@@ -1,3 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+proto_library(
+    name = "vina_proto",
+    srcs = ["vina.proto"],
+)
+
+cc_proto_library(
+    name = "vina_cc_proto",
+    deps = [":vina_proto"],
+)
+
+java_proto_library(
+    name = "vina_java_proto",
+    deps = [":vina_proto"],
+)
+
 cc_library(
     name = "parse_pdbqt",
     srcs = ["parse_pdbqt.cc"],

@@ -11,7 +11,7 @@ class VinaResult {
  public:
   VinaResult() {}
   explicit VinaResult(const std::string& ligand_str, double affinity)
-      : ligand_str(std::move(ligand_str)), affinity(affinity) {}
+      : ligand_str(ligand_str), affinity(affinity) {}
 
   std::string ligand_str;
   double affinity;
