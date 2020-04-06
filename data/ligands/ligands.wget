@@ -1,0 +1,6 @@
+#!/bin/bash
+mkdir -pv HB/AAMM && wget http://files.docking.org/3D/HB/AAMM/HBAAMM.xaa.pdbqt.gz -O HB/AAMM/HBAAMM.xaa.pdbqt.gz
+mkdir -pv HB/AAMN && wget http://files.docking.org/3D/HB/AAMN/HBAAMN.xaa.pdbqt.gz -O HB/AAMN/HBAAMN.xaa.pdbqt.gz
+mkdir -pv HB/AAMO && wget http://files.docking.org/3D/HB/AAMO/HBAAMO.xaa.pdbqt.gz -O HB/AAMO/HBAAMO.xaa.pdbqt.gz
+mkdir -pv HB/AAMP && wget http://files.docking.org/3D/HB/AAMP/HBAAMP.xaa.pdbqt.gz -O HB/AAMP/HBAAMP.xaa.pdbqt.gz
+mkdir -pv HB/AARL && wget http://files.docking.org/3D/HB/AARL/HBAARL.xaa.pdbqt.gz -O HB/AARL/HBAARL.xaa.pdbqt.gz
