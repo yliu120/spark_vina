@@ -1,4 +1,4 @@
-load("@fiesta3//third_party/boost:boost.bzl", "boost_library")
+load("@spark_vina//third_party/boost:boost.bzl", "boost_library")
 
 config_setting(
     name = "mac",

@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+.*.swp
+
+*.log
+*.1
+*_current.json
+
+.DS_Store
+*.DS_Store
+
+bazel-*
+**/test
+**/data
+
+.idea
+

@@ -1,6 +1,6 @@
 // Simple unit tests for cc module parse_pdbqt
 
-#include "spark_vina/parse_pdbqt.h"
+#include "parse_pdbqt.h"
 
 #include "gtest/gtest.h"
 
@@ -9,20 +9,20 @@ namespace {
 
 TEST(ParseReceptorTest, GeneralUsages) {
   model receptor_model = parse_receptor_pdbqt(
-      path("spark_vina/data/protein/4ZPH-docking.pdb.pdbqt"));
-  EXPECT_EQ(0, receptor_model.num_ligands());
+      path("data/protein/4ZPH-docking.pdb.pdbqt"));
+  EXPECT_EQ(receptor_model.num_ligands(), 0);
 }
 
 TEST(ParseLigandsTest, ParseCompressedLigands) {
   std::vector<std::string> ligand_strs = split_multiple_ligands(
-      path("spark_vina/data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz"));
-  EXPECT_EQ(2, ligand_strs.size());
+      path("data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz"));
+  EXPECT_EQ(ligand_strs.size(), 2);
 }
 
 TEST(ParseLigandsTest, ParseUncompressedLigands) {
   std::vector<std::string> ligand_strs = split_multiple_ligands(
-      path("spark_vina/data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt"));
-  EXPECT_EQ(2, ligand_strs.size());
+      path("data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt"));
+  EXPECT_EQ(ligand_strs.size(), 2);
 }
 
 }  // namespace

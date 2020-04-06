@@ -23,7 +23,7 @@
            JHU
 */
 
-#include "spark_vina/vina.h"
+#include "vina.h"
 
 #include <cmath>  // for ceila
 #include <exception>
@@ -38,7 +38,7 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
 
-#include "spark_vina/parse_pdbqt.h"
+#include "parse_pdbqt.h"
 #include "third_party/vina/lib/cache.h"
 #include "third_party/vina/lib/coords.h"  // add_to_output_container
 #include "third_party/vina/lib/current_weights.h"
@@ -63,13 +63,6 @@ const double kWeightHydrophobic = -0.035069;
 const double kWeightHydrogen = -0.587439;
 const double kWeightRot = 0.05846;
 const double kGranularity = 0.375;
-
-std::string default_output(const std::string& input_name) {
-  std::string tmp = input_name;
-  if (tmp.size() >= 6 && tmp.substr(tmp.size() - 6, 6) == ".pdbqt")
-    tmp.resize(tmp.size() - 6);  // FIXME?
-  return tmp + "_out.pdbqt";
-}
 
 void refine_structure(model& m, const precalculate& prec, non_cache& nc,
                       output_type& out, const vec& cap, sz max_steps = 1000) {

@@ -4,13 +4,6 @@ cc_library(
     name = "vina_libs",
     srcs = glob(["*.cpp"]),
     hdrs = glob(["*.h"]),
-    copts = select({
-        "//:marcc": [
-            "-march=sandybridge",
-            "-mtune=haswell",
-        ],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
     deps = [
         "@boost//:array",

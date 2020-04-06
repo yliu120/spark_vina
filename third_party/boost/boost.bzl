@@ -52,11 +52,6 @@ def boost_library(name, defines=None, includes=None, hdrs=None, srcs=None,
   if linkopts == None:
     linkopts = []
 
-  marcc_copts = select({
-      "@fiesta3//:marcc": ["-march=sandybridge", "-mtune=haswell"],
-      "//conditions:default": []
-  })
-
   return native.cc_library(
     name = name,
     visibility = ["//visibility:public"],
@@ -65,7 +60,7 @@ def boost_library(name, defines=None, includes=None, hdrs=None, srcs=None,
     hdrs = hdr_list(name) + hdrs,
     srcs = [s for s in srcs_list(name) if s not in exclude_src] + srcs,
     deps = deps,
-    copts = default_copts + copts + marcc_copts,
+    copts = default_copts + copts,
     linkopts = linkopts,
     licenses = ["notice"],
   )
