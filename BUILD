@@ -46,6 +46,7 @@ cc_library(
     hdrs = ["vina.h"],
     deps = [
         ":parse_pdbqt",
+	":vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
         "@boost//:filesystem",
         "@boost//:program_options",

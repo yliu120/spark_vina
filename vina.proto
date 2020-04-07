@@ -2,6 +2,6 @@ syntax = "proto3";
 
 // Encodes the result of a Vina docking.
 message VinaResult {
-	string ligang_str = 1;
+	string ligand_str = 1;
 	double affinity = 2;
 }

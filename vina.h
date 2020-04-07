@@ -7,15 +7,7 @@
 #include <string>
 #include <vector>
 
-class VinaResult {
- public:
-  VinaResult() {}
-  explicit VinaResult(const std::string& ligand_str, double affinity)
-      : ligand_str(ligand_str), affinity(affinity) {}
-
-  std::string ligand_str;
-  double affinity;
-};
+#include "vina.pb.h"
 
 // This is a util method that read ligand files to a list of strings.
 // This is just an interface to expose the split method in parse_pdbqt.

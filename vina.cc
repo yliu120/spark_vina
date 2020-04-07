@@ -262,8 +262,10 @@ std::vector<VinaResult> VinaDock::vina_fit(
       }
 
       if (affinity < filter_limit) {
-        results.emplace_back(
-            VinaResult(ligand_strs[ligand_model.first], affinity));
+        VinaResult result;
+        result.set_ligand_str(ligand_strs[ligand_model.first]);
+        result.set_affinity(affinity);
+        results.push_back(std::move(result));
       }
     }
   } catch (...) {
