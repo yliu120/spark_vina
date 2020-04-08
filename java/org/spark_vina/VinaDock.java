@@ -50,6 +50,10 @@ public final class VinaDock {
         .collect(Collectors.toList());
   }
   
+  public void finalize() {
+    nativeDelete(nativeHandle);
+  }
+  
   private native long nativeCreate(
       String receptorPath,
       double centerX,
@@ -60,6 +64,8 @@ public final class VinaDock {
       double sizeZ,
       int cpu,
       int numModes);
+      
+  private native void nativeDelete(long nativeHandle);
 
   private native List<byte[]> nativeVinaFit(
       long nativeHandle,

@@ -2,6 +2,14 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
+package(default_visibility = ["//visibility:public"])
+licenses(["notice"])
+
+config_setting(
+    name = "macos",
+    constraint_values = ["@bazel_tools//platforms:osx"],
+)
+
 proto_library(
     name = "vina_proto",
     srcs = ["vina.proto"],
