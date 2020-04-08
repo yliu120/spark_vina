@@ -10,33 +10,34 @@ public final class VinaDock {
 
   private final long nativeHandle;
   public VinaDock(
-      String receptor_path,
-      double center_x,
-      double center_y,
-      double center_z,
-      double size_x,
-      double size_y,
-      double size_z,
+      String receptorPath,
+      double centerX,
+      double centerY,
+      double centerZ,
+      double sizeX,
+      double sizeY,
+      double sizeZ,
       int cpu,
-      int num_modes) {
+      int numModes) {
     nativeHandle = nativeCreate(
-        receptor_path,
-        center_x,
-        center_y,
-        center_z,
-        size_x,
-        size_y,
-        size_z,
+        receptorPath,
+        centerX,
+        centerY,
+        centerZ,
+        sizeX,
+        sizeY,
+        sizeZ,
         cpu,
-        num_modes);
+        numModes);
     if (nativeHandle == 0) {
       throw new RuntimeException("Cannot create native C++ VinaDock object.");
     }
   }
   
-  public List<VinaResult> vinaFit(List<String> ligand_strs,
-                                  double filter_limit) {
-    return nativeVinaFit(nativeHandle, ligand_strs, filter_limit)
+  public List<VinaResult> vinaFit(List<String> ligandStrs,
+                                  double filterLimit) {
+    String[] ligandStringArray = new String[ligandStrs.size()];
+    return nativeVinaFit(nativeHandle, ligandStringArray, filterLimit)
         .stream()
         .map(
             nativeResultBytes -> {
@@ -50,20 +51,20 @@ public final class VinaDock {
   }
   
   private native long nativeCreate(
-      String receptor_path,
-      double center_x,
-      double double_y,
-      double center_z,
-      double size_x,
-      double size_y,
-      double size_z,
+      String receptorPath,
+      double centerX,
+      double doubleY,
+      double centerZ,
+      double sizeX,
+      double sizeY,
+      double sizeZ,
       int cpu,
-      int num_modes);
+      int numModes);
 
   private native List<byte[]> nativeVinaFit(
       long nativeHandle,
-      List<String> ligand_strs,
-      double filter_limit);
+      String[] ligandStringArray,
+      double filterLimit);
       
   private static void loadNativeLibrary() {
     System.loadLibrary("");
