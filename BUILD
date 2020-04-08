@@ -46,7 +46,7 @@ cc_library(
     hdrs = ["vina.h"],
     deps = [
         ":parse_pdbqt",
-	":vina_cc_proto",
+    ":vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
         "@boost//:filesystem",
         "@boost//:program_options",
@@ -72,5 +72,16 @@ cc_test(
         ":vina",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+java_library(
+    name = "spark_vina_lib",
+    srcs = [
+        "java/org/spark_vina/VinaDock.java",
+    ],
+    deps = [
+        ":vina_java_proto",
+        "@com_google_protobuf//:protobuf_java",
     ],
 )

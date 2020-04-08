@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+option java_package = "org.spark_vina";
+option java_outer_classname = "SparkVinaProtos";
+
 // Encodes the result of a Vina docking.
 message VinaResult {
 	string ligand_str = 1;
