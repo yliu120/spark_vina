@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_java//java:defs.bzl", "java_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -91,5 +92,17 @@ java_library(
     deps = [
         ":vina_java_proto",
         "@com_google_protobuf//:protobuf_java",
+    ],
+)
+
+java_test(
+    name = "spark_vina_lib_test",
+    srcs = ["javatests/org/spark_vina/VinaDockTest.java"],
+    test_class = "org.spark_vina.VinaDockTest",
+    deps = [
+        ":spark_vina_lib",
+        ":vina_java_proto",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )

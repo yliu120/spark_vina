@@ -86,27 +86,25 @@ load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_
 rules_proto_dependencies()
 rules_proto_toolchains()
 
-maven_jar(
-    name = "spark_core",
-    artifact = "org.apache.spark:spark-core_2.11:2.2.0",
+RULES_JVM_EXTERNAL_TAG = "3.0"
+RULES_JVM_EXTERNAL_SHA = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
 )
 
-maven_jar(
-    name = "spark_sql",
-    artifact = "org.apache.spark:spark-sql_2.11:2.2.0",
-)
+load("@rules_jvm_external//:defs.bzl", "maven_install")
 
-maven_jar(
-    name = "spark_mllib",
-    artifact = "org.apache.spark:spark-mllib_2.11:2.2.0",
-)
-
-maven_jar(
-    name = "spark_tags",
-    artifact = "org.apache.spark:spark-tags_2.11:2.2.0",
-)
-
-maven_jar(
-    name = "spark_catalyst",
-    artifact = "org.apache.spark:spark-catalyst_2.11:2.2.0",
+maven_install(
+    artifacts = [
+        "junit:junit:4.13",
+        "org.hamcrest:hamcrest-library:1.3",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
 )
