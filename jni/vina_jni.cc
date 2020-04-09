@@ -69,6 +69,16 @@ JNIEXPORT jobject JNICALL Java_org_spark_vina_VinaDock_nativeVinaFit(
   jobject result =
       env->NewObject(GetArrayListClass(env), GetArrayListMethodInit(env),
                      static_cast<jint>(docking_results.size()));
+  for (const auto &docking_result : docking_results) {
+    std::string serialized_result = docking_result.SerializeAsString();
+    jbyteArray docking_result_jbytes =
+        env->NewByteArray(serialized_result.size());
+    env->SetByteArrayRegion(
+        docking_result_jbytes, 0, serialized_result.size(),
+        reinterpret_cast<const jbyte*>(serialized_result.data()));
+    env->CallObjectMethod(result, GetArrayListMethodAdd(env),
+                          docking_result_jbytes);
+  }
   return result;
 }
 
