@@ -10,35 +10,35 @@
 
 namespace {
 
-std::string ToString(JNIEnv *env, jstring j_str) {
-  const char *chars = env->GetStringUTFChars(j_str, nullptr);
+std::string ToString(JNIEnv* env, jstring j_str) {
+  const char* chars = env->GetStringUTFChars(j_str, nullptr);
   std::string result(chars);
   env->ReleaseStringUTFChars(j_str, chars);
   return result;
 }
 
-jclass GetArrayListClass(JNIEnv *env) {
+jclass GetArrayListClass(JNIEnv* env) {
   static const jclass kArrayListClass = env->FindClass("java/util/ArrayList");
   return kArrayListClass;
 }
 
-jmethodID GetArrayListMethodInit(JNIEnv *env) {
+jmethodID GetArrayListMethodInit(JNIEnv* env) {
   static const jmethodID kArrayListMethodInit =
       env->GetMethodID(GetArrayListClass(env), "<init>", "(I)V");
   return kArrayListMethodInit;
 }
 
-jmethodID GetArrayListMethodAdd(JNIEnv *env) {
+jmethodID GetArrayListMethodAdd(JNIEnv* env) {
   static const jmethodID kArrayListMethodAdd =
       env->GetMethodID(GetArrayListClass(env), "add", "(Ljava/lang/Object;)Z");
   return kArrayListMethodAdd;
 }
-} // namespace
+}  // namespace
 
 extern "C" {
 // Corresponding to VinaDock.nativeCreate
 JNIEXPORT jlong JNICALL Java_org_spark_vina_VinaDock_nativeCreate(
-    JNIEnv *env, jobject clazz, jstring receptor_path, jdouble center_x,
+    JNIEnv* env, jobject clazz, jstring receptor_path, jdouble center_x,
     jdouble center_y, jdouble center_z, jdouble size_x, jdouble size_y,
     jdouble size_z, jint cpu, jint num_modes) {
   auto vina_dock = std::make_unique<VinaDock>(
@@ -49,7 +49,7 @@ JNIEXPORT jlong JNICALL Java_org_spark_vina_VinaDock_nativeCreate(
 
 // Corresponding to VinaDock.nativeVinaFit
 JNIEXPORT jobject JNICALL Java_org_spark_vina_VinaDock_nativeVinaFit(
-    JNIEnv *env, jobject clazz, jlong handle, jobjectArray ligand_string_array,
+    JNIEnv* env, jobject clazz, jlong handle, jobjectArray ligand_string_array,
     jdouble filter_limit) {
   // Parse ligand_string_array to std::vector<std::string>
   std::vector<std::string> cc_ligand_strings;
@@ -62,14 +62,14 @@ JNIEXPORT jobject JNICALL Java_org_spark_vina_VinaDock_nativeVinaFit(
   }
 
   std::vector<VinaResult> docking_results =
-      reinterpret_cast<VinaDock *>(handle)->vina_fit(cc_ligand_strings,
-                                                     filter_limit);
+      reinterpret_cast<VinaDock*>(handle)->vina_fit(cc_ligand_strings,
+                                                    filter_limit);
 
   // Pack results into jobject (List<byte>)
   jobject result =
       env->NewObject(GetArrayListClass(env), GetArrayListMethodInit(env),
                      static_cast<jint>(docking_results.size()));
-  for (const auto &docking_result : docking_results) {
+  for (const auto& docking_result : docking_results) {
     std::string serialized_result = docking_result.SerializeAsString();
     jbyteArray docking_result_jbytes =
         env->NewByteArray(serialized_result.size());
@@ -83,11 +83,10 @@ JNIEXPORT jobject JNICALL Java_org_spark_vina_VinaDock_nativeVinaFit(
 }
 
 // Corresponding to VinaDock.nativeDelete
-JNIEXPORT void JNICALL Java_org_spark_vina_VinaDock_nativeDelete(JNIEnv *env,
+JNIEXPORT void JNICALL Java_org_spark_vina_VinaDock_nativeDelete(JNIEnv* env,
                                                                  jobject clazz,
                                                                  jlong handle) {
-  if (handle == 0)
-    return;
-  delete reinterpret_cast<VinaDock *>(handle);
+  if (handle == 0) return;
+  delete reinterpret_cast<VinaDock*>(handle);
 }
-} // extern "C"
+}  // extern "C"
