@@ -30,5 +30,6 @@ cc_library(
     includes = ["."],
     deps = [
         "//:vina",
+        "//:vina_cc_proto",
     ],
 )
