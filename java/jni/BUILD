@@ -20,16 +20,50 @@ genrule(
     cmd = "cp -f $< $@",
 )
 
+filegroup(
+    name = "jni_headers",
+    srcs = [
+        ":jni.h",
+        ":jni_md.h",
+    ],
+)
+
+cc_library(
+    name = "jni_utils",
+    srcs = ["jni_utils.cc"],
+    hdrs = [
+        "jni_utils.h",
+        ":jni_headers",
+    ],
+    includes = ["."],
+    deps = []
+)
+
 cc_library(
     name = "vina_jni",
     srcs = ["vina_jni.cc"],
     hdrs = [
-        ":jni.h",
-        ":jni_md.h",
+        ":jni_headers",
     ],
     includes = ["."],
     deps = [
+        ":jni_utils",
         "//:vina",
         "//:vina_cc_proto",
     ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "vina_tools_jni",
+    srcs = ["vina_tools_jni.cc"],
+    hdrs = [
+        ":jni_headers",
+    ],
+    includes = ["."],
+    deps = [
+        ":jni_utils",
+        "//:vina",
+    ],
+    alwayslink = 1,
 )

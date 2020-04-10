@@ -88,9 +88,16 @@ java_library(
     name = "spark_vina_lib",
     srcs = [
         "java/org/spark_vina/VinaDock.java",
+        "java/org/spark_vina/VinaTools.java",
+    ],
+    resources = [
+        "//java/jni:vina_jni",
+        "//java/jni:vina_tools_jni",
     ],
     deps = [
         ":vina_java_proto",
+        "//java/jni:vina_jni",
+        "//java/jni:vina_tools_jni",
         "@com_google_protobuf//:protobuf_java",
     ],
 )
@@ -98,6 +105,9 @@ java_library(
 java_test(
     name = "spark_vina_lib_test",
     srcs = ["javatests/org/spark_vina/VinaDockTest.java"],
+    data = [
+        "//data:test_data",
+    ],
     test_class = "org.spark_vina.VinaDockTest",
     deps = [
         ":spark_vina_lib",
