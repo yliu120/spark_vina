@@ -68,7 +68,6 @@ public final class VinaDockTest {
     List<String> ligandStrings =
         VinaTools.readLigandsToStrings("data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz");
     List<VinaResult> affinities = docker.vinaFit(ligandStrings, filterLimit);
-    docker.finalize();
     assertThat(affinities, contains(isValidVinaResult(), isValidVinaResult()));
   }
 
@@ -89,7 +88,6 @@ public final class VinaDockTest {
     List<String> ligandStrings =
         VinaTools.readLigandsToStrings("data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz");
     List<VinaResult> affinities = docker.vinaFit(ligandStrings, filterLimit);
-    docker.finalize();
     assertThat(affinities, contains(isValidVinaResult(), isValidVinaResult()));
   }
 }

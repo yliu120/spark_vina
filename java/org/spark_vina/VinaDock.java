@@ -81,7 +81,8 @@ public final class VinaDock {
    * Call this method to finalize (destruct) a VinaDock instance. This method must be called
    * explicitly when the instance is no longer used.
    */
-  public void finalize() {
+  @Override
+  protected void finalize() throws Throwable {
     nativeDelete(nativeHandle);
   }
 

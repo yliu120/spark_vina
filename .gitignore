@@ -14,4 +14,7 @@ bazel-*
 **/data
 
 .idea
-
+.bazelproject
+*.iml
+.ijwb
+lib
