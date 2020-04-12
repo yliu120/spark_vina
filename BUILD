@@ -55,7 +55,7 @@ cc_library(
     hdrs = ["vina.h"],
     deps = [
         ":parse_pdbqt",
-    ":vina_cc_proto",
+        ":vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
         "@boost//:filesystem",
         "@boost//:program_options",
@@ -86,18 +86,13 @@ cc_test(
 
 java_library(
     name = "spark_vina_lib",
-    srcs = [
-        "java/org/spark_vina/VinaDock.java",
-        "java/org/spark_vina/VinaTools.java",
-    ],
+    srcs = glob(["java/org/spark_vina/*.java"]),
     resources = [
-        "//java/jni:vina_jni",
-        "//java/jni:vina_tools_jni",
+        "//java/jni:libvina_jni_all.so",
     ],
     deps = [
         ":vina_java_proto",
-        "//java/jni:vina_jni",
-        "//java/jni:vina_tools_jni",
+        "//java/jni:libvina_jni_all.so",
         "@com_google_protobuf//:protobuf_java",
     ],
 )
@@ -110,9 +105,12 @@ java_test(
     ],
     test_class = "org.spark_vina.VinaDockTest",
     deps = [
-        ":spark_vina_lib",
         ":vina_java_proto",
+        ":spark_vina_lib",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest_library",
+    ],
+    jvm_flags = [
+        "-Dorg.spark_vina.LibraryLoader.DEBUG=1",
     ],
 )

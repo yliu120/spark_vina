@@ -1,8 +1,9 @@
-#include "jni/jni_utils.h"
+#include "java/jni/jni_utils.h"
 
 namespace jni {
 
 std::string JStringToString(JNIEnv* env, jstring j_str) {
+  if (j_str == nullptr) return "";
   const char* chars = env->GetStringUTFChars(j_str, nullptr);
   std::string result(chars);
   env->ReleaseStringUTFChars(j_str, chars);
@@ -10,7 +11,8 @@ std::string JStringToString(JNIEnv* env, jstring j_str) {
 }
 
 jclass GetArrayListClass(JNIEnv* env) {
-  static const jclass kArrayListClass = env->FindClass("java/util/ArrayList");
+  static const jclass kArrayListClass = static_cast<jclass>(
+      env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
   return kArrayListClass;
 }
 

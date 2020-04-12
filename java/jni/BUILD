@@ -41,7 +41,10 @@ cc_library(
 
 cc_library(
     name = "vina_jni",
-    srcs = ["vina_jni.cc"],
+    srcs = [
+        "vina_jni.cc",
+        "vina_tools_jni.cc",
+    ],
     hdrs = [
         ":jni_headers",
     ],
@@ -54,16 +57,13 @@ cc_library(
     alwayslink = 1,
 )
 
-cc_library(
-    name = "vina_tools_jni",
-    srcs = ["vina_tools_jni.cc"],
-    hdrs = [
-        ":jni_headers",
-    ],
-    includes = ["."],
+cc_binary(
+    name = "libvina_jni_all.so",
     deps = [
-        ":jni_utils",
+        ":vina_jni",
         "//:vina",
+        "//:vina_cc_proto",
     ],
-    alwayslink = 1,
+    linkstatic = 1,
+    linkshared = 1,
 )
