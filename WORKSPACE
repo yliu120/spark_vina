@@ -1,6 +1,7 @@
 workspace(name = "spark_vina")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:maven_rules.bzl", "maven_jar")
 
 http_archive(
@@ -34,6 +35,43 @@ http_archive(
     url = "https://dl.bintray.com/boostorg/release/1.63.0/source/boost_1_63_0.tar.gz",
 )
 
+http_archive(
+    name = "pcre",
+    build_file = "//third_party:pcre.BUILD",
+    sha256 = "ccdf7e788769838f8285b3ee672ed573358202305ee361cfec7a4a4fb005bbc7",
+    strip_prefix = "pcre-8.39",
+    urls = [
+        "https://mirror.bazel.build/ftp.exim.org/pub/pcre/pcre-8.39.tar.gz",
+        "http://ftp.exim.org/pub/pcre/pcre-8.39.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "six",
+    build_file = "//third_party:six.BUILD",
+    sha256 = "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73",
+    strip_prefix = "six-1.12.0",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/pypi.python.org/packages/source/s/six/six-1.12.0.tar.gz",
+        "https://pypi.python.org/packages/source/s/six/six-1.12.0.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "swig",
+    build_file = "//third_party/swig:swig.BUILD",
+    strip_prefix = "swig-3.0.12",
+    urls = [
+        "https://downloads.sourceforge.net/project/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz",
+    ],
+)
+
+git_repository(
+    name = "subpar",
+    remote = "https://github.com/google/subpar",
+    tag = "1.0.0",
+)
+
 # rules_cc defines rules for generating C++ code from Protocol Buffers.
 http_archive(
     name = "rules_cc",
@@ -63,15 +101,21 @@ http_archive(
     ],
 )
 
-
-# java_lite_proto_library rules implicitly depend on @com_google_protobuf_javalite//:javalite_toolchain,
-# which is the JavaLite proto runtime (base classes and common utilities).
 http_archive(
-    name = "com_google_protobuf_javalite",
-    sha256 = "311b29b8d0803ab4f89be22ff365266abb6c48fd3483d59b04772a144d7a24a1",
-    strip_prefix = "protobuf-7b64714af67aa967dcf941df61fe5207975966be",
+    name = "rules_python",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
+)
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "cf754718b0aa945b00550ed7962ddc167167bd922b842199eeb6505e6f344852",
+    strip_prefix = "protobuf-3.11.3",
     urls = [
-        "https://github.com/google/protobuf/archive/7b64714af67aa967dcf941df61fe5207975966be.zip",
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
     ],
 )
 
@@ -85,6 +129,14 @@ rules_java_toolchains()
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 rules_proto_dependencies()
 rules_proto_toolchains()
+
+load("//third_party/py:python_configure.bzl", "python_configure")
+python_configure(name = "local_config_python")
+
+bind(
+    name = "python_headers",
+    actual = "@local_config_python//:python_headers",
+)
 
 RULES_JVM_EXTERNAL_TAG = "3.0"
 RULES_JVM_EXTERNAL_SHA = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"

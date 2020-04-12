@@ -1,8 +1,8 @@
 // Convenient tools on parsing pdbqt or pdbqt.gz to vina models.
 // Author: Yunlong Liu
 
-#ifndef SPARK_VINA_PARSE_PDBQT_H_
-#define SPARK_VINA_PARSE_PDBQT_H_
+#ifndef CC_PARSE_PDBQT_H_
+#define CC_PARSE_PDBQT_H_
 
 #include <string>
 #include <utility>
@@ -26,4 +26,4 @@ std::vector<std::string> split_multiple_ligands(const path& ligand_path);
 
 }  // namespace spark_vina
 
-#endif  // SPARK_VINA_PARSE_PDBQT_H_
+#endif  // CC_PARSE_PDBQT_H_

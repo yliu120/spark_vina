@@ -1,3 +1,5 @@
+load(":jni.bzl", "jni_cc_binary")
+
 package(default_visibility = ["//visibility:public"])
 
 # Inspired from:
@@ -51,19 +53,17 @@ cc_library(
     includes = ["."],
     deps = [
         ":jni_utils",
-        "//:vina",
-        "//:vina_cc_proto",
+        "//cc:vina",
+        "//protos:vina_cc_proto",
     ],
     alwayslink = 1,
 )
 
-cc_binary(
-    name = "libvina_jni_all.so",
+jni_cc_binary(
+    name = "vina_jni_all",
     deps = [
         ":vina_jni",
-        "//:vina",
-        "//:vina_cc_proto",
+        "//cc:vina",
+        "//protos:vina_cc_proto",
     ],
-    linkstatic = 1,
-    linkshared = 1,
 )

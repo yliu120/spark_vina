@@ -2,7 +2,7 @@
 
 import argparse
 
-import fiesta3.spark_vina.vina_wrap as vina  # pylint:disable=import-error
+import spark_vina.vina_wrap as vina  # pylint:disable=import-error
 
 __author__ = 'Yunlong Liu (davislong198833@gmail.com)'
 

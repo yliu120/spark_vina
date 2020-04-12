@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "java/jni/jni_utils.h"
-#include "vina.h"
+#include "cc/vina.h"
 
 #include <iostream>
 

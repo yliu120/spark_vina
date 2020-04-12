@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "java/jni/jni_utils.h"
-#include "vina.h"
-#include "vina.pb.h"
+#include "cc/vina.h"
+#include "protos/vina.pb.h"
 
 using ::jni::JStringToString;
 

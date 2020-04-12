@@ -34,12 +34,6 @@ final class LibraryLoader {
     log("jniResourceName: " + jniResourceName);
     final InputStream jniResource =
         LibraryLoader.class.getClassLoader().getResourceAsStream(jniResourceName);
-    // Extract the JNI's dependency
-    final String frameworkLibName = getVersionedLibraryName(System.mapLibraryName("vina"));
-    final String frameworkResourceName = makeResourceName(frameworkLibName);
-    log("frameworkResourceName: " + frameworkResourceName);
-    final InputStream frameworkResource =
-        LibraryLoader.class.getClassLoader().getResourceAsStream(frameworkResourceName);
     if (jniResource == null) {
       throw new UnsatisfiedLinkError(
           String.format(
@@ -54,15 +48,6 @@ final class LibraryLoader {
       // deleted first, so that it is empty when the request is fulfilled.
       tempPath.deleteOnExit();
       final String tempDirectory = tempPath.getCanonicalPath();
-      if (frameworkResource != null) {
-        extractResource(frameworkResource, frameworkLibName, tempDirectory);
-      } else {
-        log(
-            frameworkResourceName
-                + " not found. This is fine assuming "
-                + jniResourceName
-                + " is not built to depend on it.");
-      }
       System.load(extractResource(jniResource, jniLibName, tempDirectory));
     } catch (IOException e) {
       throw new UnsatisfiedLinkError(
@@ -221,7 +206,7 @@ final class LibraryLoader {
 
   private static File createTemporaryDirectory() {
     File baseDirectory = new File(System.getProperty("java.io.tmpdir"));
-    String directoryName = "tensorflow_native_libraries-" + System.currentTimeMillis() + "-";
+    String directoryName = "spark_vina_native_libraries-" + System.currentTimeMillis() + "-";
     for (int attempt = 0; attempt < 1000; attempt++) {
       File temporaryDirectory = new File(baseDirectory, directoryName + attempt);
       if (temporaryDirectory.mkdir()) {

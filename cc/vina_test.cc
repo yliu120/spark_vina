@@ -2,7 +2,7 @@
 // Author: Yunlong Liu (davislong198833@gmail.com)
 //
 
-#include "vina.h"
+#include "cc/vina.h"
 
 #include "gtest/gtest.h"
 

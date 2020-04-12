@@ -23,7 +23,7 @@
            JHU
 */
 
-#include "vina.h"
+#include "cc/vina.h"
 
 #include <cmath>  // for ceila
 #include <exception>
@@ -38,7 +38,7 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
 
-#include "parse_pdbqt.h"
+#include "cc/parse_pdbqt.h"
 #include "third_party/vina/lib/cache.h"
 #include "third_party/vina/lib/coords.h"  // add_to_output_container
 #include "third_party/vina/lib/current_weights.h"
