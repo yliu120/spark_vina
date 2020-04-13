@@ -1,4 +1,3 @@
-# load("@subpar//:subpar.bzl", "par_binary")
 load("//third_party/swig:swig.bzl", "py_wrap_cc")
 
 package(default_visibility = ["//visibility:public"])
@@ -14,6 +13,7 @@ py_wrap_cc(
     deps = [
         ":python_headers",
         "//cc:vina",
+        "//protos:vina_cc_proto",
     ],
 )
 

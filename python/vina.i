@@ -1,6 +1,7 @@
 // vina.i - SWIG interface for python vina module
 %module vina
 %{
+#include "protos/vina.pb.h"
 #include "cc/vina.h"
 %}
 
@@ -15,4 +16,5 @@ namespace std {
 }
 
 // Parse the original header file
- %include "cc/vina.h"
+%include "protos/vina.pb.h"
+%include "cc/vina.h"

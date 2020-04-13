@@ -15,7 +15,10 @@ genrule(
 genrule(
     name = "copy_jni_md_h",
     srcs = select({
-        "//:macos": ["@bazel_tools//tools/jdk:jni_md_header-darwin"],
+        "@bazel_tools//src/conditions:darwin": [
+            "@bazel_tools//tools/jdk:jni_md_header-darwin"],
+        "@bazel_tools//src/conditions:darwin_x86_64": [
+            "@bazel_tools//tools/jdk:jni_md_header-darwin"],
         "//conditions:default": ["@bazel_tools//tools/jdk:jni_md_header-linux"],
     }),
     outs = ["jni_md.h"],

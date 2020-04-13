@@ -2,7 +2,6 @@ workspace(name = "spark_vina")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@bazel_tools//tools/build_defs/repo:maven_rules.bzl", "maven_jar")
 
 http_archive(
     name = "com_google_googletest",
@@ -67,12 +66,6 @@ http_archive(
     urls = [
         "https://downloads.sourceforge.net/project/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz",
     ],
-)
-
-git_repository(
-    name = "subpar",
-    remote = "https://github.com/google/subpar",
-    tag = "1.0.0",
 )
 
 # rules_cc defines rules for generating C++ code from Protocol Buffers.
@@ -141,8 +134,8 @@ bind(
     actual = "@local_config_python//:python_headers",
 )
 
-RULES_JVM_EXTERNAL_TAG = "3.0"
-RULES_JVM_EXTERNAL_SHA = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"
+RULES_JVM_EXTERNAL_TAG = "3.2"
+RULES_JVM_EXTERNAL_SHA = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af"
 
 http_archive(
     name = "rules_jvm_external",
@@ -152,6 +145,7 @@ http_archive(
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
+load("@rules_jvm_external//:specs.bzl", "maven")
 
 maven_install(
     artifacts = [
@@ -162,4 +156,28 @@ maven_install(
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
+)
+
+maven_install(
+    name = "cli",
+    artifacts = [
+        "commons-cli:commons-cli:1.4"
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+
+maven_install(
+    name = "spark",
+    artifacts = [
+        "org.apache.spark:spark-core_2.12:2.4.5",
+        "org.apache.spark:spark-sql_2.12:2.4.5",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+    fetch_sources = True,
 )
