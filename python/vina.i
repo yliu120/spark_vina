@@ -1,7 +1,7 @@
 // vina.i - SWIG interface for python vina module
 %module vina
 %{
-#include "spark_vina/vina.h"
+#include "cc/vina.h"
 %}
 
 %include "std_vector.i"
@@ -15,4 +15,4 @@ namespace std {
 }
 
 // Parse the original header file
- %include "spark_vina/vina.h"
+ %include "cc/vina.h"

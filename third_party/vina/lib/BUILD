@@ -11,7 +11,9 @@ cc_library(
         "@boost//:lexical_cast",
         "@boost//:math",
         "@boost//:optional",
-        "@boost//:progress",
+        # TODO: Change backs to "@boost//:progress" after rules_boost supports
+        # the progress lib.
+        "//third_party/boost:progress",
         "@boost//:ptr_container",
         "@boost//:random",
         "@boost//:serialization",

@@ -36,13 +36,13 @@ def _py_wrap_cc_impl(ctx):
     fail("Exactly one SWIG source file label must be specified.", "srcs")
   module_name = ctx.attr.module_name
   src = ctx.files.srcs[0]
-  inputs = depset([src])
+  inputs = depset([src]).to_list()
   inputs += ctx.files.swig_includes
   for dep in ctx.attr.deps:
-    inputs += dep.cc.transitive_headers
+    inputs += dep[CcInfo].compilation_context.headers.to_list()
   inputs += ctx.files._swiglib
   inputs += ctx.files.toolchain_deps
-  swig_include_dirs = depset(_get_repository_roots(ctx, inputs))
+  swig_include_dirs = depset(_get_repository_roots(ctx, inputs)).to_list()
   # swig_include_dirs += sorted([f.dirname for f in ctx.files._swiglib])
   args = ["-c++"] if ctx.attr.cpp else []
   args += [
@@ -54,7 +54,7 @@ def _py_wrap_cc_impl(ctx):
   args += ["-I" + i for i in swig_include_dirs]
   args += [src.path]
   outputs = [ctx.outputs.cc_out, ctx.outputs.py_out]
-  ctx.action(
+  ctx.actions.run(
       executable=ctx.executable._swig,
       arguments=args,
       inputs=list(inputs),
@@ -66,10 +66,6 @@ def _py_wrap_cc_impl(ctx):
 
 def _output_func(module_name, py_module_name, cpp):
   return {"py_out": "%{py_module_name}.py",
-          "cc_out": "%{module_name}.cc" if cpp else "%{module_name}.c",}
-
-def _java_output_func(module_name, java_module_name, cpp):
-  return {"java_out": "%{java_module_name}.java",
           "cc_out": "%{module_name}.cc" if cpp else "%{module_name}.c",}
 
 _py_wrap_cc = rule(
@@ -84,7 +80,7 @@ _py_wrap_cc = rule(
         ),
         "deps": attr.label_list(
             allow_files = True,
-            providers = ["cc"],
+            providers = [CcInfo]
         ),
         "toolchain_deps": attr.label_list(
             allow_files = True,
@@ -119,20 +115,15 @@ def py_wrap_cc(name,
   cc_library_name = "/".join(name.split("/")[:-1] + ["_" + module_name + ".so"])
   cc_library_pyd_name = "/".join(
       name.split("/")[:-1] + ["_" + module_name + ".pyd"])
-  extra_deps = []
   _py_wrap_cc(
       name=name + "_py_wrap",
       srcs=srcs,
       swig_includes=swig_includes,
-      deps=deps + extra_deps,
+      deps=deps,
       toolchain_deps=[],
       module_name=module_name,
       py_module_name=name,
       cpp=cpp)
-
-  # leave it here for the future? But we will not use cuda.
-  extra_linkopts = []
-  extra_deps += []
 
   src = module_name
   src += ".cc" if cpp else ".c"

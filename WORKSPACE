@@ -27,13 +27,15 @@ http_archive(
     url = "https://downloads.sourceforge.net/project/bzip2/bzip2-1.0.6.tar.gz",
 )
 
-http_archive(
-    name = "boost",
-    build_file = "//third_party/boost:boost.BUILD",
-    sha256 = "fe34a4e119798e10b8cc9e565b3b0284e9fd3977ec8a1b19586ad1dec397088b",
-    strip_prefix = "boost_1_63_0",
-    url = "https://dl.bintray.com/boostorg/release/1.63.0/source/boost_1_63_0.tar.gz",
+git_repository(
+    name = "com_github_nelhage_rules_boost",
+    commit = "3375447ef6c1a9a502873a4a0484abbc037d8a96",
+    remote = "https://github.com/nelhage/rules_boost",
+    shallow_since = "1586710985 -0700",
 )
+
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+boost_deps()
 
 http_archive(
     name = "pcre",
@@ -60,6 +62,7 @@ http_archive(
 http_archive(
     name = "swig",
     build_file = "//third_party/swig:swig.BUILD",
+    sha256 = "7cf9f447ae7ed1c51722efc45e7f14418d15d7a1e143ac9f09a668999f4fc94d",
     strip_prefix = "swig-3.0.12",
     urls = [
         "https://downloads.sourceforge.net/project/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz",
