@@ -26,73 +26,90 @@ public final class SparkVinaMain {
         Option.builder()
             .longOpt("receptor_path")
             .required()
+            .hasArg()
             .desc("The path of the receptor's pdbqt file.")
             .build();
     final Option ligandDirOption =
         Option.builder()
             .longOpt("ligand_dir")
             .required()
+            .hasArg()
             .desc("The directory of the ligand in pdbqt or pdbqt.gz format.")
             .build();
     final Option outputDirOption =
-        Option.builder().longOpt("output_dir").required().desc("The output directory").build();
+        Option.builder()
+            .longOpt("output_dir")
+            .required()
+            .hasArg()
+            .desc("The output directory")
+            .build();
     final Option centerXOption =
         Option.builder()
             .longOpt("center_x")
+            .hasArg()
             .type(double.class)
             .desc("The X coord of the center of the grid.")
             .build();
     final Option centerYOption =
         Option.builder()
             .longOpt("center_y")
+            .hasArg()
             .type(double.class)
             .desc("The Y coord of the center of the grid.")
             .build();
     final Option centerZOption =
         Option.builder()
             .longOpt("center_z")
+            .hasArg()
             .type(double.class)
             .desc("The Z coord of the center of the grid.")
             .build();
     final Option sizeXOption =
         Option.builder()
             .longOpt("size_x")
+            .hasArg()
             .type(double.class)
             .desc("The X dimension of the grid.")
             .build();
     final Option sizeYOption =
         Option.builder()
             .longOpt("size_y")
+            .hasArg()
             .type(double.class)
             .desc("The Y dimension of the grid.")
             .build();
     final Option sizeZOption =
         Option.builder()
             .longOpt("size_z")
+            .hasArg()
             .type(double.class)
             .desc("The Z dimension of the grid.")
             .build();
     final Option numModesOption =
         Option.builder()
             .longOpt("num_modes")
+            .hasArg()
             .type(int.class)
             .desc("The number of calculated modes.")
             .build();
     final Option numTasksOption =
         Option.builder()
             .longOpt("num_tasks")
+            .hasArg()
             .type(int.class)
             .desc("The number of spark tasks.")
             .build();
     final Option cpuPerTasksOption =
         Option.builder()
             .longOpt("cpu_per_tasks")
+            .hasArg()
             .type(int.class)
             .desc("The number of CPUs per task.")
             .build();
     final Option thresholdOption =
         Option.builder()
             .longOpt("threshold")
+            .hasArg()
             .type(double.class)
             .desc("The estimated binding free energy threshold for the docking task.")
             .build();
