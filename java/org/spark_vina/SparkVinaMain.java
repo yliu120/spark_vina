@@ -137,49 +137,49 @@ public final class SparkVinaMain {
       CommandLine cmdLine = parser.parse(options, args);
 
       // Default to local spark cluster.
-      String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
+      final String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
       // Required args.
-      String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
-      String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
-      String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
+      final String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
+      final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
+      final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
       // Optional parameters.
-      double centerX =
+      final double centerX =
           cmdLine.hasOption(centerXOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())
               : 0.0;
-      double centerY =
+      final double centerY =
           cmdLine.hasOption(centerYOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())
               : 0.0;
-      double centerZ =
+      final double centerZ =
           cmdLine.hasOption(centerZOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())
               : 0.0;
-      double sizeX =
+      final double sizeX =
           cmdLine.hasOption(sizeXOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())
               : 0.0;
-      double sizeY =
+      final double sizeY =
           cmdLine.hasOption(sizeYOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())
               : 0.0;
-      double sizeZ =
+      final double sizeZ =
           cmdLine.hasOption(centerXOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())
               : 0.0;
-      int numModes =
+      final int numModes =
           cmdLine.hasOption(numModesOption.getLongOpt())
               ? (int) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())
               : kDefaultNumModes;
-      int numTasks =
+      final int numTasks =
           cmdLine.hasOption(numTasksOption.getLongOpt())
               ? (int) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())
               : kDefaultNumTasks;
-      int numCpuPerTasks =
+      final int numCpuPerTasks =
           cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
               ? (int) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())
               : kDefaultNumCpuPerTasks;
-      double threshold =
+      final double threshold =
           cmdLine.hasOption(thresholdOption.getLongOpt())
               ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
               : kDefaultThreshold;
