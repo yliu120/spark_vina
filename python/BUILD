@@ -9,12 +9,16 @@ alias(
 
 py_wrap_cc(
     name = "vina_wrap",
-    srcs = ["vina.i"],
+    srcs = ["vina.swig"],
     deps = [
         ":python_headers",
         "//cc:vina",
         "//protos:vina_cc_proto",
     ],
+    module_name = "vina",
+    py_deps = [
+        "//protos:vina_proto_py",
+    ]
 )
 
 py_binary(
@@ -22,7 +26,9 @@ py_binary(
     srcs = ["vina_example.py"],
     data = ["//data:test_data"],
     main = "vina_example.py",
-    deps = [":vina_wrap"],
+    deps = [
+        ":vina_wrap",
+    ],
 )
 
 py_binary(

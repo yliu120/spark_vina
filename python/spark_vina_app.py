@@ -1,4 +1,7 @@
-"""This file runs vina with spark for parallel processes."""
+"""This file runs vina with spark for parallel processes.
+
+This PySpark version is experimental and will be supported later.
+"""
 
 import argparse
 import logging
@@ -28,7 +31,7 @@ LOGGER.addHandler(CONSOLE_HANDLER)
 
 def _fit_ligands_in_one_shard(ligand_iter):
     # pylint: disable=no-name-in-module, import-error
-    from python.vina_wrap import VinaDock
+    from python.vina import VinaDock
     dock = VinaDock(FLAGS.receptor_path, FLAGS.center_x, FLAGS.center_y,
                     FLAGS.center_z, FLAGS.size_x, FLAGS.size_y, FLAGS.size_z,
                     FLAGS.cpu, FLAGS.num_modes)
@@ -41,7 +44,7 @@ def _fit_ligands_in_one_shard(ligand_iter):
 
 def _wrap_read_ligand_to_strings(item):
     # pylint: disable=no-name-in-module, import-error
-    from python.vina_wrap import read_ligand_to_strings
+    from python.vina import read_ligand_to_strings
     return read_ligand_to_strings(item)
 
 

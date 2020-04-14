@@ -34,7 +34,6 @@ def _py_wrap_cc_impl(ctx):
   srcs = ctx.files.srcs
   if len(srcs) != 1:
     fail("Exactly one SWIG source file label must be specified.", "srcs")
-  module_name = ctx.attr.module_name
   src = ctx.files.srcs[0]
   inputs = depset([src]).to_list()
   inputs += ctx.files.swig_includes
@@ -43,10 +42,9 @@ def _py_wrap_cc_impl(ctx):
   inputs += ctx.files._swiglib
   inputs += ctx.files.toolchain_deps
   swig_include_dirs = depset(_get_repository_roots(ctx, inputs)).to_list()
-  # swig_include_dirs += sorted([f.dirname for f in ctx.files._swiglib])
   args = ["-c++"] if ctx.attr.cpp else []
   args += [
-      "-python", "-module", module_name,
+      "-python", "-module", ctx.attr.module_name, "-py3", "-modern",
       "-o", ctx.outputs.cc_out.path,
       "-outdir", ctx.outputs.py_out.dirname
   ]
@@ -64,8 +62,8 @@ def _py_wrap_cc_impl(ctx):
       progress_message="SWIGing " + src.path)
   return struct(files=depset(outputs))
 
-def _output_func(module_name, py_module_name, cpp):
-  return {"py_out": "%{py_module_name}.py",
+def _output_func(module_name, cpp):
+  return {"py_out": "%{module_name}.py",
           "cc_out": "%{module_name}.cc" if cpp else "%{module_name}.c",}
 
 _py_wrap_cc = rule(
@@ -87,7 +85,6 @@ _py_wrap_cc = rule(
         ),
         "cpp": attr.bool(default = True),
         "module_name": attr.string(mandatory = True),
-        "py_module_name": attr.string(mandatory = True),
         "_swig": attr.label(
             default = Label("@swig//:swig"),
             executable = True,
@@ -108,24 +105,26 @@ def py_wrap_cc(name,
                deps=[],
                copts=[],
                cpp=True,
+               module_name="",
+               py_deps=[],
                **kwargs):
-  module_name = name.split("/")[-1]
+  _module_name = name.split("/")[-1] if not module_name else module_name
   # Convert a rule name such as foo/bar/baz to foo/bar/_baz.so
   # and use that as the name for the rule producing the .so file.
-  cc_library_name = "/".join(name.split("/")[:-1] + ["_" + module_name + ".so"])
+  cc_library_name = "/".join(
+      name.split("/")[:-1] + ["_" + _module_name + ".so"])
   cc_library_pyd_name = "/".join(
-      name.split("/")[:-1] + ["_" + module_name + ".pyd"])
+      name.split("/")[:-1] + ["_" + _module_name + ".pyd"])
   _py_wrap_cc(
       name=name + "_py_wrap",
       srcs=srcs,
       swig_includes=swig_includes,
       deps=deps,
       toolchain_deps=[],
-      module_name=module_name,
-      py_module_name=name,
+      module_name=_module_name,
       cpp=cpp)
 
-  src = module_name
+  src = _module_name
   src += ".cc" if cpp else ".c"
 
   native.cc_binary(
@@ -145,5 +144,6 @@ def py_wrap_cc(name,
 
   native.py_library(
       name=name,
-      srcs=[":" + name + ".py"],
-      data=[":" + cc_library_name])
+      srcs=[":" + _module_name + ".py"],
+      data=[":" + cc_library_name],
+      deps=py_deps)
