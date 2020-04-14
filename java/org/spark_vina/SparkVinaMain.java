@@ -8,80 +8,173 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 
 public final class SparkVinaMain {
+  private static final int kDefaultNumModes = 8;
+  private static final int kDefaultNumTasks = 1;
+  private static final int kDefaultNumCpuPerTasks = 4;
+  private static final double kDefaultThreshold = 1.0;
 
   public static void main(String[] args) throws Exception {
-    Options options = new Options();
+    final Option sparkMasterOption =
+        Option.builder().longOpt("spark_master").desc("Spark Master Address").build();
+    final Option receptorPathOption =
+        Option.builder()
+            .longOpt("receptor_path")
+            .required()
+            .desc("The path of the receptor's pdbqt file.")
+            .build();
+    final Option ligandDirOption =
+        Option.builder()
+            .longOpt("ligand_dir")
+            .required()
+            .desc("The directory of the ligand in pdbqt or pdbqt.gz format.")
+            .build();
+    final Option outputDirOption =
+        Option.builder().longOpt("output_dir").required().desc("The output directory").build();
+    final Option centerXOption =
+        Option.builder()
+            .longOpt("center_x")
+            .type(double.class)
+            .desc("The X coord of the center of the grid.")
+            .build();
+    final Option centerYOption =
+        Option.builder()
+            .longOpt("center_y")
+            .type(double.class)
+            .desc("The Y coord of the center of the grid.")
+            .build();
+    final Option centerZOption =
+        Option.builder()
+            .longOpt("center_z")
+            .type(double.class)
+            .desc("The Z coord of the center of the grid.")
+            .build();
+    final Option sizeXOption =
+        Option.builder()
+            .longOpt("size_x")
+            .type(double.class)
+            .desc("The X dimension of the grid.")
+            .build();
+    final Option sizeYOption =
+        Option.builder()
+            .longOpt("size_y")
+            .type(double.class)
+            .desc("The Y dimension of the grid.")
+            .build();
+    final Option sizeZOption =
+        Option.builder()
+            .longOpt("size_z")
+            .type(double.class)
+            .desc("The Z dimension of the grid.")
+            .build();
+    final Option numModesOption =
+        Option.builder()
+            .longOpt("num_modes")
+            .type(int.class)
+            .desc("The number of calculated modes.")
+            .build();
+    final Option numTasksOption =
+        Option.builder()
+            .longOpt("num_tasks")
+            .type(int.class)
+            .desc("The number of spark tasks.")
+            .build();
+    final Option cpuPerTasksOption =
+        Option.builder()
+            .longOpt("cpu_per_tasks")
+            .type(int.class)
+            .desc("The number of CPUs per task.")
+            .build();
+    final Option thresholdOption =
+        Option.builder()
+            .longOpt("threshold")
+            .type(double.class)
+            .desc("The estimated binding free energy threshold for the docking task.")
+            .build();
 
-    final Option sparkMaster = Option.builder().longOpt("spark_master")
-        .desc("Spark Master Address").build();
-    options.addOption(sparkMaster);
-    final Option receptorPath = Option.builder().longOpt("receptor_path").required()
-        .desc("The path of the receptor's pdbqt file.").build();
-    options.addOption(receptorPath);
-    final Option ligandDir = Option.builder().longOpt("ligand_dir").required()
-        .desc("The directory of the ligand in pdbqt or pdbqt.gz format.").build();
-    options.addOption(ligandDir);
-    final Option outputDir = Option.builder().longOpt("output_dir").required()
-        .desc("The output directory")
-        .build();
-    options.addOption(outputDir);
-    final Option centerX = Option.builder().longOpt("center_x").type(float.class)
-        .desc("The X coord of the center of the grid.").build();
-    options.addOption(centerX);
-    final Option centerY = Option.builder().longOpt("center_y").type(float.class)
-        .desc("The Y coord of the center of the grid.").build();
-    options.addOption(centerY);
-    final Option centerZ = Option.builder().longOpt("center_z").type(float.class)
-        .desc("The Z coord of the center of the grid.").build();
-    options.addOption(centerZ);
-    final Option sizeX = Option.builder().longOpt("size_x").type(float.class)
-        .desc("The X dimension of the grid.").build();
-    options.addOption(sizeX);
-    final Option sizeY = Option.builder().longOpt("size_y").type(float.class)
-        .desc("The Y dimension of the grid.").build();
-    options.addOption(sizeY);
-    final Option sizeZ = Option.builder().longOpt("size_z").type(float.class)
-        .desc("The Z dimension of the grid.").build();
-    options.addOption(
-        sizeZ);
-    final Option numModes = Option.builder().longOpt("num_modes").type(int.class)
-        .desc("The number of calculated modes.").build();
-    options.addOption(numModes);
-    final Option numTasks = Option.builder().longOpt("num_tasks").type(int.class)
-        .desc("The number of spark tasks.").build();
-    options.addOption(
-        numTasks);
-    final Option cpuPerTasks = Option.builder().longOpt("cpu_per_tasks").type(int.class)
-        .desc("The number of CPUs per task.").build();
-    options.addOption(cpuPerTasks);
-    final Option threshold = Option.builder().longOpt("threshold").type(float.class)
-        .desc("The estimated binding free energy threshold for the docking task.").build();
-    options.addOption(threshold);
+    Options options = new Options();
+    options
+        .addOption(sparkMasterOption)
+        .addOption(receptorPathOption)
+        .addOption(ligandDirOption)
+        .addOption(outputDirOption)
+        .addOption(centerXOption)
+        .addOption(centerYOption)
+        .addOption(centerZOption)
+        .addOption(sizeXOption)
+        .addOption(sizeYOption)
+        .addOption(sizeZOption)
+        .addOption(numModesOption)
+        .addOption(numTasksOption)
+        .addOption(cpuPerTasksOption)
+        .addOption(thresholdOption);
 
     try {
       // Parse the command lin arguments.
       CommandLineParser parser = new DefaultParser();
       CommandLine cmdLine = parser.parse(options, args);
 
-      String sparkMasterValue;
-      if (cmdLine.hasOption(sparkMaster.getLongOpt())) {
-        sparkMasterValue = cmdLine.getOptionValue(sparkMaster.getLongOpt());
-      }
+      // Default to local spark cluster.
+      String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
+      // Required args.
+      String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
+      String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
+      String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
+      // Optional parameters.
+      double centerX =
+          cmdLine.hasOption(centerXOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())
+              : 0.0;
+      double centerY =
+          cmdLine.hasOption(centerYOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())
+              : 0.0;
+      double centerZ =
+          cmdLine.hasOption(centerZOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())
+              : 0.0;
+      double sizeX =
+          cmdLine.hasOption(sizeXOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())
+              : 0.0;
+      double sizeY =
+          cmdLine.hasOption(sizeYOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())
+              : 0.0;
+      double sizeZ =
+          cmdLine.hasOption(centerXOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())
+              : 0.0;
+      int numModes =
+          cmdLine.hasOption(numModesOption.getLongOpt())
+              ? (int) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())
+              : kDefaultNumModes;
+      int numTasks =
+          cmdLine.hasOption(numTasksOption.getLongOpt())
+              ? (int) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())
+              : kDefaultNumTasks;
+      int numCpuPerTasks =
+          cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
+              ? (int) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())
+              : kDefaultNumCpuPerTasks;
+      double threshold =
+          cmdLine.hasOption(thresholdOption.getLongOpt())
+              ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
+              : kDefaultThreshold;
 
+      SparkContext sparkContext =
+          new SparkContext(new SparkConf().setMaster(sparkMaster).setAppName("SparkVina"));
+      SparkSession spark =
+          SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
+      spark.stop();
     } catch (ParseException parseException) {
       System.out.println(parseException.getMessage());
       new HelpFormatter().printHelp("SparkVinaMain", options);
-      return;
     }
-
-    // SparkSession spark = SparkSession
-    //     .builder()
-    //     .appName("SparkVinaMain")
-    //     .getOrCreate();
-    // spark.stop();
   }
 }
