@@ -19,6 +19,9 @@ java_library(
         "//protos:vina_java_proto",
         "//java/jni:vina_jni_all",
         "@com_google_protobuf//:protobuf_java",
+        "@maven//:com_google_guava_guava_29_0_jre",
+        "@maven//:org_apache_spark_spark_core_2_12_2_4_5",
+        "@maven//:org_slf4j_slf4j_api_1_7_30",
     ],
 )
 
@@ -32,8 +35,8 @@ java_test(
     deps = [
         ":spark_vina_lib",
         "//protos:vina_java_proto",
-        "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest_library",
+        "@maven//:org_hamcrest_hamcrest_library_2_2",
+        "@maven//:junit_junit_4_13",
     ],
     jvm_flags = [
         "-Dorg.spark_vina.LibraryLoader.DEBUG=1",
@@ -46,8 +49,10 @@ java_binary(
     main_class = "org.spark_vina.SparkVinaMain",
     deps = [
         ":spark_vina_lib",
-        "@cli//:commons_cli_commons_cli",
-        "@spark//:org_apache_spark_spark_core_2_12_2_4_5",
-        "@spark//:org_apache_spark_spark_sql_2_12_2_4_5",
+        "@maven//:commons_cli_commons_cli_1_4",
+        "@maven//:com_google_guava_guava_29_0_jre",
+        "@maven//:org_apache_spark_spark_core_2_12_2_4_5",
+        "@maven//:org_apache_spark_spark_sql_2_12_2_4_5",
+        "@maven//:org_slf4j_slf4j_api_1_7_30",
     ]
 )

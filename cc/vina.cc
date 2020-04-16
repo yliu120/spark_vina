@@ -261,6 +261,8 @@ std::vector<VinaResult> VinaDock::vina_fit(
         continue;
       }
 
+      // filter_limit should always be negative as the Vina score should be
+      // negative.
       if (affinity < filter_limit) {
         VinaResult result;
         result.set_ligand_str(ligand_strs[ligand_model.first]);

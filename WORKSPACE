@@ -132,35 +132,16 @@ load("@rules_jvm_external//:specs.bzl", "maven")
 
 maven_install(
     artifacts = [
+        "commons-cli:commons-cli:1.4",
+        "com.google.guava:guava:29.0-jre",
         "junit:junit:4.13",
-        "org.hamcrest:hamcrest-library:1.3",
-    ],
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-)
-
-maven_install(
-    name = "cli",
-    artifacts = [
-        "commons-cli:commons-cli:1.4"
-    ],
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-)
-
-maven_install(
-    name = "spark",
-    artifacts = [
         "org.apache.spark:spark-core_2.12:2.4.5",
         "org.apache.spark:spark-sql_2.12:2.4.5",
+        "org.hamcrest:hamcrest-library:2.2",
+        "org.slf4j:slf4j-api:1.7.30",
     ],
     repositories = [
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
-    fetch_sources = True,
 )

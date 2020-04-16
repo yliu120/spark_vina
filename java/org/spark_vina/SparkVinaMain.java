@@ -1,6 +1,9 @@
 package org.spark_vina;
 
-import java.util.ArrayList;
+import com.google.common.base.Optional;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -10,14 +13,18 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class SparkVinaMain {
   private static final int kDefaultNumModes = 8;
   private static final int kDefaultNumTasks = 1;
   private static final int kDefaultNumCpuPerTasks = 4;
   private static final double kDefaultThreshold = 1.0;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
   public static void main(String[] args) throws Exception {
     final Option sparkMasterOption =
@@ -184,10 +191,26 @@ public final class SparkVinaMain {
               ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
               : kDefaultThreshold;
 
+      if (!Files.exists(Paths.get(receptorPath))) {
+        throw new ParseException("Receptor path doesn't exist.");
+      }
+      if (!Files.exists(Paths.get(ligandDir))) {
+        throw new ParseException("Ligand directory doesn't exist.");
+      }
+
       SparkContext sparkContext =
           new SparkContext(new SparkConf().setMaster(sparkMaster).setAppName("SparkVina"));
       SparkSession spark =
           SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
+      JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
+
+      List<String> result =
+          javaSparkContext
+              .parallelize(SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir).get())
+              .map(VinaTools::readLigandsToStrings)
+              .flatMap(List::iterator)
+              .collect();
+
       spark.stop();
     } catch (ParseException parseException) {
       System.out.println(parseException.getMessage());

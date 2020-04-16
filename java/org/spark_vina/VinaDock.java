@@ -1,6 +1,8 @@
 package org.spark_vina;
 
+import com.google.common.base.Optional;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.spark_vina.SparkVinaProtos.VinaResult;
@@ -75,6 +77,11 @@ public final class VinaDock {
               }
             })
         .collect(Collectors.toList());
+  }
+
+  public Optional<VinaResult> vinaFitSingleLigand(String ligandString, double filterLimit) {
+    List<VinaResult> result = vinaFit(Arrays.asList(ligandString), filterLimit);
+    return result.isEmpty() ? Optional.absent() : Optional.of(result.get(0));
   }
 
   /**
