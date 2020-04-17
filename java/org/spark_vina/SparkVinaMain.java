@@ -1,8 +1,10 @@
 package org.spark_vina;
 
 import com.google.common.base.Optional;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,12 +19,14 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spark_vina.SparkVinaProtos.VinaResult;
 
 public final class SparkVinaMain {
   private static final int kDefaultNumModes = 8;
   private static final int kDefaultNumTasks = 1;
   private static final int kDefaultNumCpuPerTasks = 4;
-  private static final double kDefaultThreshold = 1.0;
+  private static final double kDefaultThreshold = -1.0;
+  private static final int kDefaultOutputNumber = 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
@@ -54,71 +58,78 @@ public final class SparkVinaMain {
         Option.builder()
             .longOpt("center_x")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The X coord of the center of the grid.")
             .build();
     final Option centerYOption =
         Option.builder()
             .longOpt("center_y")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The Y coord of the center of the grid.")
             .build();
     final Option centerZOption =
         Option.builder()
             .longOpt("center_z")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The Z coord of the center of the grid.")
             .build();
     final Option sizeXOption =
         Option.builder()
             .longOpt("size_x")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The X dimension of the grid.")
             .build();
     final Option sizeYOption =
         Option.builder()
             .longOpt("size_y")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The Y dimension of the grid.")
             .build();
     final Option sizeZOption =
         Option.builder()
             .longOpt("size_z")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The Z dimension of the grid.")
             .build();
     final Option numModesOption =
         Option.builder()
             .longOpt("num_modes")
             .hasArg()
-            .type(int.class)
+            .type(Number.class)
             .desc("The number of calculated modes.")
             .build();
     final Option numTasksOption =
         Option.builder()
             .longOpt("num_tasks")
             .hasArg()
-            .type(int.class)
+            .type(Number.class)
             .desc("The number of spark tasks.")
             .build();
     final Option cpuPerTasksOption =
         Option.builder()
             .longOpt("cpu_per_tasks")
             .hasArg()
-            .type(int.class)
+            .type(Number.class)
             .desc("The number of CPUs per task.")
             .build();
     final Option thresholdOption =
         Option.builder()
             .longOpt("threshold")
             .hasArg()
-            .type(double.class)
+            .type(Number.class)
             .desc("The estimated binding free energy threshold for the docking task.")
+            .build();
+    final Option numberOutputOption =
+        Option.builder()
+            .longOpt("num_output")
+            .hasArg()
+            .type(Number.class)
+            .desc("Output the top N ligands with the best binding score.")
             .build();
 
     Options options = new Options();
@@ -136,7 +147,8 @@ public final class SparkVinaMain {
         .addOption(numModesOption)
         .addOption(numTasksOption)
         .addOption(cpuPerTasksOption)
-        .addOption(thresholdOption);
+        .addOption(thresholdOption)
+        .addOption(numberOutputOption);
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
@@ -157,44 +169,48 @@ public final class SparkVinaMain {
     // Optional parameters.
     final double centerX =
         cmdLine.hasOption(centerXOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())).doubleValue()
             : 0.0;
     final double centerY =
         cmdLine.hasOption(centerYOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())).doubleValue()
             : 0.0;
     final double centerZ =
         cmdLine.hasOption(centerZOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())).doubleValue()
             : 0.0;
     final double sizeX =
         cmdLine.hasOption(sizeXOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())
-            : 0.0;
+            ? ((Number) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())).doubleValue()
+            : 1.0;
     final double sizeY =
         cmdLine.hasOption(sizeYOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())
-            : 0.0;
+            ? ((Number) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())).doubleValue()
+            : 1.0;
     final double sizeZ =
         cmdLine.hasOption(centerXOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())
-            : 0.0;
+            ? ((Number) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())).doubleValue()
+            : 1.0;
     final int numModes =
         cmdLine.hasOption(numModesOption.getLongOpt())
-            ? (int) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())).intValue()
             : kDefaultNumModes;
     final int numTasks =
         cmdLine.hasOption(numTasksOption.getLongOpt())
-            ? (int) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())).intValue()
             : kDefaultNumTasks;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
-            ? (int) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())).intValue()
             : kDefaultNumCpuPerTasks;
     final double threshold =
         cmdLine.hasOption(thresholdOption.getLongOpt())
-            ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())).doubleValue()
             : kDefaultThreshold;
+    final int numOutput =
+        cmdLine.hasOption(numberOutputOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(numberOutputOption.getLongOpt())).intValue()
+            : kDefaultOutputNumber;
 
     if (!Files.exists(Paths.get(receptorPath))) {
       LOGGER.error("Receptor path {} doesn't exist.", receptorPath);
@@ -217,13 +233,31 @@ public final class SparkVinaMain {
         SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
-    List<String> result =
+    List<VinaResult> result =
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
             .flatMap(List::iterator)
-            .collect();
+            .map(
+                new FitCompoundFunction(
+                    receptorPath,
+                    centerX,
+                    centerY,
+                    centerZ,
+                    sizeX,
+                    sizeY,
+                    sizeZ,
+                    numCpuPerTasks,
+                    numModes,
+                    threshold))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .takeOrdered(numOutput, new VinaResultComparator());
 
+    spark
+        .createDataFrame(result, VinaResult.class)
+        .write()
+        .parquet(Paths.get(outputDir, "output.parquet").toAbsolutePath().toString());
     spark.stop();
   }
 }

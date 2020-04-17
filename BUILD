@@ -52,6 +52,7 @@ java_binary(
     main_class = "org.spark_vina.SparkVinaMain",
     deps = [
         ":spark_vina_lib",
+        "//protos:vina_java_proto",
         "@maven//:commons_cli_commons_cli_1_4",
         "@maven//:com_google_guava_guava_29_0_jre",
         "@maven//:org_apache_spark_spark_core_2_12_2_4_5",

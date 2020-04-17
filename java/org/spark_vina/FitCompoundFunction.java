@@ -4,12 +4,12 @@ import com.google.common.base.Optional;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
-public class FitCompoundFunction implements MapFunction<String, Optional<VinaResult>> {
+public class FitCompoundFunction implements Function<String, Optional<VinaResult>> {
   private static final Logger LOGGER = LoggerFactory.getLogger(FitCompoundFunction.class);
 
   FitCompoundFunction(
@@ -49,6 +49,7 @@ public class FitCompoundFunction implements MapFunction<String, Optional<VinaRes
     inputStream.defaultReadObject();
     vinaDock =
         new VinaDock(receptorPath, centerX, centerY, centerZ, sizeX, sizeY, sizeZ, cpu, numModes);
+    LOGGER.info("FitCompoundFunction got deserialized.");
   }
 
   private void writeObject(ObjectOutputStream outputStream) throws IOException {
