@@ -138,83 +138,92 @@ public final class SparkVinaMain {
         .addOption(cpuPerTasksOption)
         .addOption(thresholdOption);
 
+    // Parse the command lin arguments.
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmdLine = null;
     try {
-      // Parse the command lin arguments.
-      CommandLineParser parser = new DefaultParser();
-      CommandLine cmdLine = parser.parse(options, args);
-
-      // Default to local spark cluster.
-      final String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
-      // Required args.
-      final String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
-      final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
-      final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
-      // Optional parameters.
-      final double centerX =
-          cmdLine.hasOption(centerXOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())
-              : 0.0;
-      final double centerY =
-          cmdLine.hasOption(centerYOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())
-              : 0.0;
-      final double centerZ =
-          cmdLine.hasOption(centerZOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())
-              : 0.0;
-      final double sizeX =
-          cmdLine.hasOption(sizeXOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())
-              : 0.0;
-      final double sizeY =
-          cmdLine.hasOption(sizeYOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())
-              : 0.0;
-      final double sizeZ =
-          cmdLine.hasOption(centerXOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())
-              : 0.0;
-      final int numModes =
-          cmdLine.hasOption(numModesOption.getLongOpt())
-              ? (int) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())
-              : kDefaultNumModes;
-      final int numTasks =
-          cmdLine.hasOption(numTasksOption.getLongOpt())
-              ? (int) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())
-              : kDefaultNumTasks;
-      final int numCpuPerTasks =
-          cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
-              ? (int) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())
-              : kDefaultNumCpuPerTasks;
-      final double threshold =
-          cmdLine.hasOption(thresholdOption.getLongOpt())
-              ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
-              : kDefaultThreshold;
-
-      if (!Files.exists(Paths.get(receptorPath))) {
-        throw new ParseException("Receptor path doesn't exist.");
-      }
-      if (!Files.exists(Paths.get(ligandDir))) {
-        throw new ParseException("Ligand directory doesn't exist.");
-      }
-
-      SparkContext sparkContext =
-          new SparkContext(new SparkConf().setMaster(sparkMaster).setAppName("SparkVina"));
-      SparkSession spark =
-          SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
-      JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
-
-      List<String> result =
-          javaSparkContext
-              .parallelize(SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir).get())
-              .map(VinaTools::readLigandsToStrings)
-              .flatMap(List::iterator)
-              .collect();
-
-      spark.stop();
+      cmdLine = parser.parse(options, args);
     } catch (ParseException parseException) {
       System.out.println(parseException.getMessage());
       new HelpFormatter().printHelp("SparkVinaMain", options);
     }
+
+    // Default to local spark cluster.
+    final String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
+    // Required args.
+    final String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
+    final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
+    final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
+    // Optional parameters.
+    final double centerX =
+        cmdLine.hasOption(centerXOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(centerXOption.getLongOpt())
+            : 0.0;
+    final double centerY =
+        cmdLine.hasOption(centerYOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(centerYOption.getLongOpt())
+            : 0.0;
+    final double centerZ =
+        cmdLine.hasOption(centerZOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(centerZOption.getLongOpt())
+            : 0.0;
+    final double sizeX =
+        cmdLine.hasOption(sizeXOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(sizeXOption.getLongOpt())
+            : 0.0;
+    final double sizeY =
+        cmdLine.hasOption(sizeYOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(sizeYOption.getLongOpt())
+            : 0.0;
+    final double sizeZ =
+        cmdLine.hasOption(centerXOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())
+            : 0.0;
+    final int numModes =
+        cmdLine.hasOption(numModesOption.getLongOpt())
+            ? (int) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())
+            : kDefaultNumModes;
+    final int numTasks =
+        cmdLine.hasOption(numTasksOption.getLongOpt())
+            ? (int) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())
+            : kDefaultNumTasks;
+    final int numCpuPerTasks =
+        cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
+            ? (int) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())
+            : kDefaultNumCpuPerTasks;
+    final double threshold =
+        cmdLine.hasOption(thresholdOption.getLongOpt())
+            ? (double) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())
+            : kDefaultThreshold;
+
+    if (!Files.exists(Paths.get(receptorPath))) {
+      LOGGER.error("Receptor path {} doesn't exist.", receptorPath);
+      return;
+    }
+    if (!Files.exists(Paths.get(ligandDir))) {
+      LOGGER.error("Ligand Directory {} doesn't exist.", ligandDir);
+      return;
+    }
+
+    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir);
+    if (!ligandFilePaths.isPresent() || ligandFilePaths.get().isEmpty()) {
+      LOGGER.error("Collecting ligand files failed.");
+      return;
+    }
+
+    SparkContext sparkContext =
+        new SparkContext(new SparkConf().setMaster(sparkMaster).setAppName("SparkVina"));
+    SparkSession spark =
+        SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
+    JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
+
+    List<String> result =
+        javaSparkContext
+            .parallelize(ligandFilePaths.get())
+            .map(VinaTools::readLigandsToStrings)
+            .flatMap(List::iterator)
+            .collect();
+
+    spark.stop();
   }
 }

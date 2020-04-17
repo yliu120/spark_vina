@@ -46,6 +46,9 @@ java_test(
 java_binary(
     name = "spark_vina_main",
     srcs = ["java/org/spark_vina/SparkVinaMain.java"],
+    resources = [
+        "log4j.properties",
+    ],
     main_class = "org.spark_vina.SparkVinaMain",
     deps = [
         ":spark_vina_lib",
