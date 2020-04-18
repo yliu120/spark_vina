@@ -4,10 +4,7 @@ build --copt=-w
 build --define=use_fast_cpp_protos=true
 build --spawn_strategy=standalone
 build --cxxopt=-std=c++14
-build --host_cxxopt=-std=c++14
-
 build:c++17 --cxxopt=-std=c++1z
-build:c++17 --cxxopt=-stdlib=libc++
 
 build:sse42 --copt=-msse4.2
 build:avx --copt=-mavx
