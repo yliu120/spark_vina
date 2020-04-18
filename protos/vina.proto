@@ -5,6 +5,7 @@ option java_outer_classname = "SparkVinaProtos";
 
 // Encodes the result of a Vina docking.
 message VinaResult {
+	string ligand_id = 3;
 	string ligand_str = 1;
 	double affinity = 2;
 }

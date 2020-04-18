@@ -8,13 +8,17 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SparkVinaUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaUtils.class);
 
-  static Optional<List<String>> getAllLigandFilesInDirectory(String ligandDir) {
+  public static Optional<List<String>> getAllLigandFilesInDirectory(String ligandDir) {
     try (Stream<Path> paths = Files.walk(Paths.get(ligandDir))) {
       List<String> result =
           paths
@@ -30,5 +34,26 @@ public class SparkVinaUtils {
       e.printStackTrace();
     }
     return Optional.absent();
+  }
+
+  public static StructType getDockingResultSchema() {
+    StructType vinaResultSchema =
+        new StructType(
+            new StructField[] {
+              new StructField("affinity", DataTypes.DoubleType, false, Metadata.empty()),
+              new StructField("ligand_string", DataTypes.StringType, false, Metadata.empty()),
+            });
+    return new StructType(
+        new StructField[] {
+          new StructField("name", DataTypes.StringType, false, Metadata.empty()),
+          new StructField("num_models", DataTypes.IntegerType, false, Metadata.empty()),
+          new StructField("affinity_mean", DataTypes.DoubleType, false, Metadata.empty()),
+          new StructField("affinity_std", DataTypes.DoubleType, false, Metadata.empty()),
+          new StructField(
+              "vina_results",
+              DataTypes.createArrayType(vinaResultSchema, false),
+              false,
+              Metadata.empty()),
+        });
   }
 }

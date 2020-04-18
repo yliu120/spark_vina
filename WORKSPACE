@@ -135,6 +135,7 @@ maven_install(
         "commons-cli:commons-cli:1.4",
         "com.google.guava:guava:29.0-jre",
         "junit:junit:4.13",
+        "org.apache.spark:spark-catalyst_2.12:2.4.5",
         "org.apache.spark:spark-core_2.12:2.4.5",
         "org.apache.spark:spark-sql_2.12:2.4.5",
         "org.hamcrest:hamcrest-library:2.2",

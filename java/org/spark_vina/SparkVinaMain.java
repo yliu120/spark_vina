@@ -1,10 +1,9 @@
 package org.spark_vina;
 
 import com.google.common.base.Optional;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,18 +14,22 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.LongAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spark_vina.SparkVinaProtos.VinaResult;
 
 public final class SparkVinaMain {
-  private static final int kDefaultNumModes = 8;
-  private static final int kDefaultNumTasks = 1;
-  private static final int kDefaultNumCpuPerTasks = 4;
-  private static final double kDefaultThreshold = -1.0;
-  private static final int kDefaultOutputNumber = 1000;
+  private static final int DEFAULT_NUM_REPEATS = 1;
+  private static final int DEFAULT_NUM_MODES = 8;
+  private static final int DEFAULT_NUM_TASKS = 1;
+  private static final int DEFAULT_NUM_CPU_PER_TASKS = 4;
+  private static final double DEFAULT_THRESHOLD = -1.0;
+  private static final int DEFAULT_OUTPUT_NUMBER = 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
@@ -103,6 +106,13 @@ public final class SparkVinaMain {
             .type(Number.class)
             .desc("The number of calculated modes.")
             .build();
+    final Option repeatsOption =
+        Option.builder()
+            .longOpt("repeats")
+            .hasArg()
+            .type(Number.class)
+            .desc("Repeatedly dock a ligand for N times for calculating CI.")
+            .build();
     final Option numTasksOption =
         Option.builder()
             .longOpt("num_tasks")
@@ -129,7 +139,7 @@ public final class SparkVinaMain {
             .longOpt("num_output")
             .hasArg()
             .type(Number.class)
-            .desc("Output the top N ligands with the best binding score.")
+            .desc("Output the top N models (not ligands) with the best binding score.")
             .build();
 
     Options options = new Options();
@@ -145,6 +155,7 @@ public final class SparkVinaMain {
         .addOption(sizeYOption)
         .addOption(sizeZOption)
         .addOption(numModesOption)
+        .addOption(repeatsOption)
         .addOption(numTasksOption)
         .addOption(cpuPerTasksOption)
         .addOption(thresholdOption)
@@ -191,26 +202,30 @@ public final class SparkVinaMain {
         cmdLine.hasOption(centerXOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(sizeZOption.getLongOpt())).doubleValue()
             : 1.0;
+    final int numRepeats =
+        cmdLine.hasOption(repeatsOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(repeatsOption.getLongOpt())).intValue()
+            : DEFAULT_NUM_REPEATS;
     final int numModes =
         cmdLine.hasOption(numModesOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())).intValue()
-            : kDefaultNumModes;
+            : DEFAULT_NUM_MODES;
     final int numTasks =
         cmdLine.hasOption(numTasksOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())).intValue()
-            : kDefaultNumTasks;
+            : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(cpuPerTasksOption.getLongOpt())).intValue()
-            : kDefaultNumCpuPerTasks;
+            : DEFAULT_NUM_CPU_PER_TASKS;
     final double threshold =
         cmdLine.hasOption(thresholdOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())).doubleValue()
-            : kDefaultThreshold;
+            : DEFAULT_THRESHOLD;
     final int numOutput =
         cmdLine.hasOption(numberOutputOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numberOutputOption.getLongOpt())).intValue()
-            : kDefaultOutputNumber;
+            : DEFAULT_OUTPUT_NUMBER;
 
     if (!Files.exists(Paths.get(receptorPath))) {
       LOGGER.error("Receptor path {} doesn't exist.", receptorPath);
@@ -233,11 +248,23 @@ public final class SparkVinaMain {
         SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
-    List<VinaResult> result =
+    // Set up accumulators
+    LongAccumulator numModelsProduced = javaSparkContext.sc().longAccumulator("NumModelsProduced");
+    LongAccumulator numModelsProcessed =
+        javaSparkContext.sc().longAccumulator("NumModelsProcessed");
+    LongAccumulator numModelsFit = javaSparkContext.sc().longAccumulator("NumModelsFit");
+
+    JavaRDD<Row> result =
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
             .flatMap(List::iterator)
+            .flatMap(x -> Collections.nCopies(numRepeats, x).iterator())
+            .map(
+                model -> {
+                  numModelsProduced.add(1);
+                  return model;
+                })
             .map(
                 new FitCompoundFunction(
                     receptorPath,
@@ -250,14 +277,35 @@ public final class SparkVinaMain {
                     numCpuPerTasks,
                     numModes,
                     threshold))
-            .filter(Optional::isPresent)
+            .map(
+                vinaResult -> {
+                  numModelsProcessed.add(1);
+                  return vinaResult;
+                })
+            .filter(
+                vinaResult -> {
+                  if (vinaResult.isPresent()) {
+                    numModelsFit.add(1);
+                  }
+                  return vinaResult.isPresent();
+                })
             .map(Optional::get)
-            .takeOrdered(numOutput, new VinaResultComparator());
+            .keyBy(vinaResult -> vinaResult.getLigandId())
+            .groupByKey()
+            .map(pair -> new DockingResult(pair._1, pair._2))
+            .map(
+                dockingResult ->
+                    RowFactory.create(
+                        dockingResult.getCompoundKey(),
+                        dockingResult.getNumModels(),
+                        dockingResult.getAffinityMean(),
+                        dockingResult.getAffinityStd(),
+                        dockingResult.getVinaResults()));
 
     spark
-        .createDataFrame(result, VinaResult.class)
+        .createDataFrame(result, SparkVinaUtils.getDockingResultSchema())
         .write()
-        .parquet(Paths.get(outputDir, "output.parquet").toAbsolutePath().toString());
+        .parquet(outputDir);
     spark.stop();
   }
 }
