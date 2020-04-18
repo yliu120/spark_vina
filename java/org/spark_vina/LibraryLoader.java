@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class for loading the Java native library.
@@ -19,8 +20,7 @@ import java.util.Properties;
  * Tensorflow.
  */
 final class LibraryLoader {
-  private static final boolean DEBUG =
-      System.getProperty("org.spark_vina.LibraryLoader.DEBUG") != null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(LibraryLoader.class);
   private static final String JNI_LIBNAME = "vina_jni_all";
 
   public static void load() {
@@ -29,17 +29,16 @@ final class LibraryLoader {
     }
     // Native code is not present, perhaps it has been packaged into the .jar file containing this.
     // Extract the JNI library itself
+    LOGGER.info("Load native JNI library failed. We then try to load from the standalone JAR.");
     final String jniLibName = System.mapLibraryName(JNI_LIBNAME);
     final String jniResourceName = makeResourceName(jniLibName);
-    log("jniResourceName: " + jniResourceName);
+    LOGGER.info("jniResourceName: " + jniResourceName);
     final InputStream jniResource =
         LibraryLoader.class.getClassLoader().getResourceAsStream(jniResourceName);
     if (jniResource == null) {
       throw new UnsatisfiedLinkError(
           String.format(
-              "Cannot find native library for OS: %s, architecture: %s. See "
-                  + " org.spark_vina.LibraryLoader.DEBUG=1 to the system properties of the JVM.",
-              os(), architecture()));
+              "Cannot find native library for OS: %s, architecture: %s.", os(), architecture()));
     }
     try {
       // Create a temporary directory for the extracted resource and its dependencies.
@@ -58,10 +57,11 @@ final class LibraryLoader {
 
   private static boolean tryLoadLibrary() {
     try {
+      LOGGER.info("Try load JNI library: " + JNI_LIBNAME);
       System.loadLibrary(JNI_LIBNAME);
       return true;
     } catch (UnsatisfiedLinkError e) {
-      log("tryLoadLibraryFailed: " + e.getMessage());
+      LOGGER.error("tryLoadLibraryFailed: " + e.getMessage());
       return false;
     }
   }
@@ -69,7 +69,7 @@ final class LibraryLoader {
   private static boolean isLoaded() {
     try {
       if (VinaTools.loaded()) {
-        log("isLoaded: true");
+        LOGGER.info("isLoaded: true");
         return true;
       }
     } catch (UnsatisfiedLinkError e) {
@@ -78,84 +78,14 @@ final class LibraryLoader {
     return false;
   }
 
-  private static boolean resourceExists(String baseName) {
-    return LibraryLoader.class.getClassLoader().getResource(makeResourceName(baseName)) != null;
-  }
-
-  private static String getVersionedLibraryName(String libFilename) {
-    final String versionName = getMajorVersionNumber();
-
-    // If we're on darwin, the versioned libraries look like blah.1.dylib.
-    final String darwinSuffix = ".dylib";
-    if (libFilename.endsWith(darwinSuffix)) {
-      final String prefix = libFilename.substring(0, libFilename.length() - darwinSuffix.length());
-      if (versionName != null) {
-        final String darwinVersionedLibrary = prefix + "." + versionName + darwinSuffix;
-        if (resourceExists(darwinVersionedLibrary)) {
-          return darwinVersionedLibrary;
-        }
-      } else {
-        // If we're here, we're on darwin, but we couldn't figure out the major version number. We
-        // already tried the library name without any changes, but let's do one final try for the
-        // library with a .so suffix.
-        final String darwinSoName = prefix + ".so";
-        if (resourceExists(darwinSoName)) {
-          return darwinSoName;
-        }
-      }
-    } else if (libFilename.endsWith(".so")) {
-      // Libraries ending in ".so" are versioned like "libfoo.so.1", so try that.
-      final String versionedSoName = libFilename + "." + versionName;
-      if (versionName != null && resourceExists(versionedSoName)) {
-        return versionedSoName;
-      }
-    }
-
-    // Otherwise, we've got no idea.
-    return libFilename;
-  }
-
-  /**
-   * Returns the major version number of this TensorFlow Java API, or {@code null} if it cannot be
-   * determined.
-   */
-  private static String getMajorVersionNumber() {
-    InputStream resourceStream =
-        LibraryLoader.class.getClassLoader().getResourceAsStream("tensorflow-version-info");
-    if (resourceStream == null) {
-      return null;
-    }
-
-    try {
-      Properties props = new Properties();
-      props.load(resourceStream);
-      String version = props.getProperty("version");
-      // expecting a string like 1.14.0, we want to get the first '1'.
-      int dotIndex;
-      if (version == null || (dotIndex = version.indexOf('.')) == -1) {
-        return null;
-      }
-      String majorVersion = version.substring(0, dotIndex);
-      try {
-        Integer.parseInt(majorVersion);
-        return majorVersion;
-      } catch (NumberFormatException unused) {
-        return null;
-      }
-    } catch (IOException e) {
-      log("failed to load tensorflow version info.");
-      return null;
-    }
-  }
-
   private static String extractResource(
       InputStream resource, String resourceName, String extractToDirectory) throws IOException {
     final File dst = new File(extractToDirectory, resourceName);
     dst.deleteOnExit();
     final String dstPath = dst.toString();
-    log("extracting native library to: " + dstPath);
+    LOGGER.info("extracting native library to: " + dstPath);
     final long nbytes = copy(resource, dst);
-    log(String.format("copied %d bytes to %s", nbytes, dstPath));
+    LOGGER.info(String.format("copied %d bytes to %s", nbytes, dstPath));
     return dstPath;
   }
 
@@ -177,14 +107,8 @@ final class LibraryLoader {
     return (arch.equals("amd64")) ? "x86_64" : arch;
   }
 
-  private static void log(String msg) {
-    if (DEBUG) {
-      System.err.println("org.spark_vina: " + msg);
-    }
-  }
-
   private static String makeResourceName(String baseName) {
-    return "jni/" + String.format("%s-%s/", os(), architecture()) + baseName;
+    return "jni/" + baseName;
   }
 
   private static long copy(InputStream src, File dstFile) throws IOException {

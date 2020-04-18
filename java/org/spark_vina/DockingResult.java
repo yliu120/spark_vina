@@ -7,7 +7,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
-public class DockingResult implements Serializable {
+public final class DockingResult implements Serializable {
   private static final long serialVersionUID = 1;
 
   public DockingResult(String compoundKey, Iterable<VinaResult> vinaResults) {
@@ -25,7 +25,7 @@ public class DockingResult implements Serializable {
     }
     this.numModels = count;
     this.affinityMean = sum / (double) this.numModels;
-    this.affinityStd = Math.sqrt(square_sum - Math.pow(this.affinityMean, 2.0));
+    this.affinityStd = Math.sqrt(square_sum / this.numModels - Math.pow(this.affinityMean, 2.0));
     this.vinaResults = vinaResultRows.toArray(new Row[vinaResultRows.size()]);
   }
 

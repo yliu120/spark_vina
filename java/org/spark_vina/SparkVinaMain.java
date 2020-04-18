@@ -169,6 +169,7 @@ public final class SparkVinaMain {
     } catch (ParseException parseException) {
       System.out.println(parseException.getMessage());
       new HelpFormatter().printHelp("SparkVinaMain", options);
+      return;
     }
 
     // Default to local spark cluster.
