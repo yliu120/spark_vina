@@ -307,6 +307,10 @@ public final class SparkVinaMain {
         .createDataFrame(result, SparkVinaUtils.getDockingResultSchema())
         .write()
         .parquet(outputDir);
+
+    LOGGER.info("Accumulator numModelsProduced: {}", numModelsProduced.value());
+    LOGGER.info("Accumulator numModelsProcessed: {}", numModelsProcessed.value());
+    LOGGER.info("Accumulator numModelsFit: {}", numModelsFit.value());
     spark.stop();
   }
 }
