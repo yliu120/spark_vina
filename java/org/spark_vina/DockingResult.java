@@ -25,7 +25,7 @@ public class DockingResult implements Serializable {
     }
     this.numModels = count;
     this.affinityMean = sum / (double) this.numModels;
-    this.affinityStd = Math.sqrt(square_sum - Math.pow(sum, 2.0));
+    this.affinityStd = Math.sqrt(square_sum - Math.pow(this.affinityMean, 2.0));
     this.vinaResults = vinaResultRows.toArray(new Row[vinaResultRows.size()]);
   }
 
