@@ -2,6 +2,11 @@ load(":jni.bzl", "jni_cc_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "srcs",
+    srcs = glob(["*"]),
+)
+
 # Inspired from:
 # https://github.com/bazelbuild/bazel/blob/f99a0543f8d97339d32075c7176b79f35be84606/src/main/native/BUILD
 # but hopefully there is a simpler alternative to this.

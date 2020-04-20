@@ -5,6 +5,11 @@ load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "srcs",
+    srcs = glob(["*"]),
+)
+
 proto_library(
     name = "vina_proto",
     srcs = ["vina.proto"],

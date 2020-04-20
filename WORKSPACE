@@ -159,3 +159,27 @@ load(
     container_repositories = "repositories",
 )
 container_repositories()
+
+# Loads rules_docker's dependencies
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
+container_pull(
+    name = "java_base",
+    registry = "gcr.io",
+    repository = "distroless/java",
+    digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb"
+)
+
+load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
+    
+dockerfile_image(
+    name = "java_base_modified",
+    dockerfile = "//docker:Dockerfile",
+)

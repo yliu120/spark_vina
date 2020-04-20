@@ -67,7 +67,7 @@ public final class VinaDock {
    * @return List<VinaResult> A list of docking result.
    */
   public List<VinaResult> vinaFit(List<String> ligandStrs, double filterLimit) {
-    return nativeVinaFit(nativeHandle, ligandStrs.toArray(String[]::new), filterLimit).stream()
+    return nativeVinaFit(nativeHandle, ligandStrs.toArray(new String[ligandStrs.size()]), filterLimit).stream()
         .map(
             nativeResultBytes -> {
               try {

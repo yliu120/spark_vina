@@ -1,5 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "srcs",
+    srcs = glob(["*"], exclude=["*test.cc",]),
+)
+
 cc_library(
     name = "parse_pdbqt",
     srcs = ["parse_pdbqt.cc"],

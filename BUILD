@@ -2,9 +2,38 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_java//java:defs.bzl", "java_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 package(default_visibility = ["//visibility:public"])
 licenses(["notice"])
+
+filegroup(
+    name = "srcs",
+    srcs = glob(
+        ["*"],
+        exclude = [
+            "bazel-*",  # convenience symlinks
+            "out",  # IntelliJ with setup-intellij.sh
+            "data",  # output of compile.sh
+            ".*",  # mainly .git* files
+            "README.md",
+        ],
+    ) + [
+        "//cc:srcs",
+        "//third_party:srcs",
+        "//protos:srcs",
+        "//java/jni:srcs",
+    ] + [".bazelrc"] + glob(["java/**/*"]),
+)
+
+pkg_tar(
+    name = "spark_vina_srcs",
+    # Adds strip_prefix to preserve the original directory structure.
+    strip_prefix = "./",
+    srcs = [":srcs"],
+    mode = "0755",
+)
 
 java_library(
     name = "spark_vina_lib",
@@ -61,4 +90,20 @@ java_binary(
         "@maven//:org_apache_spark_spark_sql_2_12_2_4_5",
         "@maven//:org_slf4j_slf4j_api_1_7_30",
     ]
+)
+
+container_image(
+    name = "spark_vina_image",
+    base = "@java_base_modified//image:dockerfile_image.tar",
+    files = ["//docker:spark_vina_main_deploy.jar"],
+    entrypoint = ["java", "-jar", "/spark_vina_main_deploy.jar"],
+    repository = "spark_vina/spark_vina",
+    ports = [
+        # Ports for Spark WebUI
+        "4040",
+    ],
+    volumes = [
+        "/workspace",
+    ],
+    stamp = 1,
 )
