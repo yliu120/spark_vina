@@ -1,9 +1,6 @@
-#include "cc/parse_pdbqt.h"
+// Most of this file is modified from the original vina implementation.
 
-#include <cctype>
-#include <fstream>
-#include <sstream>
-#include <string>
+#include "cc/parse_pdbqt.h"
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -11,6 +8,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>  // for noncopyable
+#include <cctype>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include "third_party/vina/lib/atom_constants.h"
 #include "third_party/vina/lib/convert_substring.h"
@@ -324,10 +325,9 @@ void parse_pdbqt_branch_aux(std::istream& in, unsigned& count,
       break;
     }
   if (i == p.atoms.size())
-    throw stream_parse_error(count,
-                             "No atom number " +
-                                 boost::lexical_cast<std::string>(first) +
-                                 " in this branch");
+    throw stream_parse_error(
+        count, "No atom number " + boost::lexical_cast<std::string>(first) +
+                   " in this branch");
 }
 
 void parse_pdbqt_aux(std::istream& in, unsigned& count, parsing_struct& p,
@@ -483,10 +483,9 @@ void parse_pdbqt_branch(std::istream& in, unsigned& count, parsing_struct& p,
       if (first != from || second != to)
         throw stream_parse_error(count, "Inconsistent branch numbers");
       if (!p.immobile_atom)
-        throw stream_parse_error(count,
-                                 "Atom " +
-                                     boost::lexical_cast<std::string>(to) +
-                                     " has not been found in this branch");
+        throw stream_parse_error(
+            count, "Atom " + boost::lexical_cast<std::string>(to) +
+                       " has not been found in this branch");
       return;
     } else if (starts_with(str, "ATOM  ") || starts_with(str, "HETATM")) {
       try {

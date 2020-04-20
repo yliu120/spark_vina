@@ -25,18 +25,17 @@
 
 #include "cc/vina.h"
 
-#include <cmath>  // for ceila
-#include <exception>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>  // ligand paths
-
 #include <boost/filesystem/convenience.hpp>  // filesystem::basename
 #include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
+#include <cmath>                    // for ceila
+#include <exception>
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>  // ligand paths
 
 #include "cc/parse_pdbqt.h"
 #include "third_party/vina/lib/cache.h"

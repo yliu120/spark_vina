@@ -1,4 +1,4 @@
-// Simple unit tests for cc module parse_pdbqt
+// Simple unit tests for cc module parse_pdbqt.
 
 #include "cc/parse_pdbqt.h"
 

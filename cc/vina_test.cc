@@ -9,16 +9,14 @@
 namespace {
 
 TEST(VinaDockTest, SplitLigandsInFile) {
-  std::string ligand_path =
-      "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
+  std::string ligand_path = "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
   std::vector<std::string> ligand_strs = read_ligand_to_strings(ligand_path);
   EXPECT_EQ(ligand_strs.size(), 2);
 }
 
 TEST(VinaDockTest, VinaDock) {
   std::string receptor_path = "data/protein/4ZPH-docking.pdb.pdbqt";
-  std::string ligand_path =
-      "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
+  std::string ligand_path = "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
 
   std::vector<std::string> ligand_strs = read_ligand_to_strings(ligand_path);
   EXPECT_EQ(ligand_strs.size(), 2);

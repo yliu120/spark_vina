@@ -1,6 +1,6 @@
 """This file runs vina with spark for parallel processes.
 
-This PySpark version is experimental and will be supported later.
+This PySpark version is experimental and might be deprecated at any time.
 """
 
 import argparse

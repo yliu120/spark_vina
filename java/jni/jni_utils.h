@@ -2,6 +2,7 @@
 #define JAVA_JNI_JNI_UTILS_H_
 
 #include <jni.h>
+
 #include <string>
 #include <vector>
 
