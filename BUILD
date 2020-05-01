@@ -49,8 +49,8 @@ java_library(
         "//java/jni:vina_jni_all",
         "@com_google_protobuf//:protobuf_java",
         "@maven//:com_google_guava_guava_29_0_jre",
-        "@maven//:org_apache_spark_spark_catalyst_2_12_2_4_5",
-        "@maven//:org_apache_spark_spark_core_2_12_2_4_5",
+        "@maven//:org_apache_spark_spark_catalyst_2_11_2_4_5",
+        "@maven//:org_apache_spark_spark_core_2_11_2_4_5",
         "@maven//:org_slf4j_slf4j_api_1_7_30",
     ],
 )
@@ -85,9 +85,9 @@ java_binary(
         "//protos:vina_java_proto",
         "@maven//:commons_cli_commons_cli_1_4",
         "@maven//:com_google_guava_guava_29_0_jre",
-        "@maven//:org_apache_spark_spark_catalyst_2_12_2_4_5",
-        "@maven//:org_apache_spark_spark_core_2_12_2_4_5",
-        "@maven//:org_apache_spark_spark_sql_2_12_2_4_5",
+        "@maven//:org_apache_spark_spark_catalyst_2_11_2_4_5",
+        "@maven//:org_apache_spark_spark_core_2_11_2_4_5",
+        "@maven//:org_apache_spark_spark_sql_2_11_2_4_5",
         "@maven//:org_slf4j_slf4j_api_1_7_30",
     ]
 )
@@ -102,6 +102,21 @@ container_image(
         # Ports for Spark WebUI
         "4040",
     ],
+    volumes = [
+        "/workspace",
+    ],
+    stamp = 1,
+)
+
+container_image(
+    name = "spark_vina_k8s",
+    base = "@spark_base//image",
+    files = [
+        "//docker:spark_vina_main_deploy.jar",
+	"//data:test_data",
+    ],
+    data_path = ".",
+    repository = "spark_vina/spark_vina",
     volumes = [
         "/workspace",
     ],

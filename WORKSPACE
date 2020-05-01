@@ -28,9 +28,9 @@ http_archive(
 
 git_repository(
     name = "com_github_nelhage_rules_boost",
-    commit = "3375447ef6c1a9a502873a4a0484abbc037d8a96",
+    commit = "9f9fb8b2f0213989247c9d5c0e814a8451d18d7f",
     remote = "https://github.com/nelhage/rules_boost",
-    shallow_since = "1586710985 -0700",
+    shallow_since = "1570056263 -0700",
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
@@ -142,9 +142,9 @@ maven_install(
         "commons-cli:commons-cli:1.4",
         "com.google.guava:guava:29.0-jre",
         "junit:junit:4.13",
-        "org.apache.spark:spark-catalyst_2.12:2.4.5",
-        "org.apache.spark:spark-core_2.12:2.4.5",
-        "org.apache.spark:spark-sql_2.12:2.4.5",
+        "org.apache.spark:spark-catalyst_2.11:2.4.5",
+        "org.apache.spark:spark-core_2.11:2.4.5",
+        "org.apache.spark:spark-sql_2.11:2.4.5",
         "org.hamcrest:hamcrest-library:2.2",
         "org.slf4j:slf4j-api:1.7.30",
     ],
@@ -175,6 +175,13 @@ container_pull(
     registry = "gcr.io",
     repository = "distroless/java",
     digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb"
+)
+
+container_pull(
+    name = "spark_base",
+    registry = "gcr.io",
+    repository = "spark-operator/spark",
+    digest = "sha256:0d2c7d9d66fb83a0311442f0d2830280dcaba601244d1d8c1704d72f5806cc4c",
 )
 
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
