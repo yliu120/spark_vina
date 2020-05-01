@@ -42,10 +42,12 @@ public class FitCompoundFunction implements Function<String, Optional<VinaResult
     Optional<VinaResult> vinaResult = vinaDock.vinaFitSingleLigand(ligandString, filterLimit);
     if (!vinaResult.isPresent()) {
       LOGGER.warn("Cannot fit ligand: {}", ligandString);
+      return Optional.absent();
     }
     Optional<String> ligandKey = parseLigandKey(vinaResult.get().getLigandStr());
     if (!ligandKey.isPresent()) {
       LOGGER.error("Ligand with no ZINC id: {}", vinaResult.get().getLigandStr());
+      return Optional.absent();
     }
     return Optional.of(vinaResult.get().toBuilder().setLigandId(ligandKey.get()).build());
   }

@@ -12,8 +12,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Row;
@@ -34,8 +32,6 @@ public final class SparkVinaMain {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
   public static void main(String[] args) throws Exception {
-    final Option sparkMasterOption =
-        Option.builder().longOpt("spark_master").desc("Spark Master Address").build();
     final Option receptorPathOption =
         Option.builder()
             .longOpt("receptor_path")
@@ -144,7 +140,6 @@ public final class SparkVinaMain {
 
     Options options = new Options();
     options
-        .addOption(sparkMasterOption)
         .addOption(receptorPathOption)
         .addOption(ligandDirOption)
         .addOption(outputDirOption)
@@ -172,8 +167,6 @@ public final class SparkVinaMain {
       return;
     }
 
-    // Default to local spark cluster.
-    final String sparkMaster = cmdLine.getOptionValue(sparkMasterOption.getLongOpt(), "local[*]");
     // Required args.
     final String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
     final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
@@ -243,10 +236,7 @@ public final class SparkVinaMain {
       return;
     }
 
-    SparkContext sparkContext =
-        new SparkContext(new SparkConf().setMaster(sparkMaster).setAppName("SparkVina"));
-    SparkSession spark =
-        SparkSession.builder().appName("SparkVinaMain").sparkContext(sparkContext).getOrCreate();
+    SparkSession spark = SparkSession.builder().appName("SparkVinaMain").getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
     // Set up accumulators
