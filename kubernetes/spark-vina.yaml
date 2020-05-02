@@ -11,6 +11,8 @@ spec:
   mainClass: org.spark_vina.SparkVinaMain
   mainApplicationFile: "local:///docker/spark_vina_main_deploy.jar"
   sparkConf:
+    "spark.executor.extraJavaOptions": "-Djava.io.tmpdir=/opt/spark/work-dir/tmp/"
+    "spark.driver.extraJavaOptions": "-Djava.io.tmpdir=/opt/spark/work-dir/tmp/"
     "spark.driver.extraClassPath": "/docker/spark_vina_main_deploy.jar"
     "spark.executor.extraClassPath": "/docker/spark_vina_main_deploy.jar"
   arguments:
@@ -42,7 +44,7 @@ spec:
     cores: 1
     coreRequest: "1"
     coreLimit: "1200m"
-    memory: "512m"
+    memory: "1g"
     labels:
       version: 2.4.5
     serviceAccount: spark
@@ -55,7 +57,7 @@ spec:
     cores: 2
     coreRequest: "1"
     instances: 2
-    memory: "2500m"
+    memory: "2g"
     labels:
       version: 2.4.5
     volumeMounts:
