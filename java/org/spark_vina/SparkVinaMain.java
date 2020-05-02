@@ -240,8 +240,8 @@ public final class SparkVinaMain {
     SparkSession spark = SparkSession.builder().appName("SparkVinaMain").getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
-    final int numOfExecutors = (int) javaSparkContext.getConf()
-        .get("spark.executor.instances", "1");
+    final int numOfExecutors = Integer.parseInt(javaSparkContext.getConf()
+        .get("spark.executor.instances", "1"));
     LOGGER.info("SparkVina application runs with {} executors.", numOfExecutors);
 
     // Set up accumulators
