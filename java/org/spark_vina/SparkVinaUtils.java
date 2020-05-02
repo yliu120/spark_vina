@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SparkVinaUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaUtils.class);
 
   public static Optional<List<String>> getAllLigandFilesInDirectory(String ligandDir) {
@@ -39,21 +40,21 @@ public class SparkVinaUtils {
   public static StructType getDockingResultSchema() {
     StructType vinaResultSchema =
         new StructType(
-            new StructField[] {
-              new StructField("affinity", DataTypes.DoubleType, false, Metadata.empty()),
-              new StructField("ligand_string", DataTypes.StringType, false, Metadata.empty()),
+            new StructField[]{
+                new StructField("affinity", DataTypes.DoubleType, false, Metadata.empty()),
+                new StructField("ligand_string", DataTypes.StringType, false, Metadata.empty()),
             });
     return new StructType(
-        new StructField[] {
-          new StructField("name", DataTypes.StringType, false, Metadata.empty()),
-          new StructField("num_models", DataTypes.IntegerType, false, Metadata.empty()),
-          new StructField("affinity_mean", DataTypes.DoubleType, false, Metadata.empty()),
-          new StructField("affinity_std", DataTypes.DoubleType, false, Metadata.empty()),
-          new StructField(
-              "vina_results",
-              DataTypes.createArrayType(vinaResultSchema, false),
-              false,
-              Metadata.empty()),
+        new StructField[]{
+            new StructField("name", DataTypes.StringType, false, Metadata.empty()),
+            new StructField("num_models", DataTypes.IntegerType, false, Metadata.empty()),
+            new StructField("affinity_mean", DataTypes.DoubleType, false, Metadata.empty()),
+            new StructField("affinity_std", DataTypes.DoubleType, false, Metadata.empty()),
+            new StructField(
+                "vina_results",
+                DataTypes.createArrayType(vinaResultSchema, false),
+                false,
+                Metadata.empty()),
         });
   }
 }

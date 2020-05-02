@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
  * Tensorflow.
  */
 final class LibraryLoader {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(LibraryLoader.class);
   private static final String JNI_LIBNAME = "vina_jni_all";
 
@@ -140,8 +141,9 @@ final class LibraryLoader {
     throw new IllegalStateException(
         "Could not create a temporary directory (tried to make "
             + directoryName
-            + "*) to extract TensorFlow native libraries.");
+            + "*) to extract SparkVina native libraries.");
   }
 
-  private LibraryLoader() {}
+  private LibraryLoader() {
+  }
 }

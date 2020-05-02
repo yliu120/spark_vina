@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public final class SparkVinaMain {
   private static final int DEFAULT_NUM_REPEATS = 1;
   private static final int DEFAULT_NUM_MODES = 8;
-  private static final int DEFAULT_NUM_TASKS = 1;
+  private static final int DEFAULT_NUM_TASKS = 2;
   private static final int DEFAULT_NUM_CPU_PER_TASKS = 4;
   private static final double DEFAULT_THRESHOLD = -1.0;
   private static final int DEFAULT_OUTPUT_NUMBER = 1000;
@@ -109,9 +110,9 @@ public final class SparkVinaMain {
             .type(Number.class)
             .desc("Repeatedly dock a ligand for N times for calculating CI.")
             .build();
-    final Option numTasksOption =
+    final Option numMapTasksPerExecutorOption =
         Option.builder()
-            .longOpt("num_tasks")
+            .longOpt("num_map_tasks_per_executor")
             .hasArg()
             .type(Number.class)
             .desc("The number of spark tasks.")
@@ -151,7 +152,7 @@ public final class SparkVinaMain {
         .addOption(sizeZOption)
         .addOption(numModesOption)
         .addOption(repeatsOption)
-        .addOption(numTasksOption)
+        .addOption(numMapTasksPerExecutorOption)
         .addOption(cpuPerTasksOption)
         .addOption(thresholdOption)
         .addOption(numberOutputOption);
@@ -204,9 +205,9 @@ public final class SparkVinaMain {
         cmdLine.hasOption(numModesOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numModesOption.getLongOpt())).intValue()
             : DEFAULT_NUM_MODES;
-    final int numTasks =
-        cmdLine.hasOption(numTasksOption.getLongOpt())
-            ? ((Number) cmdLine.getParsedOptionValue(numTasksOption.getLongOpt())).intValue()
+    final int numMapTasksPerExecutor =
+        cmdLine.hasOption(numMapTasksPerExecutorOption.getLongOpt())
+            ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt())).intValue()
             : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
@@ -239,6 +240,10 @@ public final class SparkVinaMain {
     SparkSession spark = SparkSession.builder().appName("SparkVinaMain").getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
+    final int numOfExecutors = (int) javaSparkContext.getConf()
+        .get("spark.executor.instances", "1");
+    LOGGER.info("SparkVina application runs with {} executors.", numOfExecutors);
+
     // Set up accumulators
     LongAccumulator numModelsProduced = javaSparkContext.sc().longAccumulator("NumModelsProduced");
     LongAccumulator numModelsProcessed =
@@ -249,8 +254,10 @@ public final class SparkVinaMain {
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
-            .flatMap(List::iterator)
-            .flatMap(x -> Collections.nCopies(numRepeats, x).iterator())
+            .flatMap(ligandStrings -> ligandStrings.stream()
+                .flatMap(ligandString -> Collections.nCopies(numRepeats, ligandString).stream())
+                .collect(Collectors.toList()).iterator())
+            .repartition(numMapTasksPerExecutor * numOfExecutors)
             .map(
                 model -> {
                   numModelsProduced.add(1);
