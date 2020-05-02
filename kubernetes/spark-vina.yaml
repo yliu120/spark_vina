@@ -1,0 +1,66 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-vina
+  namespace: default
+spec:
+  type: Java
+  mode: cluster
+  image: "yliu120/spark-vina:k8s"
+  imagePullPolicy: Always
+  mainClass: org.spark_vina.SparkVinaMain
+  mainApplicationFile: "local:///docker/spark_vina_main_deploy.jar"
+  sparkConf:
+    "spark.tasks.cpus": "1"
+    "spark.executor.cores": "10"
+    "spark.driver.extraClassPath": "/docker/spark_vina_main_deploy.jar"
+    "spark.executor.extraClassPath": "/docker/spark_vina_main_deploy.jar"
+  arguments:
+    - "--receptor_path=/data/protein/4ZPH-docking.pdb.pdbqt"
+    - "--ligand_dir=/data/ligands/HB/"
+    - "--center_x=170.0"
+    - "--center_y=-110.0"
+    - "--center_z=-110.0"
+    - "--size_x=10.0"
+    - "--size_y=10.0"
+    - "--size_z=10.0"
+    - "--num_modes=4"
+    - "--cpu_per_tasks=2"
+    - "--output_dir=/output/AAMP-k8s" 
+  sparkVersion: "2.4.5"
+  restartPolicy:
+    type: Never
+  volumes:
+    - name: "tmp-volume"
+      hostPath:
+        path: "/tmp"
+        type: Directory
+    - name: "output-volume"
+      hostPath:
+        path: "/var/data/output"
+        type: Directory
+  driver:
+    cores: 1
+    coreRequest: "1"
+    coreLimit: "1200m"
+    memory: "512m"
+    labels:
+      version: 2.4.5
+    serviceAccount: spark
+    volumeMounts:
+      - name: "tmp-volume"
+        mountPath: "/tmp"
+      - name: "output-volume"
+        mountPath: "/output"
+  executor:
+    cores: 2
+    coreRequest: "2"
+    instances: 1
+    memory: "2500m"
+    labels:
+      version: 2.4.5
+    volumeMounts:
+      - name: "tmp-volume"
+        mountPath: "/tmp"
+      - name: "output-volume"
+        mountPath: "/output"
