@@ -34,7 +34,8 @@ Docker images.
 ### Prerequisites
 
 + C++ Compiler: Both `clang` and `gcc` are supported.
-+ Java JDK: version > 1.8
++ Java JDK: version = 8
+  + Let's stick to Java 8 until Spark officially supports Java 11.
   + For Linux users, packages can be installed through package managers binding
     with the specific Linux distributions. For instance, for Debian/Ubuntu users,
     they can be installed through `sudo apt install g++ unzip zip openjdk-11-jdk`.
