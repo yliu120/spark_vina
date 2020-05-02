@@ -11,8 +11,6 @@ spec:
   mainClass: org.spark_vina.SparkVinaMain
   mainApplicationFile: "local:///docker/spark_vina_main_deploy.jar"
   sparkConf:
-    "spark.tasks.cpus": "1"
-    "spark.executor.cores": "10"
     "spark.driver.extraClassPath": "/docker/spark_vina_main_deploy.jar"
     "spark.executor.extraClassPath": "/docker/spark_vina_main_deploy.jar"
   arguments:
@@ -25,6 +23,7 @@ spec:
     - "--size_y=10.0"
     - "--size_z=10.0"
     - "--num_modes=4"
+    - "--num_map_tasks_per_executor=4"
     - "--cpu_per_tasks=2"
     - "--output_dir=/output/AAMP-k8s" 
   sparkVersion: "2.4.5"
@@ -54,8 +53,8 @@ spec:
         mountPath: "/output"
   executor:
     cores: 2
-    coreRequest: "2"
-    instances: 1
+    coreRequest: "1"
+    instances: 2
     memory: "2500m"
     labels:
       version: 2.4.5
