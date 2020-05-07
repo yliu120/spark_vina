@@ -38,6 +38,7 @@
 #include <vector>  // ligand paths
 
 #include "cc/parse_pdbqt.h"
+#include "glog/logging.h"
 #include "third_party/vina/lib/cache.h"
 #include "third_party/vina/lib/coords.h"  // add_to_output_container
 #include "third_party/vina/lib/current_weights.h"
@@ -87,13 +88,15 @@ output_container remove_redundant(const output_container& in, fl min_rmsd) {
   return tmp;
 }
 
-fl do_search(model& m, const boost::optional<model>& ref,
-             const scoring_function& sf, const precalculate& prec,
-             const igrid& ig, const precalculate& prec_widened,
-             const igrid& ig_widened, non_cache& nc,  // nc.slope is changed
-             const std::string& out_name, const vec& corner1,
-             const vec& corner2, const parallel_mc& par, fl energy_range,
-             sz num_modes, int seed, const terms& t, const flv& weights) {
+VinaResult do_search(model& m, const boost::optional<model>& ref,
+                     const scoring_function& sf, const precalculate& prec,
+                     const igrid& ig, const precalculate& prec_widened,
+                     const igrid& ig_widened,
+                     non_cache& nc,  // nc.slope is changed
+                     const std::string& out_name, const vec& corner1,
+                     const vec& corner2, const parallel_mc& par,
+                     fl energy_range, sz num_modes, int seed, const terms& t,
+                     const flv& weights) {
   conf_size s = m.get_size();
   conf c = m.get_initial_conf();
   const vec authentic_v(1000, 1000, 1000);
@@ -126,25 +129,38 @@ fl do_search(model& m, const boost::optional<model>& ref,
   if (!out_cont.empty()) best_mode_model.set(out_cont.front().c);
 
   sz how_many = 0;
+  //  VINA_FOR_IN(i, out_cont) {
+  //     if (how_many >= num_modes || !not_max(out_cont[i].e) ||
+  //         out_cont[i].e > out_cont[0].e + energy_range)
+  //       break;  // check energy_range sanity FIXME
+  //     ++how_many;
+  //     m.set(out_cont[i].c);
+  //   }
+  //   write_all_output(m, out_cont, how_many, out_name, remarks);
+
+  //   if (out.size() < how_many) how_many = out.size();
+  // VINA_CHECK(how_many <= remarks.size());
+  // ofile f((path(output_name)));
+  // VINA_FOR(i, how_many) {
+  //   m.set(out[i].c);
+  //   m.write_model(f, i + 1, remarks[i]);  // so that model numbers start with 1
+  // }
+  VinaResult result;
   VINA_FOR_IN(i, out_cont) {
     if (how_many >= num_modes || !not_max(out_cont[i].e) ||
         out_cont[i].e > out_cont[0].e + energy_range)
       break;  // check energy_range sanity FIXME
     ++how_many;
+    m.set(out_cont[i].c);
 
-    // Temporarily returns the first one which with
-    // the lowest binding affinity.
-    return out_cont[i].e;  // intermolecular_energies[i];
-    // For primary screen, we only cares about affinity.
-    // const model& r = ref ? ref.get() : best_mode_model;
-    // const fl lb = m.rmsd_lower_bound(r);
-    // const fl ub = m.rmsd_upper_bound(r);
+    VinaResult::Model* model = result.add_models();
+    model->set_affinity(out_cont[i].e);
+    model->set_docked_pdbqt(m.model_to_string());
   }
-  // For all other cases, we consider them invalid and return max;
-  return max_fl;
+  return result;
 }
 
-double main_procedure(
+VinaResult main_procedure(
     model& m, const boost::optional<model>& ref,  // m is non-const (FIXME?)
     const std::string& out_name, const grid_dims& gd, int exhaustiveness,
     const flv& weights, int cpu, int seed, sz num_modes, fl energy_range) {
@@ -250,9 +266,9 @@ std::vector<VinaResult> VinaDock::vina_fit(
 
       int seed = auto_seed();
 
-      double affinity = 0.0;
+      VinaResult result;
       try {
-        affinity =
+        result =
             main_procedure(system, ref, "", gd, exhaustiveness, weights, cpu_,
                            seed, static_cast<sz>(num_modes_), energy_range);
       } catch (...) {
@@ -262,6 +278,7 @@ std::vector<VinaResult> VinaDock::vina_fit(
 
       // filter_limit should always be negative as the Vina score should be
       // negative.
+
       if (affinity < filter_limit) {
         VinaResult result;
         result.set_ligand_str(ligand_strs[ligand_model.first]);

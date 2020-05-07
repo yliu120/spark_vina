@@ -17,4 +17,5 @@ bazel-*
 .bazelproject
 *.iml
 .ijwb
+.vscode
 lib

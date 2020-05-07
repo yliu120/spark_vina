@@ -24,6 +24,7 @@
 #define VINA_MODEL_H
 
 #include <boost/optional.hpp>  // for context
+#include <string>
 
 #include "file.h"
 #include "grid_dim.h"
@@ -67,7 +68,6 @@ typedef strictly_triangular_matrix<distance_type> distance_type_matrix;
 
 // forward declaration
 namespace spark_vina {
-class Model;
 struct pdbqt_initializer;
 }
 
@@ -136,6 +136,14 @@ struct model {
   void seti(const conf& c);
   void sete(const conf& c);
   void set(const conf& c);
+
+  std::vector<std::string> models_to_string() const {
+    std::vector<std::string> model_strings;
+    for (const auto& ligand : ligands) {
+      model_strings.push_back(ligand_to_string(ligand.cont));
+    }
+    return model_strings;
+  }
 
   fl gyration_radius(sz ligand_number) const;  // uses coords
 
@@ -223,7 +231,6 @@ struct model {
   friend struct pdbqt_initializer;
 
   // Add another friend declaration for spark_vina's purpose.
-  friend class spark_vina::Model;
   friend struct spark_vina::pdbqt_initializer;
   friend struct model_test;
 
@@ -250,6 +257,9 @@ struct model {
     ofile out(name);
     write_context(c, out, remark);
   }
+
+  std::string ligand_to_string(const context& contexts) const;
+
   fl rmsd_lower_bound_asymmetric(const model& x,
                                  const model& y) const;  // actually static
 

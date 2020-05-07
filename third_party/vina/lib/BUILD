@@ -6,6 +6,7 @@ cc_library(
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"],
     deps = [
+        "@absl//absl/strings",
         "@boost//:array",
         "@boost//:filesystem",
         "@boost//:lexical_cast",

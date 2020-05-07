@@ -145,7 +145,3 @@ against the receptor (protein: `HIF2a` in our example).
 We would recommend you deploying spark_vina_main_deploy.jar in
 Kubernetes clusters for large scale virtual screen tasks. The instructions are
 among our TODO list.
-  
-
-  
-

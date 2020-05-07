@@ -39,6 +39,7 @@ cc_library(
         "@boost//:filesystem",
         "@boost//:program_options",
         "@boost//:thread",
+        "@glog//:glog",
     ],
 )
 

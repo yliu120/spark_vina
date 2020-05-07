@@ -5,7 +5,14 @@ option java_outer_classname = "SparkVinaProtos";
 
 // Encodes the result of a Vina docking.
 message VinaResult {
-	string ligand_id = 3;
-	string ligand_str = 1;
-	double affinity = 2;
+	string ligand_id = 1;
+	string original_pdbqt = 2;
+  int64 random_seed = 3;
+
+  // Docking a single compound produces num_modes models.
+	message Model {
+		string docked_pdbqt = 1;
+    double affinity = 2;
+	}
+	repeated Model models = 4;
 }
