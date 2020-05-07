@@ -32,10 +32,6 @@ spec:
   restartPolicy:
     type: Never
   volumes:
-    - name: "tmp-volume"
-      hostPath:
-        path: "/tmp"
-        type: Directory
     - name: "output-volume"
       hostPath:
         path: "/var/data/output"
@@ -49,8 +45,6 @@ spec:
       version: 2.4.5
     serviceAccount: spark
     volumeMounts:
-      - name: "tmp-volume"
-        mountPath: "/tmp"
       - name: "output-volume"
         mountPath: "/output"
   executor:
@@ -61,7 +55,5 @@ spec:
     labels:
       version: 2.4.5
     volumeMounts:
-      - name: "tmp-volume"
-        mountPath: "/tmp"
       - name: "output-volume"
         mountPath: "/output"

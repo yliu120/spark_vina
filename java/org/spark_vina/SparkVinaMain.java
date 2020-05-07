@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class SparkVinaMain {
+
   private static final int DEFAULT_NUM_REPEATS = 1;
   private static final int DEFAULT_NUM_MODES = 8;
   private static final int DEFAULT_NUM_TASKS = 2;
@@ -208,7 +209,7 @@ public final class SparkVinaMain {
     final int numMapTasksPerExecutor =
         cmdLine.hasOption(numMapTasksPerExecutorOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt()))
-                .intValue()
+            .intValue()
             : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())

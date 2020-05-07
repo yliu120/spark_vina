@@ -11,9 +11,21 @@ import org.slf4j.LoggerFactory;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
 public class FitCompoundFunction implements Function<String, Optional<VinaResult>> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(FitCompoundFunction.class);
   private static final String ZINC_PATTERN = "ZINC";
-
+  private static final long serialVersionUID = 333;
+  private final String receptorPath;
+  private final double centerX;
+  private final double centerY;
+  private final double centerZ;
+  private final double sizeX;
+  private final double sizeY;
+  private final double sizeZ;
+  private final int cpu;
+  private final int numModes;
+  private final double filterLimit;
+  private transient VinaDock vinaDock;
   FitCompoundFunction(
       String receptorPath,
       double centerX,
@@ -76,18 +88,4 @@ public class FitCompoundFunction implements Function<String, Optional<VinaResult
   private void writeObject(ObjectOutputStream outputStream) throws IOException {
     outputStream.defaultWriteObject();
   }
-
-  private transient VinaDock vinaDock;
-  private final String receptorPath;
-  private final double centerX;
-  private final double centerY;
-  private final double centerZ;
-  private final double sizeX;
-  private final double sizeY;
-  private final double sizeZ;
-  private final int cpu;
-  private final int numModes;
-  private final double filterLimit;
-
-  private static final long serialVersionUID = 333;
 }

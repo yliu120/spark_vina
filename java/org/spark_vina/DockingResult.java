@@ -8,6 +8,7 @@ import org.apache.spark.sql.RowFactory;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
 public final class DockingResult implements Serializable {
+
   private static final long serialVersionUID = 1;
 
   public DockingResult(String compoundKey, Iterable<VinaResult> vinaResults) {
