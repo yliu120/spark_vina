@@ -137,12 +137,9 @@ struct model {
   void sete(const conf& c);
   void set(const conf& c);
 
-  std::vector<std::string> models_to_string() const {
-    std::vector<std::string> model_strings;
-    for (const auto& ligand : ligands) {
-      model_strings.push_back(ligand_to_string(ligand.cont));
-    }
-    return model_strings;
+  std::string model_to_string() const {
+    if (ligands.empty()) return "";
+    return ligand_to_string(ligands[0].cont);
   }
 
   fl gyration_radius(sz ligand_number) const;  // uses coords

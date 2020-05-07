@@ -129,30 +129,20 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
   if (!out_cont.empty()) best_mode_model.set(out_cont.front().c);
 
   sz how_many = 0;
-  //  VINA_FOR_IN(i, out_cont) {
-  //     if (how_many >= num_modes || !not_max(out_cont[i].e) ||
-  //         out_cont[i].e > out_cont[0].e + energy_range)
-  //       break;  // check energy_range sanity FIXME
-  //     ++how_many;
-  //     m.set(out_cont[i].c);
-  //   }
-  //   write_all_output(m, out_cont, how_many, out_name, remarks);
-
-  //   if (out.size() < how_many) how_many = out.size();
-  // VINA_CHECK(how_many <= remarks.size());
-  // ofile f((path(output_name)));
-  // VINA_FOR(i, how_many) {
-  //   m.set(out[i].c);
-  //   m.write_model(f, i + 1, remarks[i]);  // so that model numbers start with 1
-  // }
-  VinaResult result;
   VINA_FOR_IN(i, out_cont) {
     if (how_many >= num_modes || !not_max(out_cont[i].e) ||
         out_cont[i].e > out_cont[0].e + energy_range)
       break;  // check energy_range sanity FIXME
     ++how_many;
-    m.set(out_cont[i].c);
+  }
 
+  if (out_cont.size() < how_many) {
+    how_many = out_cont.size();
+  }
+
+  VinaResult result;
+  VINA_FOR(i, how_many) {
+    m.set(out_cont[i].c);
     VinaResult::Model* model = result.add_models();
     model->set_affinity(out_cont[i].e);
     model->set_docked_pdbqt(m.model_to_string());
@@ -276,13 +266,15 @@ std::vector<VinaResult> VinaDock::vina_fit(
         continue;
       }
 
+      if (result.models().empty()) {
+        continue;
+      }
+
       // filter_limit should always be negative as the Vina score should be
       // negative.
-
-      if (affinity < filter_limit) {
-        VinaResult result;
-        result.set_ligand_str(ligand_strs[ligand_model.first]);
-        result.set_affinity(affinity);
+      if (result.models(0).affinity() < filter_limit) {
+        result.set_original_pdbqt(ligand_strs[ligand_model.first]);
+        result.set_random_seed(seed);
         results.push_back(std::move(result));
       }
     }
