@@ -44,9 +44,9 @@ public class FitCompoundFunction implements Function<String, Optional<VinaResult
       LOGGER.warn("Cannot fit ligand: {}", ligandString);
       return Optional.absent();
     }
-    Optional<String> ligandKey = parseLigandKey(vinaResult.get().getLigandStr());
+    Optional<String> ligandKey = parseLigandKey(vinaResult.get().getOriginalPdbqt());
     if (!ligandKey.isPresent()) {
-      LOGGER.error("Ligand with no ZINC id: {}", vinaResult.get().getLigandStr());
+      LOGGER.error("Ligand with no ZINC id: {}", vinaResult.get().getOriginalPdbqt());
       return Optional.absent();
     }
     return Optional.of(vinaResult.get().toBuilder().setLigandId(ligandKey.get()).build());

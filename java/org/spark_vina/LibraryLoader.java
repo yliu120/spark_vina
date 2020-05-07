@@ -144,6 +144,5 @@ final class LibraryLoader {
             + "*) to extract SparkVina native libraries.");
   }
 
-  private LibraryLoader() {
-  }
+  private LibraryLoader() {}
 }

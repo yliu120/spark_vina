@@ -207,7 +207,8 @@ public final class SparkVinaMain {
             : DEFAULT_NUM_MODES;
     final int numMapTasksPerExecutor =
         cmdLine.hasOption(numMapTasksPerExecutorOption.getLongOpt())
-            ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt())).intValue()
+            ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt()))
+                .intValue()
             : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
@@ -240,8 +241,8 @@ public final class SparkVinaMain {
     SparkSession spark = SparkSession.builder().appName("SparkVinaMain").getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
-    final int numOfExecutors = Integer.parseInt(javaSparkContext.getConf()
-        .get("spark.executor.instances", "1"));
+    final int numOfExecutors =
+        Integer.parseInt(javaSparkContext.getConf().get("spark.executor.instances", "1"));
     LOGGER.info("SparkVina application runs with {} executors.", numOfExecutors);
 
     // Set up accumulators
@@ -254,9 +255,13 @@ public final class SparkVinaMain {
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
-            .flatMap(ligandStrings -> ligandStrings.stream()
-                .flatMap(ligandString -> Collections.nCopies(numRepeats, ligandString).stream())
-                .collect(Collectors.toList()).iterator())
+            .flatMap(
+                ligandStrings ->
+                    ligandStrings.stream()
+                        .flatMap(
+                            ligandString -> Collections.nCopies(numRepeats, ligandString).stream())
+                        .collect(Collectors.toList())
+                        .iterator())
             .repartition(numMapTasksPerExecutor * numOfExecutors)
             .map(
                 model -> {

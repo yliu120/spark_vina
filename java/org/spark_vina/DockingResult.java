@@ -12,21 +12,27 @@ public final class DockingResult implements Serializable {
 
   public DockingResult(String compoundKey, Iterable<VinaResult> vinaResults) {
     this.compoundKey = compoundKey;
-    List<Row> vinaResultRows = new ArrayList<>();
+    List<Row> vinaResultsRows = new ArrayList<>();
 
     double sum = 0.0;
     double square_sum = 0.0;
     int count = 0;
     for (VinaResult vinaResult : vinaResults) {
-      count++;
-      sum += vinaResult.getAffinity();
-      square_sum += Math.pow(vinaResult.getAffinity(), 2.0);
-      vinaResultRows.add(RowFactory.create(vinaResult.getAffinity(), vinaResult.getLigandStr()));
+      List<Row> vinaResultRow = new ArrayList<>();
+      for (VinaResult.Model model : vinaResult.getModelsList()) {
+        count++;
+        sum += model.getAffinity();
+        square_sum += Math.pow(model.getAffinity(), 2.0);
+        vinaResultRow.add(RowFactory.create(model.getAffinity(), model.getDockedPdbqt()));
+      }
+      vinaResultsRows.add(
+          RowFactory.create(
+              vinaResult.getRandomSeed(), vinaResultRow.toArray(new Row[vinaResultRow.size()])));
     }
     this.numModels = count;
     this.affinityMean = sum / (double) this.numModels;
     this.affinityStd = Math.sqrt(square_sum / this.numModels - Math.pow(this.affinityMean, 2.0));
-    this.vinaResults = vinaResultRows.toArray(new Row[vinaResultRows.size()]);
+    this.vinaResults = vinaResultsRows.toArray(new Row[vinaResultsRows.size()]);
   }
 
   public String getCompoundKey() {
