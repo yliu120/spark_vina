@@ -5,9 +5,9 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "com_google_googletest",
-    url = "https://github.com/google/googletest/archive/release-1.10.0.zip",
     sha256 = "94c634d499558a76fa649edb13721dce6e98fb1e7018dfaeba3cd7a083945e91",
     strip_prefix = "googletest-release-1.10.0",
+    url = "https://github.com/google/googletest/archive/release-1.10.0.zip",
 )
 
 http_archive(
@@ -34,6 +34,7 @@ git_repository(
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+
 boost_deps()
 
 http_archive(
@@ -59,23 +60,23 @@ http_archive(
 
 http_archive(
     name = "com_github_gflags_gflags",
-    url = "https://github.com/gflags/gflags/archive/v2.2.2.tar.gz",
     sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
     strip_prefix = "gflags-2.2.2",
+    url = "https://github.com/gflags/gflags/archive/v2.2.2.tar.gz",
 )
 
 http_archive(
     name = "glog",
-    url = "https://github.com/google/glog/archive/v0.4.0.tar.gz",
     sha256 = "f28359aeba12f30d73d9e4711ef356dc842886968112162bc73002645139c39c",
     strip_prefix = "glog-0.4.0",
+    url = "https://github.com/google/glog/archive/v0.4.0.tar.gz",
 )
 
 http_archive(
     name = "absl",
-    url = "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
     sha256 = "f41868f7a938605c92936230081175d1eae87f6ea2c248f41077c8f88316f111",
     strip_prefix = "abseil-cpp-20200225.2",
+    url = "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
 )
 
 # rules_cc defines rules for generating C++ code from Protocol Buffers.
@@ -123,21 +124,29 @@ http_archive(
         "https://github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
     ],
 )
+
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
 protobuf_deps()
 
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+
 rules_cc_dependencies()
 
 load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
 rules_java_dependencies()
+
 rules_java_toolchains()
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
 rules_proto_dependencies()
+
 rules_proto_toolchains()
 
 load("//third_party/py:python_configure.bzl", "python_configure")
+
 python_configure(name = "local_config_python")
 
 bind(
@@ -146,17 +155,17 @@ bind(
 )
 
 RULES_JVM_EXTERNAL_TAG = "3.2"
+
 RULES_JVM_EXTERNAL_SHA = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af"
 
 http_archive(
     name = "rules_jvm_external",
-    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
     sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
-load("@rules_jvm_external//:specs.bzl", "maven")
 
 maven_install(
     artifacts = [
@@ -179,6 +188,7 @@ load(
     "@io_bazel_rules_docker//repositories:repositories.bzl",
     container_repositories = "repositories",
 )
+
 container_repositories()
 
 # Loads rules_docker's dependencies
@@ -193,20 +203,20 @@ load(
 
 container_pull(
     name = "java_base",
+    digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb",
     registry = "gcr.io",
     repository = "distroless/java",
-    digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb"
 )
 
 container_pull(
     name = "spark_base",
+    digest = "sha256:0d2c7d9d66fb83a0311442f0d2830280dcaba601244d1d8c1704d72f5806cc4c",
     registry = "gcr.io",
     repository = "spark-operator/spark",
-    digest = "sha256:0d2c7d9d66fb83a0311442f0d2830280dcaba601244d1d8c1704d72f5806cc4c",
 )
 
 load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
-    
+
 dockerfile_image(
     name = "java_base_modified",
     dockerfile = "//docker:Dockerfile",

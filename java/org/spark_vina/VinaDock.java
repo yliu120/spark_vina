@@ -42,15 +42,15 @@ public final class VinaDock {
    * @return a VinaDock instance.
    */
   public VinaDock(
-      String receptorPath,
-      double centerX,
-      double centerY,
-      double centerZ,
-      double sizeX,
-      double sizeY,
-      double sizeZ,
-      int cpu,
-      int numModes) {
+      final String receptorPath,
+      final double centerX,
+      final double centerY,
+      final double centerZ,
+      final double sizeX,
+      final double sizeY,
+      final double sizeZ,
+      final int cpu,
+      final int numModes) {
     nativeHandle =
         nativeCreate(receptorPath, centerX, centerY, centerZ, sizeX, sizeY, sizeZ, cpu, numModes);
     if (nativeHandle == 0) {
@@ -66,7 +66,7 @@ public final class VinaDock {
    * @param filterLimit A filtering limit.
    * @return List<VinaResult> A list of docking result.
    */
-  public List<VinaResult> vinaFit(List<String> ligandStrs, double filterLimit) {
+  public List<VinaResult> vinaFit(final List<String> ligandStrs, final double filterLimit) {
     return nativeVinaFit(
             nativeHandle, ligandStrs.toArray(new String[ligandStrs.size()]), filterLimit)
         .stream()
@@ -74,15 +74,16 @@ public final class VinaDock {
             nativeResultBytes -> {
               try {
                 return VinaResult.parseFrom(nativeResultBytes);
-              } catch (InvalidProtocolBufferException e) {
+              } catch (final InvalidProtocolBufferException e) {
                 throw new RuntimeException(e);
               }
             })
         .collect(Collectors.toList());
   }
 
-  public Optional<VinaResult> vinaFitSingleLigand(String ligandString, double filterLimit) {
-    List<VinaResult> result = vinaFit(Arrays.asList(ligandString), filterLimit);
+  public Optional<VinaResult> vinaFitSingleLigand(
+      final String ligandString, final double filterLimit) {
+    final List<VinaResult> result = vinaFit(Arrays.asList(ligandString), filterLimit);
     return result.isEmpty() ? Optional.absent() : Optional.of(result.get(0));
   }
 

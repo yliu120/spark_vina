@@ -47,7 +47,7 @@ public class SparkVinaUtils {
     StructType vinaResultsSchema =
         new StructType(
             new StructField[]{
-                new StructField("random_seed", DataTypes.IntegerType, false, Metadata.empty()),
+                new StructField("random_seed", DataTypes.LongType, false, Metadata.empty()),
                 new StructField(
                     "vina_result",
                     DataTypes.createArrayType(vinaResultSchema, false),

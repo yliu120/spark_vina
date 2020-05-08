@@ -26,6 +26,7 @@ public class FitCompoundFunction implements Function<String, Optional<VinaResult
   private final int numModes;
   private final double filterLimit;
   private transient VinaDock vinaDock;
+
   FitCompoundFunction(
       String receptorPath,
       double centerX,

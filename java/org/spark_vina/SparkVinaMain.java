@@ -29,7 +29,6 @@ public final class SparkVinaMain {
   private static final int DEFAULT_NUM_TASKS = 2;
   private static final int DEFAULT_NUM_CPU_PER_TASKS = 4;
   private static final double DEFAULT_THRESHOLD = -1.0;
-  private static final int DEFAULT_OUTPUT_NUMBER = 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
@@ -132,13 +131,6 @@ public final class SparkVinaMain {
             .type(Number.class)
             .desc("The estimated binding free energy threshold for the docking task.")
             .build();
-    final Option numberOutputOption =
-        Option.builder()
-            .longOpt("num_output")
-            .hasArg()
-            .type(Number.class)
-            .desc("Output the top N models (not ligands) with the best binding score.")
-            .build();
 
     Options options = new Options();
     options
@@ -155,8 +147,7 @@ public final class SparkVinaMain {
         .addOption(repeatsOption)
         .addOption(numMapTasksPerExecutorOption)
         .addOption(cpuPerTasksOption)
-        .addOption(thresholdOption)
-        .addOption(numberOutputOption);
+        .addOption(thresholdOption);
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
@@ -209,7 +200,7 @@ public final class SparkVinaMain {
     final int numMapTasksPerExecutor =
         cmdLine.hasOption(numMapTasksPerExecutorOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt()))
-            .intValue()
+                .intValue()
             : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
@@ -219,10 +210,6 @@ public final class SparkVinaMain {
         cmdLine.hasOption(thresholdOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())).doubleValue()
             : DEFAULT_THRESHOLD;
-    final int numOutput =
-        cmdLine.hasOption(numberOutputOption.getLongOpt())
-            ? ((Number) cmdLine.getParsedOptionValue(numberOutputOption.getLongOpt())).intValue()
-            : DEFAULT_OUTPUT_NUMBER;
 
     if (!Files.exists(Paths.get(receptorPath))) {
       LOGGER.error("Receptor path {} doesn't exist.", receptorPath);
