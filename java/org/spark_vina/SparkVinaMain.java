@@ -301,6 +301,7 @@ public final class SparkVinaMain {
                 dockingResult ->
                     RowFactory.create(
                         dockingResult.getCompoundKey(),
+                        dockingResult.getOriginalPdbqt(),
                         dockingResult.getNumModels(),
                         dockingResult.getAffinityMean(),
                         dockingResult.getAffinityStd(),

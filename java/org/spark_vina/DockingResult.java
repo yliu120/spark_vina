@@ -11,6 +11,11 @@ public final class DockingResult implements Serializable {
 
   private static final long serialVersionUID = 1;
 
+  /**
+   * Constructs a DockingResult from the original vinaResults.
+   * @param compoundKey The ID of the compound
+   * @param vinaResults A list of docking results. This should always be non-empty.
+   */
   public DockingResult(String compoundKey, Iterable<VinaResult> vinaResults) {
     this.compoundKey = compoundKey;
     List<Row> vinaResultsRows = new ArrayList<>();
@@ -30,6 +35,8 @@ public final class DockingResult implements Serializable {
           RowFactory.create(
               vinaResult.getRandomSeed(), vinaResultRow.toArray(new Row[vinaResultRow.size()])));
     }
+
+    this.originalPdbqt = vinaResults.iterator().next().getOriginalPdbqt();
     this.numModels = count;
     this.affinityMean = sum / (double) this.numModels;
     this.affinityStd = Math.sqrt(square_sum / this.numModels - Math.pow(this.affinityMean, 2.0));
@@ -39,6 +46,8 @@ public final class DockingResult implements Serializable {
   public String getCompoundKey() {
     return compoundKey;
   }
+
+  public String getOriginalPdbqt() { return originalPdbqt; }
 
   public double getAffinityMean() {
     return affinityMean;
@@ -57,6 +66,7 @@ public final class DockingResult implements Serializable {
   }
 
   private final String compoundKey;
+  private String originalPdbqt;
   private final double affinityMean;
   private final double affinityStd;
   private final int numModels;
