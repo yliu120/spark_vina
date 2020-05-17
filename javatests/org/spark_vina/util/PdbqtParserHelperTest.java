@@ -1,12 +1,13 @@
 package org.spark_vina.util;
 
+import static com.google.protobuf.TextFormat.merge;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.extensions.proto.ProtoTruth.assertThat;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.TextFormat;
+import com.google.common.truth.extensions.proto.ProtoTruth;
+import com.google.protobuf.TextFormat.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -16,7 +17,7 @@ import org.spark_vina.CompoundProtos.Compound;
 public final class PdbqtParserHelperTest {
 
   @Test
-  public void parsePdbqtSuccessfully() {
+  public void parsePdbqtSuccessfully() throws ParseException {
     final String testPdbqtString =
         Joiner.on("\n")
             .join(
@@ -54,14 +55,12 @@ public final class PdbqtParserHelperTest {
                     "  count: 3",
                     "}"));
     Compound.Builder expectedResultProtoBuilder = Compound.newBuilder();
-    try {
-      TextFormat.merge(expectedResultString, expectedResultProtoBuilder);
-    } catch (TextFormat.ParseException e) {
-    }
+    merge(expectedResultString, expectedResultProtoBuilder);
 
     Optional<Compound> result = PdbqtParserHelper.parseFeaturesFromPdbqtString(testPdbqtString);
 
     assertThat(result).isPresent();
-    assertThat(result.get()).isEqualTo(expectedResultProtoBuilder.build());
+    ProtoTruth.assertThat(result.get())
+        .isEqualTo(expectedResultProtoBuilder.setOriginalPdbqt(testPdbqtString).build());
   }
 }

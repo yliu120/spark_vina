@@ -172,7 +172,7 @@ maven_install(
         "commons-cli:commons-cli:1.4",
         "com.google.guava:guava:29.0-jre",
         "com.google.truth:truth:1.0.1",
-        "com.google.truth.extensions:truth-proto-extension:0.31",
+        "com.google.truth.extensions:truth-proto-extension:1.0.1",
         "junit:junit:4.13",
         "org.apache.spark:spark-catalyst_2.11:2.4.5",
         "org.apache.spark:spark-core_2.11:2.4.5",

@@ -16,6 +16,7 @@ import org.spark_vina.SparkVinaProtos.VinaResult;
 
 @RunWith(JUnit4.class)
 public final class VinaDockTest {
+
   private final double centerX = 0.0;
   private final double centerY = 0.0;
   private final double centerZ = 0.0;
@@ -34,7 +35,8 @@ public final class VinaDockTest {
 
       @Override
       public boolean matchesSafely(VinaResult vinaResult) {
-        return vinaResult.getLigandStr().contains("REMARK") && vinaResult.getAffinity() < 1.0;
+        return vinaResult.getOriginalPdbqt().contains("REMARK") && !vinaResult.getModelsList()
+            .isEmpty();
       }
     };
   }
