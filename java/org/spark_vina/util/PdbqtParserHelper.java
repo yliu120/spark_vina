@@ -16,7 +16,6 @@ import org.spark_vina.CompoundProtos.Compound;
 public final class PdbqtParserHelper {
   private static final String ZINC_PATTERN = "ZINC";
   private static final int ATOM_TYPE_INDEX = 2;
-  private static final int MAX_ATOM_LINE_COMPONENTS = 3;
   private static final Logger LOGGER = LoggerFactory.getLogger(PdbqtParserHelper.class);
   private static final ImmutableMap<String, AtomType> ATOM_TYPE_MAP;
   private static final ImmutableMap<AtomType, Double> MOLECULAR_WEIGHT_MAP;
@@ -39,8 +38,7 @@ public final class PdbqtParserHelper {
     final Iterable<String> lines =
         Splitter.onPattern("\r?\n").trimResults().omitEmptyStrings().split(ligandString);
     final HashMap<String, Integer> atomCountMap = new HashMap<>();
-    final Splitter atomSplitter =
-        Splitter.on(" ").trimResults().omitEmptyStrings().limit(MAX_ATOM_LINE_COMPONENTS);
+    final Splitter atomSplitter = Splitter.on(" ").trimResults().omitEmptyStrings();
     final Compound.Builder compoundBuilder = Compound.newBuilder();
 
     for (final String line : lines) {
