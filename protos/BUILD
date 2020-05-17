@@ -29,3 +29,13 @@ py_proto_library(
     name = "vina_proto_py",
     srcs = ["vina.proto"],
 )
+
+proto_library(
+    name = "compound_proto",
+    srcs = ["compound.proto"],
+)
+
+java_proto_library(
+    name = "compound_java_proto",
+    deps = [":compound_proto"],
+)

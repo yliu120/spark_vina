@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_package = "org.spark_vina";
+option java_outer_classname = "CompoundProtos";
+
+// All supported atom types:
+enum AtomType {
+  UNKNOWN = 0;
+  HYDROGEN = 1;
+  CARBON = 6;
+  NITROGEN = 7;
+  OXYGEN = 8;
+  FLUROINE = 9;
+  SODIUM = 11;
+  MAGNESIUM = 12;
+  PHOSPHORUS = 15;
+  SULFUR = 16;
+  POTASSIUM = 19;
+  CALCIUM = 20;
+  CHLORINE = 17;
+  BROMINE = 35;
+  IODINE = 53;
+}
+
+// Encodes features of a single Atom.
+message AtomFeatures {
+  AtomType atom_type = 1;
+  int32 count = 2;
+}
+
+// Encodes all the info of a single compound.
+message Compound {
+  string name = 1;
+  int32 logP = 2;
+  int32 molecular_weight = 3;
+  string original_pdbqt = 4;
+  repeated AtomFeatures atom_features = 5;
+}
