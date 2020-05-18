@@ -5,10 +5,12 @@ java_binary(
     srcs = ["ZincFilesToParquetMain.java"],
     main_class = "org.spark.tools.ZincFilesToParquetMain",
     resources = [
-        "log4j.properties",
+        "//:log4j.properties",
     ],
     deps = [
         "//:spark_vina_lib",
+        "//java/org/spark_vina/util:pdbqt_parser_helper",
+        "//java/org/spark_vina/util:zinc_helper",
         "//protos:compound_java_proto",
         "@maven//:com_google_guava_guava_29_0_jre",
         "@maven//:commons_cli_commons_cli_1_4",

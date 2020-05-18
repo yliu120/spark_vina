@@ -31,7 +31,7 @@ message AtomFeatures {
 // Encodes all the info of a single compound.
 message Compound {
   string name = 1;
-  int32 logP = 2;
+  double logP = 2;
   int32 molecular_weight = 3;
   string original_pdbqt = 4;
   repeated AtomFeatures atom_features = 5;

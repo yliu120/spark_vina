@@ -14,8 +14,9 @@ import org.spark_vina.CompoundProtos.AtomType;
 import org.spark_vina.CompoundProtos.Compound;
 
 public final class PdbqtParserHelper {
+
   private static final String ZINC_PATTERN = "ZINC";
-  private static final int ATOM_TYPE_INDEX = 2;
+  private static final int ATOM_NAME_INDEX = 2;
   private static final Logger LOGGER = LoggerFactory.getLogger(PdbqtParserHelper.class);
   private static final ImmutableMap<String, AtomType> ATOM_TYPE_MAP;
   private static final ImmutableMap<AtomType, Double> MOLECULAR_WEIGHT_MAP;
@@ -37,15 +38,17 @@ public final class PdbqtParserHelper {
   public static Optional<Compound> parseFeaturesFromPdbqtString(final String ligandString) {
     final Iterable<String> lines =
         Splitter.onPattern("\r?\n").trimResults().omitEmptyStrings().split(ligandString);
-    final HashMap<String, Integer> atomCountMap = new HashMap<>();
-    final Splitter atomSplitter = Splitter.on(" ").trimResults().omitEmptyStrings();
-    final Compound.Builder compoundBuilder = Compound.newBuilder();
+    HashMap<String, Integer> atomCountMap = new HashMap<>();
+    Splitter atomSplitter = Splitter.on(" ").trimResults().omitEmptyStrings();
+    Compound.Builder compoundBuilder = Compound.newBuilder();
 
     for (final String line : lines) {
       if (line.startsWith("ATOM")) {
-        final String atomType = atomSplitter.splitToList(line).get(ATOM_TYPE_INDEX);
-        final Integer count = atomCountMap.getOrDefault(atomType, 0);
-        atomCountMap.put(atomType, count.intValue() + 1);
+        final List<String> atomLineComponents = atomSplitter.splitToList(line);
+        final String normalizedAtomType = normalizeAtomType(atomLineComponents.get(ATOM_NAME_INDEX).toUpperCase(),
+            atomLineComponents.get(atomLineComponents.size() - 1).toUpperCase());
+        final Integer count = atomCountMap.getOrDefault(normalizedAtomType, 0);
+        atomCountMap.put(normalizedAtomType, count.intValue() + 1);
       } else if (line.startsWith("REMARK  N")) {
         final List<String> words =
             Splitter.on(" ").trimResults().omitEmptyStrings().splitToList(line);
@@ -65,8 +68,9 @@ public final class PdbqtParserHelper {
       builder.setAtomType(atomType);
       builder.setCount(entry.getValue());
 
-      if (atomType == AtomType.UNKNOWN) {
-        LOGGER.error("Unknown atom name: {}. Use average MW instead.", entry.getKey());
+      if (atomType.equals(AtomType.UNKNOWN)) {
+        LOGGER.error("Unknown atom name: {} in compound {}.", entry.getKey(),
+            ligandString);
       }
       molecularWeight += MOLECULAR_WEIGHT_MAP.get(atomType) * entry.getValue();
     }
@@ -74,6 +78,14 @@ public final class PdbqtParserHelper {
     compoundBuilder.setOriginalPdbqt(ligandString);
     compoundBuilder.setMolecularWeight((int) molecularWeight);
     return Optional.of(compoundBuilder.build());
+  }
+
+  // Heuristics to speed up parsing.
+  private static String normalizeAtomType(String atomName, String atomType) {
+    if (atomName.equals(atomType) && ATOM_TYPE_MAP.containsKey(atomName)) {
+      return atomName;
+    }
+    return atomName.substring(0, 1);
   }
 
   static {
@@ -97,7 +109,7 @@ public final class PdbqtParserHelper {
 
     MOLECULAR_WEIGHT_MAP =
         new ImmutableMap.Builder<AtomType, Double>()
-            .put(AtomType.UNKNOWN, 129.0)
+            .put(AtomType.UNKNOWN, 0.0)
             .put(AtomType.HYDROGEN, 1.008)
             .put(AtomType.CARBON, 12.011)
             .put(AtomType.NITROGEN, 14.007)
