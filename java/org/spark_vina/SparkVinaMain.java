@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -204,7 +205,7 @@ public final class SparkVinaMain {
     final int numMapTasksPerExecutor =
         cmdLine.hasOption(numMapTasksPerExecutorOption.getLongOpt())
             ? ((Number) cmdLine.getParsedOptionValue(numMapTasksPerExecutorOption.getLongOpt()))
-                .intValue()
+            .intValue()
             : DEFAULT_NUM_TASKS;
     final int numCpuPerTasks =
         cmdLine.hasOption(cpuPerTasksOption.getLongOpt())
@@ -224,7 +225,8 @@ public final class SparkVinaMain {
       return;
     }
 
-    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir);
+    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir,
+        Pattern.compile(".*.(pdbqt|pdbqt.gz)"));
     if (!ligandFilePaths.isPresent() || ligandFilePaths.get().isEmpty()) {
       LOGGER.error("Collecting ligand files failed.");
       return;

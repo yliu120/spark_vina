@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -38,9 +39,9 @@ public final class ZincFilesToParquetMain {
   private static final int DEFAULT_NUM_SHARDS = 1;
 
   public static void main(String[] args) throws Exception {
-    final Option ligandDirOption =
+    final Option sourceDirOption =
         Option.builder()
-            .longOpt("ligand_dir")
+            .longOpt("source_dir")
             .required()
             .hasArg()
             .desc("The directory of the ligand in pdbqt or pdbqt.gz format.")
@@ -61,7 +62,7 @@ public final class ZincFilesToParquetMain {
             .build();
 
     Options options = new Options();
-    options.addOption(ligandDirOption).addOption(shardsOption).addOption(outputDirOption);
+    options.addOption(sourceDirOption).addOption(shardsOption).addOption(outputDirOption);
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
@@ -74,21 +75,30 @@ public final class ZincFilesToParquetMain {
       return;
     }
 
-    final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
+    final String sourceDir = cmdLine.getOptionValue(sourceDirOption.getLongOpt());
     final int shards =
         cmdLine.hasOption(shardsOption.getLongOpt())
             ? Integer.parseInt(cmdLine.getOptionValue(shardsOption.getLongOpt()))
             : DEFAULT_NUM_SHARDS;
     final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
 
-    if (!Files.exists(Paths.get(ligandDir))) {
-      LOGGER.error("Ligand Directory {} doesn't exist.", ligandDir);
+    if (!Files.exists(Paths.get(sourceDir))) {
+      LOGGER.error("Ligand Directory {} doesn't exist.", sourceDir);
       return;
     }
 
-    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir);
+    Optional<List<String>> ligandFilePaths = SparkVinaUtils
+        .getAllLigandFilesInDirectory(sourceDir, Pattern
+            .compile(".*.(pdbqt|pdbqt.gz)"));
+    Optional<List<String>> metaDataFilePaths = SparkVinaUtils
+        .getAllLigandFilesInDirectory(sourceDir, Pattern
+            .compile(".*.txt"));
     if (!ligandFilePaths.isPresent() || ligandFilePaths.get().isEmpty()) {
       LOGGER.error("Collecting ligand pdbqt files failed.");
+      return;
+    }
+    if (!metaDataFilePaths.isPresent() || metaDataFilePaths.get().isEmpty()) {
+      LOGGER.error("Collecting metadata files failed.");
       return;
     }
 
@@ -99,12 +109,6 @@ public final class ZincFilesToParquetMain {
 
     JavaRDD<Row> resultRows = javaSparkContext.parallelize(ligandFilePaths.get()).map(path -> {
       List<String> ligandStrings = VinaTools.readLigandsToStrings(path);
-      List<String> pathComponents = Splitter.on('/').trimResults().omitEmptyStrings()
-          .splitToList(path);
-      // Gets the second char of the base file name and maps it to LogP.
-      double logP = ZincHelper
-          .convertAlphabetToLogp(pathComponents.get(pathComponents.size() - 1).charAt(1));
-
       List<Compound> compounds = new ArrayList<>(ligandStrings.size());
       for (final String ligandString : ligandStrings) {
         Optional<Compound> compound = PdbqtParserHelper.parseFeaturesFromPdbqtString(ligandString);
@@ -112,11 +116,11 @@ public final class ZincFilesToParquetMain {
           LOGGER.error("Ligand cannot be converted to a compound: {}", ligandString);
           continue;
         }
-        compounds.add(compound.get().toBuilder().setLogP(logP).build());
+        compounds.add(compound.get());
       }
       numCompounds.add(compounds.size());
       return compounds;
-    }).flatMap(compounds -> compounds.iterator()).repartition(shards).map(compound -> {
+    }).flatMap(compounds -> compounds.iterator()).repartition(shards).distinct().map(compound -> {
       HashMap<AtomType, Integer> countMap = new HashMap<>();
       for (AtomFeatures features : compound.getAtomFeaturesList()) {
         countMap.put(features.getAtomType(), features.getCount());

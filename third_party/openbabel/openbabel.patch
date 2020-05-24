@@ -1,0 +1,655 @@
+diff -ruN openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h openbabel-openbabel-3-1-1-new/include/openbabel/babelconfig.h
+--- openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h	1969-12-31 19:00:00.000000000 -0500
++++ openbabel-openbabel-3-1-1-new/include/openbabel/babelconfig.h	2020-05-23 11:11:51.000000000 -0400
+@@ -0,0 +1,189 @@
++/* src/config.h.in.  Generated from configure.in by autoheader.  */
++
++/* UNUSED MACROS */
++#define BABEL_DATADIR "" 
++#define OB_MODULE_PATH ""
++#define MODULE_EXTENSION ""
++
++/* The version of Open Babel */
++#define BABEL_VERSION "3.1.0"
++
++/* Version check macro
++   Can be used like #if (OB_VERSION >= OB_VERSION_CHECK(2, 2, 99)) */
++#define OB_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
++
++/* OB_VERSION is (major << 16) + (minor << 8) + patch */
++#define OB_VERSION OB_VERSION_CHECK(3, 1, 0)
++
++// If we are using a recent GCC version with visibility support use it
++#ifdef HAVE_GCC_VISIBILITY
++  #define OB_EXPORT __attribute__ ((visibility("default")))
++  #define OB_IMPORT __attribute__ ((visibility("default")))
++  #define OB_HIDDEN __attribute__ ((visibility("hidden")))
++#elif defined(WIN32) && defined(USING_DYNAMIC_LIBS) && !defined(__MINGW32__)
++ #define OB_EXPORT __declspec(dllexport)
++ #define OB_IMPORT __declspec(dllimport)
++ #define OB_HIDDEN
++#else
++ #define OB_EXPORT
++ #define OB_IMPORT
++ #define OB_HIDDEN
++#endif
++
++/* Used to export symbols for DLL / shared library builds */
++#if defined(MAKE_OBDLL) // e.g. in src/main.cpp
++ #ifndef OB_EXTERN
++  #define OB_EXTERN   OB_EXPORT extern
++ #endif
++ #ifndef OBAPI
++  #define OBAPI    OB_EXPORT
++ #endif
++ #ifndef OBCOMMON
++  #define OBCOMMON OB_EXPORT
++ #endif
++ #ifndef OBCONV
++  #define OBCONV   OB_EXPORT
++ #endif
++ #ifndef OBERROR
++  #define OBERROR  OB_EXPORT
++ #endif
++ #ifndef OBFPRT
++  #define OBFPRT   OB_EXPORT
++ #endif
++ #ifndef OBFPTR
++  #define OBFPTR   OB_EXPORT
++ #endif
++ #ifndef OBMCDL
++  #define OBMCDL   OB_EXPORT
++ #endif
++ #ifndef OBDEPICT
++  #define OBDEPICT OB_EXPORT
++ #endif
++
++#else   // defined(MAKE_OBDLL)
++
++ #ifndef OB_EXTERN
++  #define OB_EXTERN   OB_IMPORT extern
++ #endif
++ #ifndef OBAPI
++  #define OBAPI    OB_IMPORT
++ #endif
++ #ifndef OBCOMMON
++  #define OBCOMMON OB_IMPORT
++ #endif
++ #ifndef OBCONV
++  #define OBCONV   OB_IMPORT
++ #endif
++ #ifndef OBERROR
++  #define OBERROR  OB_IMPORT
++ #endif
++ #ifndef OBFPRT
++  #define OBFPRT   OB_IMPORT
++ #endif
++ #ifndef OBFPTR
++  #define OBFPTR   OB_IMPORT
++ #endif
++ #ifndef OBMCDL
++ #define OBMCDL    OB_IMPORT
++  #ifndef OBDEPICT
++ #define OBDEPICT  OB_IMPORT
++ #endif
++
++ #endif
++
++#endif
++
++#ifdef _MSC_VER
++ // Suppress warning on deprecated functions
++ #pragma warning(disable : 4996)
++ // Suppress warning that compiler is ignoring C++ exception specification
++ #pragma warning( disable : 4290 )
++ // Suppress warning on signed/unsigned comparison with < or > (harmless, but maybe should be fixed)
++ #pragma warning( disable : 4018 )
++ // Suppress warning on forcing int etc. value to bool 'true' or 'false' (performance warning)
++ #pragma warning( disable : 4800 )
++ //
++ #pragma warning( disable : 4251 )
++
++
++ #include <algorithm>  // std::min and std::max were moved here in C++11
++ #include <crtdbg.h>
++
++ #ifdef _DEBUG
++ #define DEBUG_NEW new(_NORMAL_BLOCK, THIS_FILE, __LINE__)
++ #else
++  #define DEBUG_NEW new
++ #endif
++#endif  // _MSC_VER
++
++/* have <sys/time.h> */
++#define HAVE_SYS_TIME_H 1
++
++/* have <time.h> */
++#define HAVE_TIME_H 1
++
++/* have <sstream> */
++#define HAVE_SSTREAM 1
++
++/* have symbol clock_t */
++#define HAVE_CLOCK_T 1
++
++/* have symbol rint */
++#define HAVE_RINT 1
++
++/* have symbol snprintf */
++#define HAVE_SNPRINTF 1
++
++/* have symbol sranddev */
++#define HAVE_SRANDDEV 1
++
++/* have symbol strcasecmp */
++#define HAVE_STRCASECMP 1
++
++/* have symbol strncasecmp */
++#define HAVE_STRNCASECMP 1
++
++/* have struct clock_t */
++#define HAVE_CLOCK_T 1
++
++/* shared pointer implementation to be used */
++#define OB_SHARED_PTR_IMPLEMENTATION std::shared_ptr
++
++/* header to be included for shared pointers */
++#define OB_SHARED_PTR_HEADER <memory>
++
++#if defined(WIN32)
++ #ifndef HAVE_SNPRINTF
++  #define snprintf _snprintf
++  #define HAVE_SNPRINTF 1
++ #endif
++
++ #ifndef HAVE_STRCASECMP
++  #define strcasecmp _stricmp
++  #define HAVE_STRCASECMP 1
++ #endif
++
++ #ifndef HAVE_STRNCASECMP
++  #define strncasecmp _strnicmp
++  #define HAVE_STRNCASECMP 1
++ #endif
++#endif  // WIN32
++
++/* #undef SCANDIR_NEEDS_CONST */
++#ifdef SCANDIR_NEEDS_CONST
++ #define SCANDIR_CONST const
++#else
++ #define SCANDIR_CONST
++#endif
++
++#ifndef TIME_WITH_SYS_TIME
++  #ifdef HAVE_SYS_TIME
++    #ifdef HAVE_TIME
++      #define TIME_WITH_SYS_TIME 1
++    #else
++      #define TIME_WITH_SYS_TIME 0
++    #endif
++  #else
++    #define TIME_WITH_SYS_TIME 0
++  #endif
++#endif
+diff -ruN openbabel-openbabel-3-1-1/include/openbabel/plugin.h openbabel-openbabel-3-1-1-new/include/openbabel/plugin.h
+--- openbabel-openbabel-3-1-1/include/openbabel/plugin.h	2020-05-08 11:38:02.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/include/openbabel/plugin.h	2020-05-23 11:12:21.000000000 -0400
+@@ -374,218 +374,9 @@
+   OBAPI OB_EXTERN className instanceName;
+ 
+   // formats
+-  OB_STATIC_PLUGIN(ABINITFormat, theABINITFormat)
+-  OB_STATIC_PLUGIN(AcesOutputFormat, theAcesOutputFormat)
+-  OB_STATIC_PLUGIN(AcesInputFormat, theAcesInputFormat)
+-  OB_STATIC_PLUGIN(ACRFormat, theACRFormat)
+-  OB_STATIC_PLUGIN(ADFOutputFormat, theADFOutputFormat)
+-  OB_STATIC_PLUGIN(ADFInputFormat, theADFInputFormat)
+-  OB_STATIC_PLUGIN(AlchemyFormat, theAlchemyFormat)
+-  OB_STATIC_PLUGIN(AmberPrepFormat, theAmberPrepFormat)
+-  OB_STATIC_PLUGIN(AoforceFormat, theAoforceFormat)
+-  OB_STATIC_PLUGIN(OBAPIInterface, theOBAPIInterface)
+-  OB_STATIC_PLUGIN(BallStickFormat, theBallStickFormat)
+-  OB_STATIC_PLUGIN(BGFFormat, theBGFFormat)
+-  OB_STATIC_PLUGIN(BoxFormat, theBoxFormat)
+-  OB_STATIC_PLUGIN(CacaoFormat, theCacaoFormat)
+-  OB_STATIC_PLUGIN(CacheFormat, theCacheFormat)
+-  OB_STATIC_PLUGIN(CARFormat, theCARFormat)
+-  OB_STATIC_PLUGIN(CASTEPFormat, theCASTEPFormat)
+-  OB_STATIC_PLUGIN(CCCFormat, theCCCFormat)
+-  OB_STATIC_PLUGIN(CHEM3D1Format, theCHEM3D1Format)
+-  OB_STATIC_PLUGIN(CHEM3D2Format, theCHEM3D2Format)
+-  OB_STATIC_PLUGIN(ChemDrawBinaryXFormat, theChemDrawBinaryXFormat)
+-  OB_STATIC_PLUGIN(ChemDrawFormat, theChemDrawFormat)
+-  OB_STATIC_PLUGIN(ChemKinFormat, theChemKinFormat)
+-  OB_STATIC_PLUGIN(CHTFormat, theCHTFormat)
+-  OB_STATIC_PLUGIN(CIFFormat, theCIFFormat)
+-  OB_STATIC_PLUGIN(CopyFormat, theCopyFormat)
+-  OB_STATIC_PLUGIN(CRK2DFormat, theCRK2DFormat)
+-  OB_STATIC_PLUGIN(CRK3DFormat, theCRK3DFormat)
+-  OB_STATIC_PLUGIN(CSRFormat, theCSRFormat)
+-  OB_STATIC_PLUGIN(CSSRFormat, theCSSRFormat)
+-  OB_STATIC_PLUGIN(DlpolyConfigFormat, theDlpolyConfigFormat)
+-  OB_STATIC_PLUGIN(DlpolyHISTORYFormat, theDlpolyHISTORYFormat)
+-  OB_STATIC_PLUGIN(DMolFormat, theDMolFormat)
+-  OB_STATIC_PLUGIN(EXYZFormat, theEXYZFormat)
+-  OB_STATIC_PLUGIN(FASTAFormat, theFASTAFormat)
+-  OB_STATIC_PLUGIN(FastSearchFormat, theFastSearchFormat)
+-  OB_STATIC_PLUGIN(FCHKFormat, theFCHKFormat)
+-  OB_STATIC_PLUGIN(FEATFormat, theFEATFormat)
+-  OB_STATIC_PLUGIN(FenskeZmatFormat, theFenskeZmatFormat)
+-  OB_STATIC_PLUGIN(FHIaimsFormat,theFHIaimsFormat)
+-  OB_STATIC_PLUGIN(FingerprintFormat, theFingerprintFormat)
+-  OB_STATIC_PLUGIN(FreeFormFractionalFormat, theFreeFormFractionalFormat)
+-  OB_STATIC_PLUGIN(GAMESSOutputFormat, theGAMESSOutputFormat)
+-  OB_STATIC_PLUGIN(GAMESSInputFormat, theGAMESSInputFormat)
+-  OB_STATIC_PLUGIN(OBGaussianCubeFormat, theGaussianCubeFormat)
+-  OB_STATIC_PLUGIN(GaussianOutputFormat, theGaussianOutputFormat)
+-  OB_STATIC_PLUGIN(GaussianInputFormat, theGaussianInputFormat)
+-  OB_STATIC_PLUGIN(GaussianZMatrixInputFormat, theGaussianZMatrixInputFormat)
+-  OB_STATIC_PLUGIN(GenBankFormat, theGenBankFormat)
+-  OB_STATIC_PLUGIN(GhemicalFormat, theGhemicalFormat)
+-  OB_STATIC_PLUGIN(GROFormat, theGROFormat)
+-  OB_STATIC_PLUGIN(GROMOS96Format, theGROMOS96Format)
+-  OB_STATIC_PLUGIN(GULPFormat, theGULPFormat)
+-  OB_STATIC_PLUGIN(HINFormat, theHINFormat)
+-  OB_STATIC_PLUGIN(JaguarOutputFormat, theJaguarOutputFormat)
+-  OB_STATIC_PLUGIN(JaguarInputFormat, theJaguarInputFormat)
+-  OB_STATIC_PLUGIN(LMPDATFormat, theLMPDATFormat)
+-  OB_STATIC_PLUGIN(MCDLFormat, theMCDLFormat)
+-  OB_STATIC_PLUGIN(MOLFormat, theMOLFormat)
+   OB_STATIC_PLUGIN(SDFormat, theSDFormat)
+-  OB_STATIC_PLUGIN(OBT41Format, t41Format__)
+-  OB_STATIC_PLUGIN(OBMoldenFormat, moldenFormat__)
+-  OB_STATIC_PLUGIN(mmCIFFormat, themmCIFFormat)
+-  OB_STATIC_PLUGIN(MacroModFormat, theMacroModFormat)
+-  OB_STATIC_PLUGIN(MNAFormat, theMNAFormat)
+   OB_STATIC_PLUGIN(MOL2Format, theMOL2Format)
+-  OB_STATIC_PLUGIN(MolproOutputFormat, theMolproOutputFormat)
+-  OB_STATIC_PLUGIN(MolproInputFormat, theMolproInputFormat)
+-  OB_STATIC_PLUGIN(MolReportFormat, theMolReportFormat)
+-  OB_STATIC_PLUGIN(MOPACFormat, theMOPACFormat)
+-  OB_STATIC_PLUGIN(MOPACCARTFormat, theMOPACCARTFormat)
+-  OB_STATIC_PLUGIN(MOPACINTFormat, theMOPACINTFormat)
+-  OB_STATIC_PLUGIN(MPDFormat, theMPDFormat)
+-  OB_STATIC_PLUGIN(MPQCFormat, theMPQCFormat)
+-  OB_STATIC_PLUGIN(MPQCInputFormat, theMPQCInputFormat)
+-  OB_STATIC_PLUGIN(MSIFormat, theMSIFormat)
+-  OB_STATIC_PLUGIN(OBMSMSFormat, msmsFormat__)
+-  OB_STATIC_PLUGIN(NulFormat, theNulFormat)
+-  OB_STATIC_PLUGIN(NWChemOutputFormat, theNWChemOutputFormat)
+-  OB_STATIC_PLUGIN(NWChemInputFormat, theNWChemInputFormat)
+-  OB_STATIC_PLUGIN(OBOpenDXCubeFormat, theOpenDXCubeFormat)
+-  OB_STATIC_PLUGIN(OrcaOutputFormat, theOrcaOutputFormat)
+-  OB_STATIC_PLUGIN(OrcaInputFormat, theOrcaInputFormat)
+-  OB_STATIC_PLUGIN(OutputFormat, theOutputFormat)
+-  OB_STATIC_PLUGIN(PCModelFormat, thePCModelFormat)
+-  OB_STATIC_PLUGIN(PDBFormat, thePDBFormat)
+   OB_STATIC_PLUGIN(PDBQTFormat, thePDBQTFormat)
+-#ifdef HAVE_LIBZ
+-  OB_STATIC_PLUGIN(PNGFormat, thePNGFormat)
+-#endif
+-  OB_STATIC_PLUGIN(PointCloudFormat, thePointCloudFormat)
+-  OB_STATIC_PLUGIN(PovrayFormat, thePovrayFormat)
+-  OB_STATIC_PLUGIN(PQRFormat, thePQRFormat)
+-  OB_STATIC_PLUGIN(PQSFormat, thePQSFormat)
+-  OB_STATIC_PLUGIN(PWscfFormat, thePWscfFormat)
+-  OB_STATIC_PLUGIN(QChemOutputFormat, theQChemOutputFormat)
+-  OB_STATIC_PLUGIN(QChemInputFormat, theQChemInputFormat)
+-  OB_STATIC_PLUGIN(ReportFormat, theReportFormat)
+-  OB_STATIC_PLUGIN(SmiReactFormat, theSmiReactFormat)
+-  OB_STATIC_PLUGIN(RXNFormat, theRXNFormat)
+-  OB_STATIC_PLUGIN(ShelXFormat, theShelXFormat)
+-  OB_STATIC_PLUGIN(SMIFormat, theSMIFormat)
+-  OB_STATIC_PLUGIN(STLFormat, theSTLFormat)
+-  OB_STATIC_PLUGIN(CANSMIFormat, theCANSMIFormat)
+-  OB_STATIC_PLUGIN(FIXFormat, theFIXFormat)
+-  OB_STATIC_PLUGIN(SVGFormat, theSVGFormat)
+-  OB_STATIC_PLUGIN(TextFormat, theTextFormat)
+-  OB_STATIC_PLUGIN(ThermoFormat, theThermoFormat)
+-  OB_STATIC_PLUGIN(TinkerFormat, theTinkerFormat)
+-  OB_STATIC_PLUGIN(TitleFormat, theTitleFormat)
+-  OB_STATIC_PLUGIN(TurbomoleFormat, theTurbomoleFormat)
+-  OB_STATIC_PLUGIN(UniChemFormat, theUniChemFormat)
+-  OB_STATIC_PLUGIN(VASPFormat, theVASPFormat)
+-  OB_STATIC_PLUGIN(ViewMolFormat, theViewMolFormat)
+-  OB_STATIC_PLUGIN(XEDFormat, theXEDFormat)
+-  OB_STATIC_PLUGIN(XSFFormat, theXSFFormat)
+-  OB_STATIC_PLUGIN(XYZFormat, theXYZFormat)
+-  OB_STATIC_PLUGIN(YOBFormat, theYOBFormat)
+-  OB_STATIC_PLUGIN(ZINDOFormat, theZINDOFormat)
+-#ifdef HAVE_STATIC_LIBXML
+-  OB_STATIC_PLUGIN(ChemDrawXMLFormat, theChemDrawXMLFormat)
+-  OB_STATIC_PLUGIN(CMLFormat, theCMLFormat)
+-  OB_STATIC_PLUGIN(CMLReactFormat, theCMLReactFormat)
+-  OB_STATIC_PLUGIN(PubChemFormat, thePubChemFormat)
+-  OB_STATIC_PLUGIN(XMLFormat, theXMLFormat)
+-#endif
+-#ifdef HAVE_STATIC_INCHI
+-  OB_STATIC_PLUGIN(InChIFormat, theInChIFormat)
+-#endif
+-#ifdef HAVE_REGEX_H
+-  OB_STATIC_PLUGIN(GAMESSUKInputFormat, theGAMESSUKInputFormat)
+-  OB_STATIC_PLUGIN(GAMESSUKOutputFormat, theGAMESSUKOutputFormat)
+-#endif
+-#ifdef HAVE_RPC_XDR_H
+-  OB_STATIC_PLUGIN(XTCFormat, theXTCFormat)
+-#endif
+-
+-  // descriptors
+-  OB_STATIC_PLUGIN(CanSmiles, theCanSmiles)
+-  OB_STATIC_PLUGIN(CompoundFilter, dummyCmpFilter)
+-  OB_STATIC_PLUGIN(MWFilter, theMWFilter)
+-  OB_STATIC_PLUGIN(SmartsFilter, firstSmartsFilter)
+-  OB_STATIC_PLUGIN(SmartsFilter, secondSmartsFilter)
+-  OB_STATIC_PLUGIN(TitleFilter, theTitleFilter)
+-  OB_STATIC_PLUGIN(FormulaDescriptor, TheFormulaDescriptor)
+-  //OB_STATIC_PLUGIN(FPCount, theFPCount)
+-  OB_STATIC_PLUGIN(InChIFilter, theInChIFilter)
+-  // smarts descriptors
+-  OB_STATIC_PLUGIN(SmartsDescriptor, theHBD)
+-  OB_STATIC_PLUGIN(SmartsDescriptor, theHBA1)
+-  OB_STATIC_PLUGIN(SmartsDescriptor, theHBA2)
+-  OB_STATIC_PLUGIN(SmartsDescriptor, thenF)
+-  // group contribution descriptors
+-  OB_STATIC_PLUGIN(OBGroupContrib, thelogP)
+-  OB_STATIC_PLUGIN(OBGroupContrib, theTPSA)
+-  OB_STATIC_PLUGIN(OBGroupContrib, theMR)
+-
+-  // fingerprints
+-  OB_STATIC_PLUGIN(fingerprint2, thefingerprint2)
+-  OB_STATIC_PLUGIN(PatternFP, FP3PatternFP)
+-  OB_STATIC_PLUGIN(PatternFP, FP4PatternFP)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP0)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP2)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP4)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP6)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP8)
+-  OB_STATIC_PLUGIN(fingerprintECFP, theECFP10)
+-
+-  // forcefields
+-  OB_STATIC_PLUGIN(OBForceFieldGaff, theForceFieldGaff)
+-  OB_STATIC_PLUGIN(OBForceFieldGhemical, theForceFieldGhemical)
+-  OB_STATIC_PLUGIN(OBForceFieldMMFF94, theForceFieldMMFF94)
+-  OB_STATIC_PLUGIN(OBForceFieldMMFF94, theForceFieldMMFF94s)
+-  OB_STATIC_PLUGIN(OBForceFieldUFF, theForceFieldUFF)
+-
+-  // operations
+-  OB_STATIC_PLUGIN(OpAddInIndex, theOpAddInIndex)
+-  OB_STATIC_PLUGIN(OpAddPolarH, theOpAddPolarH)
+-  OB_STATIC_PLUGIN(OpAddNonPolarH, theOpAddNonPolarH)
+-  OB_STATIC_PLUGIN(OpChangeCell, theOpChangeCell)
+-  OB_STATIC_PLUGIN(OpCanonical, theOpCanonical)
+-  OB_STATIC_PLUGIN(OpDelPolarH, theOpDelPolarH)
+-  OB_STATIC_PLUGIN(OpDelNonPolarH, theOpDelNonPolarH)
+-  OB_STATIC_PLUGIN(OpFillUC, theOpFillUC)
+-  OB_STATIC_PLUGIN(OpEnergy, theOpEnergy)
+-  OB_STATIC_PLUGIN(OpMinimize, theOpMinimize)
+-  OB_STATIC_PLUGIN(OpGen2D, theOpGen2D)
+-  OB_STATIC_PLUGIN(OpGen3D, theOpGen3D)
+-  OB_STATIC_PLUGIN(OpNewS, theOpNewS)
+-  OB_STATIC_PLUGIN(OpPartialCharge, theOpPartialCharge)
+-  OB_STATIC_PLUGIN(OpReadConformers, theOpReadConformers)
+-  OB_STATIC_PLUGIN(OpSort, theOpSort)
+-  OB_STATIC_PLUGIN(OpExtraOut, theOpExtraOut)
+-#ifdef HAVE_STATIC_INCHI
+-  OB_STATIC_PLUGIN(OpUnique, theOpUnique)
+-#endif
+-#ifdef HAVE_EIGEN
+-  OB_STATIC_PLUGIN(OpConformer, theOpConformer)
+-#endif
+-
+-  // charges
+-  OB_STATIC_PLUGIN(GasteigerCharges, theGasteigerCharges)
+-  OB_STATIC_PLUGIN(MMFF94Charges, theMMFF94Charges)
+-  OB_STATIC_PLUGIN(NoCharges, theNoCharges)
+-  OB_STATIC_PLUGIN(FromFileCharges, theFromFileCharges)
+-#ifdef HAVE_EIGEN
+-  OB_STATIC_PLUGIN(QEqCharges, theQEqCharges)
+-  OB_STATIC_PLUGIN(QTPIECharges, theQTPIECharges)
+-#endif
+-#ifdef HAVE_EIGEN3
+-  OB_STATIC_PLUGIN(EQEqCharges, theEQEqCharges)
+-#endif
+   OBAPI std::vector<std::string> EnableStaticPlugins();
+ 
+ #endif // USING_DYNAMIC_LIBS
+diff -ruN openbabel-openbabel-3-1-1/openbabel.bzl openbabel-openbabel-3-1-1-new/openbabel.bzl
+--- openbabel-openbabel-3-1-1/openbabel.bzl	1969-12-31 19:00:00.000000000 -0500
++++ openbabel-openbabel-3-1-1-new/openbabel.bzl	2020-05-23 11:00:30.000000000 -0400
+@@ -0,0 +1,14 @@
++"""Helper rules to build openbabel library."""
++
++def ob_cc_library(name, srcs = [], hdrs = [], deps = [], **kwargs):
++    all_hdrs = hdrs + ["include/openbabel/babelconfig.h"]
++    native.cc_library(
++        name = name,
++        srcs = srcs,
++        hdrs = all_hdrs,
++        deps = deps,
++        includes = [
++            "include",
++            "data",
++        ],
++    )
+diff -ruN openbabel-openbabel-3-1-1/src/plugin.cpp openbabel-openbabel-3-1-1-new/src/plugin.cpp
+--- openbabel-openbabel-3-1-1/src/plugin.cpp	2020-05-08 11:38:02.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/src/plugin.cpp	2020-05-23 11:12:34.000000000 -0400
+@@ -228,218 +228,9 @@
+   // by compiler optimization.
+   std::vector<std::string> plugin_ids;
+   // formats
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theABINITFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theAcesOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theAcesInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theACRFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theADFOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theADFInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&t41Format__)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theAlchemyFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theAmberPrepFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theAoforceFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOBAPIInterface)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theBallStickFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theBGFFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theBoxFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCacaoFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCacheFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCARFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCASTEPFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCCCFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCHEM3D1Format)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCHEM3D2Format)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theChemDrawBinaryXFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theChemDrawFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theChemKinFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCHTFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCIFFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCopyFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCRK2DFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCRK3DFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCSRFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCSSRFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theDlpolyConfigFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theDlpolyHISTORYFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theDMolFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theEXYZFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFASTAFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFastSearchFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFCHKFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFEATFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFenskeZmatFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFHIaimsFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFingerprintFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFreeFormFractionalFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGAMESSOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGAMESSInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGaussianCubeFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGaussianOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGaussianInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGaussianZMatrixInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGenBankFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGhemicalFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGROFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGROMOS96Format)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGULPFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theHINFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theJaguarOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theJaguarInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theLMPDATFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMCDLFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMOLFormat)->GetID());
+   plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theSDFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&themmCIFFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMacroModFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMNAFormat)->GetID());
+   plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMOL2Format)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&moldenFormat__)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMolproOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMolproInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMolReportFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMOPACFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMOPACCARTFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMOPACINTFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMPDFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMPQCFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMPQCInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMSIFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&msmsFormat__)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theNulFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theNWChemOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theNWChemInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpenDXCubeFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePCModelFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePDBFormat)->GetID());
+   plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePDBQTFormat)->GetID());
+-#ifdef HAVE_LIBZ
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePNGFormat)->GetID());
+-#endif
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePointCloudFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePovrayFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePQRFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePQSFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePWscfFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theQChemOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theQChemInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theReportFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theSmiReactFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theRXNFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theShelXFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theSMIFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theSTLFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCANSMIFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFIXFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theSVGFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTextFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theThermoFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTinkerFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTitleFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTurbomoleFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theUniChemFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theVASPFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theViewMolFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theXEDFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theXSFFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theXYZFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theYOBFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theZINDOFormat)->GetID());
+-#ifdef HAVE_STATIC_LIBXML
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theChemDrawXMLFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCMLFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCMLReactFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thePubChemFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theXMLFormat)->GetID());
+-#endif
+-#ifdef HAVE_STATIC_INCHI
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theInChIFormat)->GetID());
+-#endif
+-#ifdef HAVE_RPC_XDR_H
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theXTCFormat)->GetID());
+-#endif
+-#ifdef HAVE_REGEX_H
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGAMESSUKInputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGAMESSUKOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOrcaOutputFormat)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOrcaInputFormat)->GetID());
+-#endif
+-
+-  // descriptors
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theCanSmiles)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&dummyCmpFilter)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMWFilter)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&firstSmartsFilter)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&secondSmartsFilter)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTitleFilter)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&TheFormulaDescriptor)->GetID());
+-  //plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFPCount)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theInChIFilter)->GetID());
+-  // smarts descriptors
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theHBD)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theHBA1)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theHBA2)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thenF)->GetID());
+-  // group contribution descriptors
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thelogP)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theTPSA)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMR)->GetID());
+-
+-  // fingerprints
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&thefingerprint2)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&FP3PatternFP)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&FP4PatternFP)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP0)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP2)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP4)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP6)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP8)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theECFP10)->GetID());
+-
+-  // forcefields
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theForceFieldGaff)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theForceFieldGhemical)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theForceFieldMMFF94)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theForceFieldMMFF94s)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theForceFieldUFF)->GetID());
+-
+-  // operations
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpAddInIndex)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpAddPolarH)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpAddNonPolarH)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpCanonical)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpDelPolarH)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpDelNonPolarH)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpFillUC)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpEnergy)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpMinimize)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpGen2D)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpGen3D)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpNewS)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpPartialCharge)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpReadConformers)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpSort)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpExtraOut)->GetID());
+-#ifdef HAVE_EIGEN
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpConformer)->GetID());
+-#endif
+-#ifdef HAVE_STATIC_INCHI
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theOpUnique)->GetID());
+-#endif
+-
+-  // charges
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theGasteigerCharges)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theMMFF94Charges)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theNoCharges)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theFromFileCharges)->GetID());
+-#ifdef HAVE_EIGEN
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theQEqCharges)->GetID());
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theQTPIECharges)->GetID());
+-#endif
+-#ifdef HAVE_EIGEN3
+-  plugin_ids.push_back(reinterpret_cast<OBPlugin*>(&theEQEqCharges)->GetID());
+-#endif
+-
+   return plugin_ids;
+ }
+ 

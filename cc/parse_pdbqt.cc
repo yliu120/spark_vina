@@ -525,6 +525,10 @@ std::vector<std::string> split_multiple_ligands(std::istream& file) {
     ligand.push_back('\n');
     ligand.append(std::move(line));
   }
+  // If the ligand buffer is not empty, we flush it.
+  if (!ligand.empty()) {
+    ligand_strs.push_back(std::move(ligand));
+  }
   return ligand_strs;
 }
 

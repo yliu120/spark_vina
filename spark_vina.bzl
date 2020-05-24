@@ -1,10 +1,10 @@
 # JNI specifically needs a .dylib to be loaded as a shared library though
 # Bazel builds .so libraries on Darwin platform.
-def jni_cc_binary(name,
-                  srcs=[],
-                  deps=[],
-                  copts=[],
-                  **kwargs):
+def sv_cc_shared_library(name,
+                         srcs=[],
+                         deps=[],
+                         copts=[],
+                         **kwargs):
   base_name = "lib" + name
   native.cc_binary(
       name = base_name + ".so",

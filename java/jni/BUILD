@@ -1,6 +1,6 @@
-load(":jni.bzl", "jni_cc_binary")
-
 package(default_visibility = ["//visibility:public"])
+
+load("//:spark_vina.bzl", "sv_cc_shared_library")
 
 filegroup(
     name = "srcs",
@@ -67,7 +67,7 @@ cc_library(
     alwayslink = 1,
 )
 
-jni_cc_binary(
+sv_cc_shared_library(
     name = "vina_jni_all",
     deps = [
         ":vina_jni",
