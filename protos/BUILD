@@ -35,6 +35,11 @@ proto_library(
     srcs = ["compound.proto"],
 )
 
+cc_proto_library(
+    name = "compound_cc_proto",
+    deps = [":compound_proto"],
+)
+
 java_proto_library(
     name = "compound_java_proto",
     deps = [":compound_proto"],
