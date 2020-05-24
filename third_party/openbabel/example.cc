@@ -1,6 +1,7 @@
 #include <string>
 
 #include "glog/logging.h"
+#include "gflags/gflags.h"
 #include "openbabel/obconversion.h"
 #include "openbabel/mol.h"
 
@@ -42,6 +43,7 @@ NO_CHARGES
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
+  google::ParseCommandLineFlags(&argc, &argv, true);
 
   OpenBabel::OBConversion conv;
   if (!conv.SetInAndOutFormats("mol2", "pdbqt")) {
