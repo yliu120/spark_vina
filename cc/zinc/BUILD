@@ -11,7 +11,6 @@ cc_library(
     deps = [
         "//protos:compound_cc_proto",
         "@absl//absl/strings",
-        "@absl//absl/types:span",
         "@glog",
         "@openbabel//:core",
         "@openbabel//:formats",

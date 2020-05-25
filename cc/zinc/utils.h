@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 #include "protos/compound.pb.h"
 
 namespace zinc {

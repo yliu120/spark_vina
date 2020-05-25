@@ -46,6 +46,7 @@ java_library(
     ],
     deps = [
         "//java/jni:vina_jni_all",
+        "//java/org/spark/tools:library_loader",
         "//protos:vina_java_proto",
         "@com_google_protobuf//:protobuf_java",
         "@maven//:com_google_guava_guava_29_0_jre",

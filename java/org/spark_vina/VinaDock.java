@@ -5,6 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.spark.tools.LibraryLoader;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
 /**
@@ -113,6 +114,8 @@ public final class VinaDock {
       long nativeHandle, String[] ligandStringArray, double filterLimit);
 
   static {
-    LibraryLoader.load();
+    if (!VinaTools.loaded()) {
+      LibraryLoader.load("vina_jni_all");
+    }
   }
 }

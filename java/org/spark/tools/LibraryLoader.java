@@ -1,4 +1,4 @@
-package org.spark_vina;
+package org.spark.tools;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,19 +19,18 @@ import org.slf4j.LoggerFactory;
  * question https://stackoverflow.com/questions/2937406/. Shamelessly copied some util code from
  * Tensorflow.
  */
-final class LibraryLoader {
+public final class LibraryLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LibraryLoader.class);
-  private static final String JNI_LIBNAME = "vina_jni_all";
 
-  public static void load() {
-    if (isLoaded() || tryLoadLibrary()) {
+  public static void load(String jniLibraryName) {
+    if (tryLoadLibrary(jniLibraryName)) {
       return;
     }
     // Native code is not present, perhaps it has been packaged into the .jar file containing this.
     // Extract the JNI library itself
     LOGGER.info("Load native JNI library failed. We then try to load from the standalone JAR.");
-    final String jniLibName = System.mapLibraryName(JNI_LIBNAME);
+    final String jniLibName = System.mapLibraryName(jniLibraryName);
     final String jniResourceName = makeResourceName(jniLibName);
     LOGGER.info("jniResourceName: " + jniResourceName);
     final InputStream jniResource =
@@ -56,27 +55,15 @@ final class LibraryLoader {
     }
   }
 
-  private static boolean tryLoadLibrary() {
+  private static boolean tryLoadLibrary(String jniLibName) {
     try {
-      LOGGER.info("Try load JNI library: " + JNI_LIBNAME);
-      System.loadLibrary(JNI_LIBNAME);
+      LOGGER.info("Try load JNI library: " + jniLibName);
+      System.loadLibrary(jniLibName);
       return true;
     } catch (UnsatisfiedLinkError e) {
       LOGGER.error("tryLoadLibraryFailed: " + e.getMessage());
       return false;
     }
-  }
-
-  private static boolean isLoaded() {
-    try {
-      if (VinaTools.loaded()) {
-        LOGGER.info("isLoaded: true");
-        return true;
-      }
-    } catch (UnsatisfiedLinkError e) {
-      return false;
-    }
-    return false;
   }
 
   private static String extractResource(
@@ -131,7 +118,7 @@ final class LibraryLoader {
 
   private static File createTemporaryDirectory() {
     File baseDirectory = new File(System.getProperty("java.io.tmpdir"));
-    String directoryName = "spark_vina_native_libraries-" + System.currentTimeMillis() + "-";
+    String directoryName = "native_libraries-" + System.currentTimeMillis() + "-";
     for (int attempt = 0; attempt < 1000; attempt++) {
       File temporaryDirectory = new File(baseDirectory, directoryName + attempt);
       if (temporaryDirectory.mkdir()) {
@@ -141,7 +128,7 @@ final class LibraryLoader {
     throw new IllegalStateException(
         "Could not create a temporary directory (tried to make "
             + directoryName
-            + "*) to extract SparkVina native libraries.");
+            + "*) to extract native libraries.");
   }
 
   private LibraryLoader() {}
