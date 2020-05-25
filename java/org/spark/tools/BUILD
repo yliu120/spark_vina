@@ -31,6 +31,7 @@ java_binary(
         "//:log4j.properties",
     ],
     deps = [
+        ":zinc_utils",
         "//:spark_vina_lib",
         "//java/org/spark_vina/util:pdbqt_parser_helper",
         "//java/org/spark_vina/util:zinc_helper",
