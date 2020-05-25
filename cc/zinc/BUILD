@@ -12,8 +12,7 @@ cc_library(
         "//protos:compound_cc_proto",
         "@absl//absl/strings",
         "@glog",
-        "@openbabel//:core",
-        "@openbabel//:formats",
+        "@openbabel//:supported_formats",
     ],
 )
 

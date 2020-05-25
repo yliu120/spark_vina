@@ -1,6 +1,6 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//:openbabel.bzl", "ob_cc_library")
+
+package(default_visibility = ["//visibility:public"])
 
 ob_cc_library(
     name = "tokenst",
@@ -66,11 +66,11 @@ ob_cc_library(
 
 ob_cc_library(
     name = "elements",
-    srcs = ["src/elements.cpp"],
-    hdrs = [
-        "include/openbabel/elements.h",
+    srcs = [
+        "src/elements.cpp",
         "src/elementtable.h",
     ],
+    hdrs = ["include/openbabel/elements.h"],
 )
 
 ob_cc_library(
@@ -122,7 +122,7 @@ ob_cc_library(
     name = "rand",
     srcs = [
         "src/rand.cpp",
-        "src/rand.h"
+        "src/rand.h",
     ],
 )
 
@@ -134,6 +134,7 @@ ob_cc_library(
         "src/bond.cpp",
         "src/bondtyper.cpp",
         "src/builder.cpp",
+        "src/canon.cpp",
         "src/chains.cpp",
         "src/data.cpp",
         "src/data_utilities.cpp",
@@ -156,6 +157,7 @@ ob_cc_library(
         "src/parsmart.cpp",
         "src/phmodel.cpp",
         "src/query.cpp",
+        "src/reactionfacade.cpp",
         "src/residue.cpp",
         "src/rotamer.cpp",
         "src/rotor.cpp",
@@ -185,6 +187,7 @@ ob_cc_library(
         "include/openbabel/bond.h",
         "include/openbabel/bondtyper.h",
         "include/openbabel/builder.h",
+        "include/openbabel/canon.h",
         "include/openbabel/chains.h",
         "include/openbabel/data.h",
         "include/openbabel/data_utilities.h",
@@ -200,26 +203,27 @@ ob_cc_library(
         "include/openbabel/math/spacegroup.h",
         "include/openbabel/math/transform3d.h",
         "include/openbabel/math/vector3.h",
+        "include/openbabel/mcdlutil.h",
         "include/openbabel/mol.h",
         "include/openbabel/molchrg.h",
-        "include/openbabel/mcdlutil.h",
         "include/openbabel/obfunctions.h",
         "include/openbabel/obiter.h",
         "include/openbabel/obutil.h",
         "include/openbabel/parsmart.h",
         "include/openbabel/phmodel.h",
         "include/openbabel/query.h",
-        "include/openbabel/rotamer.h",
-        "include/openbabel/rotor.h",
+        "include/openbabel/reactionfacade.h",
         "include/openbabel/residue.h",
         "include/openbabel/ring.h",
+        "include/openbabel/rotamer.h",
+        "include/openbabel/rotor.h",
         "include/openbabel/shared_ptr.h",
         "include/openbabel/stereo/cistrans.h",
         "include/openbabel/stereo/squareplanar.h",
         "include/openbabel/stereo/stereo.h",
         "include/openbabel/stereo/tetrahedral.h",
-        "include/openbabel/stereo/tetraplanar.h",
         "include/openbabel/stereo/tetranonplanar.h",
+        "include/openbabel/stereo/tetraplanar.h",
         "include/openbabel/typer.h",
     ],
     deps = [
@@ -228,10 +232,10 @@ ob_cc_library(
         ":elements",
         ":format",
         ":locale",
-        ":rand",
         ":obconversion",
         ":oberror",
         ":op",
+        ":rand",
     ],
     alwayslink = 1,
 )
@@ -249,12 +253,14 @@ ob_cc_library(
 )
 
 ob_cc_library(
-    name = "formats",
+    name = "supported_formats",
     srcs = [
-        "src/formats/mdlvalence.h",
         "src/formats/mdlformat.cpp",
+        "src/formats/mdlvalence.h",
         "src/formats/mol2format.cpp",
         "src/formats/pdbqtformat.cpp",
+        "src/formats/smilesformat.cpp",
+        "src/formats/smilesvalence.h",
     ],
     deps = [
         ":core",
@@ -262,4 +268,3 @@ ob_cc_library(
     ],
     alwayslink = 1,
 )
-

@@ -87,14 +87,14 @@ public final class ZincFilesToParquetMain {
       return;
     }
 
-    Optional<List<String>> ligandFilePaths = SparkVinaUtils
+    Optional<List<String>> mol2LigandFilePaths = SparkVinaUtils
         .getAllLigandFilesInDirectory(sourceDir, Pattern
-            .compile(".*.(pdbqt|pdbqt.gz)"));
+            .compile(".*.(mol2)"));
     Optional<List<String>> metaDataFilePaths = SparkVinaUtils
         .getAllLigandFilesInDirectory(sourceDir, Pattern
             .compile(".*.txt"));
-    if (!ligandFilePaths.isPresent() || ligandFilePaths.get().isEmpty()) {
-      LOGGER.error("Collecting ligand pdbqt files failed.");
+    if (!mol2LigandFilePaths.isPresent() || mol2LigandFilePaths.get().isEmpty()) {
+      LOGGER.error("Collecting mol2 files failed.");
       return;
     }
     if (!metaDataFilePaths.isPresent() || metaDataFilePaths.get().isEmpty()) {
@@ -102,43 +102,52 @@ public final class ZincFilesToParquetMain {
       return;
     }
 
-    SparkSession spark = SparkSession.builder().appName("ZincFilesToParquetMain").getOrCreate();
-    JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
-
-    LongAccumulator numCompounds = javaSparkContext.sc().longAccumulator("NumCompounds");
-
-    JavaRDD<Row> resultRows = javaSparkContext.parallelize(ligandFilePaths.get()).map(path -> {
-      List<String> ligandStrings = VinaTools.readLigandsToStrings(path);
-      List<Compound> compounds = new ArrayList<>(ligandStrings.size());
-      for (final String ligandString : ligandStrings) {
-        Optional<Compound> compound = PdbqtParserHelper.parseFeaturesFromPdbqtString(ligandString);
-        if (!compound.isPresent()) {
-          LOGGER.error("Ligand cannot be converted to a compound: {}", ligandString);
-          continue;
+    for (String path : mol2LigandFilePaths.get()) {
+      for (String mol2Ligand : ZincUtils.readAllMol2CompoundsFromFile(path)) {
+        Optional<Compound> compound = ZincUtils.convertMol2StringToPdbqtCompound(mol2Ligand);
+        if (compound.isPresent()) {
+          LOGGER.info("Converted compound:\n{}", compound.get().toString());
         }
-        compounds.add(compound.get());
       }
-      numCompounds.add(compounds.size());
-      return compounds;
-    }).flatMap(compounds -> compounds.iterator()).repartition(shards).distinct().map(compound -> {
-      HashMap<AtomType, Integer> countMap = new HashMap<>();
-      for (AtomFeatures features : compound.getAtomFeaturesList()) {
-        countMap.put(features.getAtomType(), features.getCount());
-      }
-      return RowFactory
-          .create(compound.getName(), compound.getMolecularWeight(), compound.getLogP(),
-              countMap.getOrDefault(AtomType.CARBON, 0),
-              countMap.getOrDefault(AtomType.NITROGEN, 0),
-              countMap.getOrDefault(AtomType.OXYGEN, 0),
-              countMap.getOrDefault(AtomType.PHOSPHORUS, 0),
-              countMap.getOrDefault(AtomType.SULFUR, 0), compound.getOriginalPdbqt());
-    });
+    }
 
-    spark
-        .createDataFrame(resultRows, getTableSchema())
-        .write()
-        .parquet(outputDir);
-    spark.stop();
+//    SparkSession spark = SparkSession.builder().appName("ZincFilesToParquetMain").getOrCreate();
+//    JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
+//
+////    LongAccumulator numCompounds = javaSparkContext.sc().longAccumulator("NumCompounds");
+//
+////    JavaRDD<Row> resultRows = javaSparkContext.parallelize(ligandFilePaths.get()).map(path -> {
+////      List<String> ligandStrings = VinaTools.readLigandsToStrings(path);
+////      List<Compound> compounds = new ArrayList<>(ligandStrings.size());
+////      for (final String ligandString : ligandStrings) {
+////        Optional<Compound> compound = PdbqtParserHelper.parseFeaturesFromPdbqtString(ligandString);
+////        if (!compound.isPresent()) {
+////          LOGGER.error("Ligand cannot be converted to a compound: {}", ligandString);
+////          continue;
+////        }
+////        compounds.add(compound.get());
+////      }
+////      numCompounds.add(compounds.size());
+////      return compounds;
+////    }).flatMap(compounds -> compounds.iterator()).repartition(shards).distinct().map(compound -> {
+////      HashMap<AtomType, Integer> countMap = new HashMap<>();
+////      for (AtomFeatures features : compound.getAtomFeaturesList()) {
+////        countMap.put(features.getAtomType(), features.getCount());
+////      }
+////      return RowFactory
+////          .create(compound.getName(), compound.getMolecularWeight(), compound.getLogP(),
+////              countMap.getOrDefault(AtomType.CARBON, 0),
+////              countMap.getOrDefault(AtomType.NITROGEN, 0),
+////              countMap.getOrDefault(AtomType.OXYGEN, 0),
+////              countMap.getOrDefault(AtomType.PHOSPHORUS, 0),
+////              countMap.getOrDefault(AtomType.SULFUR, 0), compound.getOriginalPdbqt());
+////    });
+//
+//    spark
+//        .createDataFrame(resultRows, getTableSchema())
+//        .write()
+//        .parquet(outputDir);
+//    spark.stop();
   }
 
   private static StructType getTableSchema() {
