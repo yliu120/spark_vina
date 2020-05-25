@@ -10,6 +10,13 @@ std::string JStringToString(JNIEnv* env, jstring j_str) {
   return result;
 }
 
+jbyteArray StringToJByteArray(JNIEnv* env, const std::string& str) {
+  jbyteArray arr = env->NewByteArray(str.length());
+  env->SetByteArrayRegion(arr, 0, str.length(),
+                          reinterpret_cast<const jbyte*>(str.c_str()));
+  return arr;
+}
+
 jclass GetArrayListClass(JNIEnv* env) {
   static const jclass kArrayListClass = static_cast<jclass>(
       env->NewGlobalRef(env->FindClass("java/util/ArrayList")));

@@ -10,7 +10,7 @@ namespace jni {
 
 std::string JStringToString(JNIEnv* env, jstring j_str);
 
-jstring StringToJString(JNIEnv* env, const std::string& str);
+jbyteArray StringToJByteArray(JNIEnv* env, const std::string& str);
 
 jclass GetArrayListClass(JNIEnv* env);
 

@@ -1,6 +1,7 @@
-package(default_visibility = ["//visibility:public"])
-
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//:spark_vina.bzl", "sv_cc_shared_library")
+
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "srcs",
@@ -21,9 +22,11 @@ genrule(
     name = "copy_jni_md_h",
     srcs = select({
         "@bazel_tools//src/conditions:darwin": [
-            "@bazel_tools//tools/jdk:jni_md_header-darwin"],
+            "@bazel_tools//tools/jdk:jni_md_header-darwin",
+        ],
         "@bazel_tools//src/conditions:darwin_x86_64": [
-            "@bazel_tools//tools/jdk:jni_md_header-darwin"],
+            "@bazel_tools//tools/jdk:jni_md_header-darwin",
+        ],
         "//conditions:default": ["@bazel_tools//tools/jdk:jni_md_header-linux"],
     }),
     outs = ["jni_md.h"],
@@ -46,7 +49,7 @@ cc_library(
         ":jni_headers",
     ],
     includes = ["."],
-    deps = []
+    deps = [],
 )
 
 cc_library(
@@ -67,11 +70,35 @@ cc_library(
     alwayslink = 1,
 )
 
+cc_library(
+    name = "zinc_utils_jni",
+    srcs = ["zinc_utils_jni.cc"],
+    hdrs = [
+        ":jni_headers",
+    ],
+    includes = ["."],
+    deps = [
+        ":jni_utils",
+        "//cc/zinc:utils",
+        "//protos:compound_cc_proto",
+    ],
+    alwayslink = 1,
+)
+
 sv_cc_shared_library(
     name = "vina_jni_all",
     deps = [
         ":vina_jni",
         "//cc:vina",
         "//protos:vina_cc_proto",
+    ],
+)
+
+sv_cc_shared_library(
+    name = "zinc_utils_jni_all",
+    deps = [
+        ":zinc_utils_jni",
+        "//cc/zinc:utils",
+        "//protos:compound_cc_proto",
     ],
 )
