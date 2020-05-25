@@ -34,6 +34,8 @@ Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string) {
   compound.set_name(molecule.GetTitle());
   compound.set_num_atoms(molecule.NumAtoms());
   compound.set_num_bonds(molecule.NumBonds());
+  compound.set_molecular_weight(molecule.GetMolWt());
+  compound.set_net_charge(molecule.GetTotalCharge());
   compound.set_original_pdbqt(obconversion->WriteString(&molecule));
 
   if (compound.original_pdbqt().empty()) {
