@@ -63,7 +63,10 @@ NO_NAME
   23   17   24 1
 )";
 
-TEST(ZincUtilsTest, NormalCase) {
+constexpr char kSmileString[] =
+    R"(C[C@H](CCC(=O)[O-])[C@H]1CC[C@H]2[C@@H]3[C@@H](O)C[C@@H]4C[C@H](O)CC[C@]4(C)[C@H]3CC[C@@]21C)";
+
+TEST(ZincUtilsTest, NormalPdbqtConversionCase) {
   Compound compound = ConvertMol2StringToPdbqtCompound(kMol2String);
   EXPECT_EQ(compound.name(), "ZINC000001531008");
   EXPECT_EQ(compound.num_atoms(), 24);
@@ -71,6 +74,14 @@ TEST(ZincUtilsTest, NormalCase) {
   EXPECT_NEAR(compound.molecular_weight(), 195.147, 0.01);
   EXPECT_EQ(compound.net_charge(), -1);
   EXPECT_FALSE(compound.original_pdbqt().empty());
+}
+
+TEST(ZincUtilsTest, NormalCase) {
+  Compound compound = GetMetadataFromSmileString(kSmileString);
+  EXPECT_EQ(compound.num_atoms(), 67);
+  EXPECT_EQ(compound.num_bonds(), 70);
+  EXPECT_NEAR(compound.molecular_weight(), 391.564, 0.01);
+  EXPECT_EQ(compound.net_charge(), -1);
 }
 
 }  // namespace

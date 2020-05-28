@@ -12,11 +12,6 @@ using ::jni::JStringToString;
 
 extern "C" {
 // Corresponding to VinaTools.readLigandsToStrings
-JNIEXPORT jboolean JNICALL
-Java_org_spark_1vina_VinaTools_loaded(JNIEnv* env, jobject clazz) {
-  return static_cast<jboolean>(true);
-}
-
 JNIEXPORT jobject JNICALL Java_org_spark_1vina_VinaTools_readLigandsToStrings(
     JNIEnv* env, jobject clazz, jstring ligand_path) {
   std::vector<std::string> cc_results =

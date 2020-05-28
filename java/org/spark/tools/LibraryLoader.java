@@ -4,6 +4,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +27,10 @@ import org.slf4j.LoggerFactory;
 public final class LibraryLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LibraryLoader.class);
+  private static ConcurrentMap<String, Boolean> isLibraryLoaded = new ConcurrentHashMap<>();
 
   public static void load(String jniLibraryName) {
-    if (tryLoadLibrary(jniLibraryName)) {
+    if (isLibraryLoaded.getOrDefault(jniLibraryName, false) || tryLoadLibrary(jniLibraryName)) {
       return;
     }
     // Native code is not present, perhaps it has been packaged into the .jar file containing this.
@@ -48,6 +54,7 @@ public final class LibraryLoader {
       tempPath.deleteOnExit();
       final String tempDirectory = tempPath.getCanonicalPath();
       System.load(extractResource(jniResource, jniLibName, tempDirectory));
+      isLibraryLoaded.put(jniLibraryName, true);
     } catch (IOException e) {
       throw new UnsatisfiedLinkError(
           String.format(
@@ -57,8 +64,9 @@ public final class LibraryLoader {
 
   private static boolean tryLoadLibrary(String jniLibName) {
     try {
-      LOGGER.info("Try load JNI library: " + jniLibName);
+      LOGGER.info("Try to load JNI library: " + jniLibName);
       System.loadLibrary(jniLibName);
+      isLibraryLoaded.put(jniLibName, true);
       return true;
     } catch (UnsatisfiedLinkError e) {
       LOGGER.error("tryLoadLibraryFailed: " + e.getMessage());
@@ -104,7 +112,7 @@ public final class LibraryLoader {
     try {
       byte[] buffer = new byte[1 << 20]; // 1MB
       long ret = 0;
-      int n = 0;
+      int n;
       while ((n = src.read(buffer)) >= 0) {
         dst.write(buffer, 0, n);
         ret += n;

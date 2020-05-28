@@ -11,6 +11,8 @@ namespace zinc {
 
 Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string);
 
+Compound GetMetadataFromSmileString(absl::string_view smile_string);
+
 }  // namespace zinc
 
 #endif  // CC_ZINC_UTILS_H_

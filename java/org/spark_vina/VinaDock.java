@@ -2,7 +2,7 @@ package org.spark_vina;
 
 import com.google.common.base.Optional;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.spark.tools.LibraryLoader;
@@ -19,7 +19,7 @@ import org.spark_vina.SparkVinaProtos.VinaResult;
  * @version 0.1
  * @since 2020-04-08
  */
-public final class VinaDock {
+public final class VinaDock implements AutoCloseable {
 
   private final long nativeHandle;
 
@@ -40,7 +40,6 @@ public final class VinaDock {
    * @param sizeZ The size on Z dimension
    * @param cpu The number of cpus used for this docking
    * @param numModes The number of modes returned.
-   * @return a VinaDock instance.
    */
   public VinaDock(
       final String receptorPath,
@@ -84,7 +83,7 @@ public final class VinaDock {
 
   public Optional<VinaResult> vinaFitSingleLigand(
       final String ligandString, final double filterLimit) {
-    final List<VinaResult> result = vinaFit(Arrays.asList(ligandString), filterLimit);
+    final List<VinaResult> result = vinaFit(Collections.singletonList(ligandString), filterLimit);
     return result.isEmpty() ? Optional.absent() : Optional.of(result.get(0));
   }
 
@@ -93,7 +92,7 @@ public final class VinaDock {
    * explicitly when the instance is no longer used.
    */
   @Override
-  protected void finalize() throws Throwable {
+  public void close() throws Exception {
     nativeDelete(nativeHandle);
   }
 
@@ -114,8 +113,6 @@ public final class VinaDock {
       long nativeHandle, String[] ligandStringArray, double filterLimit);
 
   static {
-    if (!VinaTools.loaded()) {
-      LibraryLoader.load("vina_jni_all");
-    }
+    LibraryLoader.load("vina_jni_all");
   }
 }

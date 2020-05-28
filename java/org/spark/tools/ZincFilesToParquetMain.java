@@ -29,16 +29,14 @@ import org.spark_vina.CompoundProtos.AtomFeatures;
 import org.spark_vina.CompoundProtos.AtomType;
 import org.spark_vina.CompoundProtos.Compound;
 import org.spark_vina.SparkVinaUtils;
-import org.spark_vina.VinaTools;
-import org.spark_vina.util.PdbqtParserHelper;
-import org.spark_vina.util.ZincHelper;
 
 public final class ZincFilesToParquetMain {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZincFilesToParquetMain.class);
   private static final int DEFAULT_NUM_SHARDS = 1;
+  private static final int MIN_PARTITIONS = 10;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     final Option sourceDirOption =
         Option.builder()
             .longOpt("source_dir")
@@ -66,7 +64,7 @@ public final class ZincFilesToParquetMain {
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
-    CommandLine cmdLine = null;
+    CommandLine cmdLine;
     try {
       cmdLine = parser.parse(options, args);
     } catch (ParseException parseException) {
@@ -102,17 +100,31 @@ public final class ZincFilesToParquetMain {
       return;
     }
 
-    for (String path : mol2LigandFilePaths.get()) {
-      for (String mol2Ligand : ZincUtils.readAllMol2CompoundsFromFile(path)) {
-        Optional<Compound> compound = ZincUtils.convertMol2StringToPdbqtCompound(mol2Ligand);
-        if (compound.isPresent()) {
-          LOGGER.info("Converted compound:\n{}", compound.get().toString());
-        }
-      }
-    }
+//    for (String path : mol2LigandFilePaths.get()) {
+//      for (String mol2Ligand : ZincUtils.readAllMol2CompoundsFromFile(path)) {
+//        Optional<Compound> compound = ZincUtils.convertMol2StringToPdbqtCompound(mol2Ligand);
+//        if (compound.isPresent()) {
+//          LOGGER.info("Converted compound:\n{}", compound.get().toString());
+//        }
+//      }
+//    }
 
-//    SparkSession spark = SparkSession.builder().appName("ZincFilesToParquetMain").getOrCreate();
-//    JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
+    SparkSession spark = SparkSession.builder().appName("ZincFilesToParquetMain").getOrCreate();
+    JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
+
+    JavaRDD<String> metaDataRDD = javaSparkContext
+        .textFile(String.join(",", metaDataFilePaths.get()), MIN_PARTITIONS);
+    JavaRDD<CompoundMetadata> compoundMetadataRDD = metaDataRDD
+        .map(CompoundMetadata::parseFromTSVLine);
+    long numUniqueCompound = compoundMetadataRDD.groupBy(CompoundMetadata::getSmileString)
+        .count();
+    long numUniqueZincID = compoundMetadataRDD.groupBy(CompoundMetadata::getZincId).count();
+    long numUniqueProtomerID = compoundMetadataRDD.groupBy(CompoundMetadata::getProtomerId)
+        .count();
+    LOGGER.info("The number of unique compounds is {}.", numUniqueCompound);
+    LOGGER.info("The number of unique zinc ID is {}.", numUniqueZincID);
+    LOGGER.info("The number of unique protomer ID is {}.", numUniqueProtomerID);
+
 //
 ////    LongAccumulator numCompounds = javaSparkContext.sc().longAccumulator("NumCompounds");
 //
@@ -147,7 +159,7 @@ public final class ZincFilesToParquetMain {
 //        .createDataFrame(resultRows, getTableSchema())
 //        .write()
 //        .parquet(outputDir);
-//    spark.stop();
+    spark.stop();
   }
 
   private static StructType getTableSchema() {

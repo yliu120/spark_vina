@@ -42,11 +42,6 @@ public final class VinaDockTest {
   }
 
   @Test
-  public void vinaJniLibsLoaded() {
-    assertTrue(VinaTools.loaded());
-  }
-
-  @Test
   public void vinaToolsReadLigandsToStrings() {
     List<String> ligandStrings =
         VinaTools.readLigandsToStrings("data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz");

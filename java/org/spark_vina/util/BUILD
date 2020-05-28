@@ -7,8 +7,8 @@ java_library(
     srcs = ["PdbqtParserHelper.java"],
     deps = [
         "//protos:compound_java_proto",
-        "@maven//:com_google_guava_guava_29_0_jre",
-        "@maven//:org_slf4j_slf4j_api_1_7_30",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )
 
@@ -16,6 +16,6 @@ java_library(
     name = "zinc_helper",
     srcs = ["ZincHelper.java"],
     deps = [
-        "@maven//:com_google_guava_guava_29_0_jre",
+        "@maven//:com_google_guava_guava",
     ],
 )

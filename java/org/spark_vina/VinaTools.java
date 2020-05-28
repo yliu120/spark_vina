@@ -6,11 +6,7 @@ import org.spark.tools.LibraryLoader;
 public final class VinaTools {
   public static native List<String> readLigandsToStrings(String ligandPath);
 
-  public static native boolean loaded();
-
   static {
-    if (!loaded()) {
-      LibraryLoader.load("vina_jni_all");
-    }
+    LibraryLoader.load("vina_jni_all");
   }
 }

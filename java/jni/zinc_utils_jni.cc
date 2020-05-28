@@ -20,4 +20,14 @@ Java_org_spark_tools_ZincUtils_convertMol2StringToPdbqtCompoundBytes(
   return jni::StringToJByteArray(env, compound.SerializeAsString());
 }
 
+// Corresponds to Java function:
+// org.spark.tools.ZincUtils.getMetadataFromSmileString
+JNIEXPORT jbyteArray JNICALL
+Java_org_spark_tools_ZincUtils_getMetadataFromSmileString(
+    JNIEnv* env, jobject clazz, jstring smile_string) {
+  Compound compound =
+      zinc::GetMetadataFromSmileString(JStringToString(env, smile_string));
+  return jni::StringToJByteArray(env, compound.SerializeAsString());
+}
+
 }  // extern "C"

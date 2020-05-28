@@ -184,14 +184,18 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "commons-cli:commons-cli:1.4",
-        "com.google.guava:guava:29.0-jre",
         "com.google.truth:truth:1.0.1",
+        "com.google.guava:guava:29.0-jre",
         "com.google.truth.extensions:truth-proto-extension:1.0.1",
         "junit:junit:4.13",
-        "org.apache.spark:spark-catalyst_2.11:2.4.5",
-        "org.apache.spark:spark-core_2.11:2.4.5",
-        "org.apache.spark:spark-sql_2.11:2.4.5",
-        "org.hamcrest:hamcrest-library:2.2",
+        "org.apache.hadoop:hadoop-mapreduce-client-core:3.2.1",
+        "org.apache.hadoop:hadoop-mapreduce-client-common:3.2.1",
+        "org.apache.hadoop:hadoop-mapreduce-client-app:3.2.1",
+        "org.apache.hadoop:hadoop-common:3.2.1",
+        "org.apache.spark:spark-catalyst_2.12:3.0.0-preview2",
+        "org.apache.spark:spark-core_2.12:3.0.0-preview2",
+        "org.apache.spark:spark-sql_2.12:3.0.0-preview2",
+        "org.hamcrest:hamcrest:2.2",
         "org.slf4j:slf4j-api:1.7.30",
     ],
     repositories = [
