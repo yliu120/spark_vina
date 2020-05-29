@@ -1,12 +1,10 @@
 package org.spark.tools;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,6 +13,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Row;
@@ -22,19 +21,17 @@ import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import org.apache.spark.util.LongAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spark_vina.CompoundProtos.AtomFeatures;
-import org.spark_vina.CompoundProtos.AtomType;
 import org.spark_vina.CompoundProtos.Compound;
 import org.spark_vina.SparkVinaUtils;
+import scala.Tuple2;
 
 public final class ZincFilesToParquetMain {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZincFilesToParquetMain.class);
-  private static final int DEFAULT_NUM_SHARDS = 1;
   private static final int MIN_PARTITIONS = 10;
+  private static final int DEFAULT_MOL2_PARTITIONS = 100;
 
   public static void main(String[] args) {
     final Option sourceDirOption =
@@ -43,13 +40,6 @@ public final class ZincFilesToParquetMain {
             .required()
             .hasArg()
             .desc("The directory of the ligand in pdbqt or pdbqt.gz format.")
-            .build();
-    final Option shardsOption =
-        Option.builder()
-            .longOpt("shards")
-            .required()
-            .hasArg()
-            .desc("The number of output shards.")
             .build();
     final Option outputDirOption =
         Option.builder()
@@ -60,7 +50,7 @@ public final class ZincFilesToParquetMain {
             .build();
 
     Options options = new Options();
-    options.addOption(sourceDirOption).addOption(shardsOption).addOption(outputDirOption);
+    options.addOption(sourceDirOption).addOption(outputDirOption);
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
@@ -74,10 +64,6 @@ public final class ZincFilesToParquetMain {
     }
 
     final String sourceDir = cmdLine.getOptionValue(sourceDirOption.getLongOpt());
-    final int shards =
-        cmdLine.hasOption(shardsOption.getLongOpt())
-            ? Integer.parseInt(cmdLine.getOptionValue(shardsOption.getLongOpt()))
-            : DEFAULT_NUM_SHARDS;
     final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
 
     if (!Files.exists(Paths.get(sourceDir))) {
@@ -100,77 +86,90 @@ public final class ZincFilesToParquetMain {
       return;
     }
 
-//    for (String path : mol2LigandFilePaths.get()) {
-//      for (String mol2Ligand : ZincUtils.readAllMol2CompoundsFromFile(path)) {
-//        Optional<Compound> compound = ZincUtils.convertMol2StringToPdbqtCompound(mol2Ligand);
-//        if (compound.isPresent()) {
-//          LOGGER.info("Converted compound:\n{}", compound.get().toString());
-//        }
-//      }
-//    }
-
     SparkSession spark = SparkSession.builder().appName("ZincFilesToParquetMain").getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
     JavaRDD<String> metaDataRDD = javaSparkContext
         .textFile(String.join(",", metaDataFilePaths.get()), MIN_PARTITIONS);
-    JavaRDD<CompoundMetadata> compoundMetadataRDD = metaDataRDD
-        .map(CompoundMetadata::parseFromTSVLine);
-    long numUniqueCompound = compoundMetadataRDD.groupBy(CompoundMetadata::getSmileString)
-        .count();
-    long numUniqueZincID = compoundMetadataRDD.groupBy(CompoundMetadata::getZincId).count();
-    long numUniqueProtomerID = compoundMetadataRDD.groupBy(CompoundMetadata::getProtomerId)
-        .count();
-    LOGGER.info("The number of unique compounds is {}.", numUniqueCompound);
-    LOGGER.info("The number of unique zinc ID is {}.", numUniqueZincID);
-    LOGGER.info("The number of unique protomer ID is {}.", numUniqueProtomerID);
+    JavaRDD<Tuple2<Compound, CompoundMetadata>> compoundMetadataRDD = metaDataRDD
+        .map(CompoundMetadata::parseFromTSVLine).groupBy(CompoundMetadata::getSmileString)
+        .mapValues(compoundMetadataList -> compoundMetadataList.iterator().next())
+        .map(tuple -> {
+          Optional<Compound> metadata = ZincUtils.getMetadataFromSmileString(tuple._1);
+          if (!metadata.isPresent()) {
+            LOGGER.error("Discard bad molecule with malformed Smile: {}", tuple._1);
+            return null;
+          }
+          return new Tuple2<>(metadata.get().toBuilder().setName(tuple._2.getZincId()).build(),
+              tuple._2);
+        }).filter(Objects::isNull);
 
-//
-////    LongAccumulator numCompounds = javaSparkContext.sc().longAccumulator("NumCompounds");
-//
-////    JavaRDD<Row> resultRows = javaSparkContext.parallelize(ligandFilePaths.get()).map(path -> {
-////      List<String> ligandStrings = VinaTools.readLigandsToStrings(path);
-////      List<Compound> compounds = new ArrayList<>(ligandStrings.size());
-////      for (final String ligandString : ligandStrings) {
-////        Optional<Compound> compound = PdbqtParserHelper.parseFeaturesFromPdbqtString(ligandString);
-////        if (!compound.isPresent()) {
-////          LOGGER.error("Ligand cannot be converted to a compound: {}", ligandString);
-////          continue;
-////        }
-////        compounds.add(compound.get());
-////      }
-////      numCompounds.add(compounds.size());
-////      return compounds;
-////    }).flatMap(compounds -> compounds.iterator()).repartition(shards).distinct().map(compound -> {
-////      HashMap<AtomType, Integer> countMap = new HashMap<>();
-////      for (AtomFeatures features : compound.getAtomFeaturesList()) {
-////        countMap.put(features.getAtomType(), features.getCount());
-////      }
-////      return RowFactory
-////          .create(compound.getName(), compound.getMolecularWeight(), compound.getLogP(),
-////              countMap.getOrDefault(AtomType.CARBON, 0),
-////              countMap.getOrDefault(AtomType.NITROGEN, 0),
-////              countMap.getOrDefault(AtomType.OXYGEN, 0),
-////              countMap.getOrDefault(AtomType.PHOSPHORUS, 0),
-////              countMap.getOrDefault(AtomType.SULFUR, 0), compound.getOriginalPdbqt());
-////    });
-//
-//    spark
-//        .createDataFrame(resultRows, getTableSchema())
-//        .write()
-//        .parquet(outputDir);
+    JavaRDD<Tuple2<Compound, String>> mol2RDD = javaSparkContext
+        .parallelize(mol2LigandFilePaths.get())
+        .flatMap(path -> ZincUtils.readAllMol2CompoundsFromFile(path).iterator())
+        .repartition(DEFAULT_MOL2_PARTITIONS)
+        .map(
+            mol2String -> {
+              Optional<Compound> mol2Metadata = ZincUtils.getMetadataFromMol2String(mol2String);
+              if (!mol2Metadata.isPresent()) {
+                LOGGER.error("Discard bad molecule with malformed mol2: {}", mol2String);
+                return null;
+              }
+              return new Tuple2<>(mol2Metadata.get(), mol2String);
+            }
+        )
+        .filter(Objects::isNull)
+        .groupBy(tuple -> tuple._1)
+        .map(
+            groupByResult -> new Tuple2<>(groupByResult._1, groupByResult._2.iterator().next()._2));
+
+    JavaRDD<Row> resultTable = JavaPairRDD.fromJavaRDD(compoundMetadataRDD)
+        .join(JavaPairRDD.fromJavaRDD(mol2RDD)).map(
+            compoundInfoTuple -> {
+              Optional<Compound> pdbqtCompound = ZincUtils
+                  .convertMol2StringToPdbqtCompound(compoundInfoTuple._2._2);
+              if (!pdbqtCompound.isPresent()) {
+                return null;
+              }
+              return RowFactory.create(
+                  compoundInfoTuple._2._1.getProtomerId(),
+                  compoundInfoTuple._1.getName(),
+                  compoundInfoTuple._1.getNumAtoms(),
+                  compoundInfoTuple._1.getNumBonds(),
+                  compoundInfoTuple._1.getMolecularWeight(),
+                  compoundInfoTuple._2._1.getApolarDesolvation(),
+                  compoundInfoTuple._2._1.getPolarDesolvation(),
+                  compoundInfoTuple._2._1.getPhLevel().name(),
+                  compoundInfoTuple._2._1.getLogP(),
+                  compoundInfoTuple._2._1.gethBondAcceptors(),
+                  compoundInfoTuple._2._1.gethBondDonors(),
+                  compoundInfoTuple._2._1.getRotatableBonds(),
+                  pdbqtCompound.get()
+              );
+            }
+        ).filter(Objects::isNull);
+
+    spark
+        .createDataFrame(resultTable, getTableSchema())
+        .write()
+        .parquet(outputDir);
     spark.stop();
   }
 
   private static StructType getTableSchema() {
-    return new StructType().add("name", DataTypes.StringType)
+    return new StructType()
+        .add("protomer_id", DataTypes.StringType)
+        .add("zinc_id", DataTypes.StringType)
+        .add("num_atoms", DataTypes.IntegerType)
+        .add("num_bonds", DataTypes.IntegerType)
         .add("molecular_weight", DataTypes.IntegerType)
+        .add("apolar_desolvation", DataTypes.DoubleType)
+        .add("polar_desolvation", DataTypes.DoubleType)
+        .add("ph_level", DataTypes.StringType)
         .add("logp", DataTypes.DoubleType)
-        .add("num_carbons", DataTypes.IntegerType)
-        .add("num_nitrogens", DataTypes.IntegerType)
-        .add("num_oxygens", DataTypes.IntegerType)
-        .add("num_phosphorus", DataTypes.IntegerType)
-        .add("num_sulfers", DataTypes.IntegerType)
+        .add("hbond_acceptors", DataTypes.IntegerType)
+        .add("hbond_donors", DataTypes.IntegerType)
+        .add("rotatable_bonds", DataTypes.IntegerType)
         .add("pdbqt", DataTypes.StringType);
   }
 }

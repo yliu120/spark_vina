@@ -1,5 +1,7 @@
 #include "cc/zinc/utils.h"
 
+#include <utility>
+
 #include "glog/logging.h"
 #include "openbabel/mol.h"
 #include "openbabel/obconversion.h"
@@ -8,6 +10,7 @@ namespace zinc {
 namespace {
 
 using ::OpenBabel::OBConversion;
+using ::OpenBabel::OBMol;
 
 OBConversion* GetMol2ToPdbqtOBConversion() {
   static OBConversion* const obconversion = []() {
@@ -32,24 +35,32 @@ OBConversion* GetSmilesOBConversion() {
   return obconversion;
 }
 
-}  // namespace
-
-Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string) {
+std::pair<OBMol, Compound> ConvertMol2StringToOBMol(
+    absl::string_view mol2_string) {
   Compound compound;
-  OBConversion* obconversion = GetMol2ToPdbqtOBConversion();
-  OpenBabel::OBMol molecule;
+  OBMol molecule;
 
-  if (!obconversion->ReadString(&molecule, std::string(mol2_string))) {
+  if (!GetMol2ToPdbqtOBConversion()->ReadString(&molecule,
+                                                std::string(mol2_string))) {
     LOG(ERROR) << "Unable to read mol2 string: " << mol2_string;
-    return compound;
+    return std::make_pair(molecule, compound);
   }
   compound.set_name(molecule.GetTitle());
   compound.set_num_atoms(molecule.NumAtoms());
   compound.set_num_bonds(molecule.NumBonds());
   compound.set_molecular_weight(molecule.GetMolWt());
   compound.set_net_charge(molecule.GetTotalCharge());
-  compound.set_original_pdbqt(obconversion->WriteString(&molecule));
+  return std::make_pair(molecule, compound);
+}
+}  // namespace
 
+Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string) {
+  Compound compound;
+  OBMol molecule;
+  std::tie(molecule, compound) = ConvertMol2StringToOBMol(mol2_string);
+
+  compound.set_original_pdbqt(
+      GetMol2ToPdbqtOBConversion()->WriteString(&molecule));
   if (compound.original_pdbqt().empty()) {
     LOG(ERROR) << "Unable to convert MOL2 string: " << mol2_string;
   }
@@ -58,10 +69,10 @@ Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string) {
 
 Compound GetMetadataFromSmileString(absl::string_view smile_string) {
   Compound compound;
-  OBConversion* obconversion = GetSmilesOBConversion();
-  OpenBabel::OBMol molecule;
+  OBMol molecule;
 
-  if (!obconversion->ReadString(&molecule, std::string(smile_string))) {
+  if (!GetSmilesOBConversion()->ReadString(&molecule,
+                                           std::string(smile_string))) {
     LOG(ERROR) << "Unable to read smile string: " << smile_string;
     return compound;
   }
@@ -71,6 +82,12 @@ Compound GetMetadataFromSmileString(absl::string_view smile_string) {
   compound.set_num_bonds(molecule.NumBonds());
   compound.set_molecular_weight(molecule.GetMolWt());
   compound.set_net_charge(molecule.GetTotalCharge());
+  return compound;
+}
+
+Compound GetMetadataFromMol2String(absl::string_view mol2_string) {
+  Compound compound;
+  std::tie(std::ignore, compound) = ConvertMol2StringToOBMol(mol2_string);
   return compound;
 }
 

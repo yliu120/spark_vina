@@ -43,6 +43,7 @@ java_binary(
         "@maven//:org_apache_spark_spark_catalyst_2_12",
         "@maven//:org_apache_spark_spark_core_2_12",
         "@maven//:org_apache_spark_spark_sql_2_12",
+        "@maven//:org_scala_lang_scala_library",
         "@maven//:org_slf4j_slf4j_api",
     ],
 )

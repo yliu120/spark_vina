@@ -1,6 +1,5 @@
 package org.spark.tools;
 
-import com.google.common.base.Optional;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.spark_vina.CompoundProtos.Compound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +20,32 @@ public final class ZincUtils {
     try {
       Compound compound = Compound.parseFrom(convertMol2StringToPdbqtCompoundBytes(mol2String));
       if (compound.getOriginalPdbqt().isEmpty()) {
-        return Optional.absent();
+        return Optional.empty();
       }
       return Optional.of(compound);
     } catch (InvalidProtocolBufferException e) {
       LOGGER.error("Unable to parse the returned PDBQT compound: {}", e.toString());
-      return Optional.absent();
+      return Optional.empty();
+    }
+  }
+
+  public static Optional<Compound> getMetadataFromSmileString(String smileString) {
+    try {
+      return Optional.of(Compound.parseFrom(getMetadataBytesFromSmileString(smileString)));
+    } catch (InvalidProtocolBufferException e) {
+      LOGGER.error("Unable to parse the returned compound for {}.", smileString);
+      LOGGER.error(e.getMessage());
+      return Optional.empty();
+    }
+  }
+
+  public static Optional<Compound> getMetadataFromMol2String(String mol2String) {
+    try {
+      return Optional.of(Compound.parseFrom(getMetadataBytesFromMol2String(mol2String)));
+    } catch (InvalidProtocolBufferException e) {
+      LOGGER.error("Unable to parse the returned compound for {}.", mol2String);
+      LOGGER.error(e.getMessage());
+      return Optional.empty();
     }
   }
 
@@ -59,6 +79,8 @@ public final class ZincUtils {
   }
 
   private static native byte[] convertMol2StringToPdbqtCompoundBytes(String mol2String);
+  private static native byte[] getMetadataBytesFromSmileString(String smileString);
+  private static native byte[] getMetadataBytesFromMol2String(String mol2String);
 
   static {
     LibraryLoader.load("zinc_utils_jni_all");

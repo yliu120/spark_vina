@@ -196,6 +196,7 @@ maven_install(
         "org.apache.spark:spark-core_2.12:3.0.0-preview2",
         "org.apache.spark:spark-sql_2.12:3.0.0-preview2",
         "org.hamcrest:hamcrest:2.2",
+        "org.scala-lang:scala-library:2.12.10",
         "org.slf4j:slf4j-api:1.7.30",
     ],
     repositories = [
