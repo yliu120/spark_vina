@@ -23,10 +23,10 @@
 #ifndef VINA_PARALLEL_PROGRESS_H
 #define VINA_PARALLEL_PROGRESS_H
 
-#include <boost/progress.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include "incrementable.h"
+#include "third_party/boost/progress.hpp"
 
 struct parallel_progress : public incrementable {
 	parallel_progress() : p(NULL) {}

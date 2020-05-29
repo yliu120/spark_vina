@@ -416,7 +416,7 @@ diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/plugin.h openbabel-openba
 diff -ruNa openbabel-openbabel-3-1-1/openbabel.bzl openbabel-openbabel-3-1-1-new/openbabel.bzl
 --- openbabel-openbabel-3-1-1/openbabel.bzl	1969-12-31 19:00:00.000000000 -0500
 +++ openbabel-openbabel-3-1-1-new/openbabel.bzl	2020-05-25 12:14:19.000000000 -0400
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,14 @@
 +"""Helper rules to build openbabel library."""
 +
 +def ob_cc_library(name, srcs = [], hdrs = [], deps = [], **kwargs):
@@ -426,7 +426,6 @@ diff -ruNa openbabel-openbabel-3-1-1/openbabel.bzl openbabel-openbabel-3-1-1-new
 +        srcs = srcs,
 +        hdrs = actual_hdrs,
 +        deps = deps,
-+        include_prefix = "include/",
 +        includes = [
 +            "include",
 +            "data",
