@@ -11,13 +11,13 @@ using ::jni::JStringToString;
 extern "C" {
 
 // Corresponds to Java function:
-// org.spark.tools.ZincUtils.convertMol2StringToPdbqtCompoundBytes
-JNIEXPORT jbyteArray JNICALL
-Java_org_spark_tools_ZincUtils_convertMol2StringToPdbqtCompoundBytes(
+// org.spark.tools.ZincUtils.convertMol2StringToPdbqtString
+JNIEXPORT jstring JNICALL
+Java_org_spark_tools_ZincUtils_convertMol2StringToPdbqtString(
     JNIEnv* env, jobject clazz, jstring mol2_string) {
-  Compound compound =
-      zinc::ConvertMol2StringToPdbqtCompound(JStringToString(env, mol2_string));
-  return jni::StringToJByteArray(env, compound.SerializeAsString());
+  std::string result_str =
+      zinc::ConvertMol2StringToPdbqtString(JStringToString(env, mol2_string));
+  return env->NewStringUTF(result_str.c_str());
 }
 
 // Corresponds to Java function:

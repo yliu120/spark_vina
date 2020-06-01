@@ -1,10 +1,10 @@
 package org.spark_vina;
 
-import com.google.common.base.Optional;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
@@ -156,7 +156,7 @@ public final class SparkVinaMain {
 
     // Parse the command lin arguments.
     CommandLineParser parser = new DefaultParser();
-    CommandLine cmdLine = null;
+    CommandLine cmdLine;
     try {
       cmdLine = parser.parse(options, args);
     } catch (ParseException parseException) {
@@ -281,12 +281,12 @@ public final class SparkVinaMain {
                 })
             .filter(
                 vinaResult -> {
-                  if (vinaResult.isPresent()) {
+                  boolean notNull = (vinaResult != null);
+                  if (notNull) {
                     numModelsFit.add(1);
                   }
-                  return vinaResult.isPresent();
+                  return notNull;
                 })
-            .map(Optional::get)
             .keyBy(vinaResult -> vinaResult.getLigandId())
             .groupByKey()
             .map(pair -> new DockingResult(pair._1, pair._2))

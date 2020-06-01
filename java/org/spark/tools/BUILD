@@ -1,18 +1,21 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 
-load("@rules_java//java:defs.bzl", "java_library", "java_binary")
+package(default_visibility = ["//visibility:public"])
 
 java_library(
     name = "library_loader",
     srcs = ["LibraryLoader.java"],
     deps = [
         "@maven//:org_slf4j_slf4j_api",
-    ]
+    ],
 )
 
 java_library(
     name = "zinc_utils",
     srcs = ["ZincUtils.java"],
+    resources = [
+        "//java/jni:zinc_utils_jni_all",
+    ],
     deps = [
         ":library_loader",
         "//java/jni:zinc_utils_jni_all",
@@ -20,15 +23,15 @@ java_library(
         "@com_google_protobuf//:protobuf_java",
         "@maven//:com_google_guava_guava",
         "@maven//:org_slf4j_slf4j_api",
-    ]
+    ],
 )
 
 java_binary(
     name = "zinc_files_to_parquet_main",
     srcs = [
-        "PhLevel.java",
         "CompoundMetadata.java",
-        "ZincFilesToParquetMain.java"
+        "PhLevel.java",
+        "ZincFilesToParquetMain.java",
     ],
     main_class = "org.spark.tools.ZincFilesToParquetMain",
     resources = [

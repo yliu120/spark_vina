@@ -16,17 +16,8 @@ import org.slf4j.LoggerFactory;
 public final class ZincUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZincUtils.class);
 
-  public static Optional<Compound> convertMol2StringToPdbqtCompound(String mol2String) {
-    try {
-      Compound compound = Compound.parseFrom(convertMol2StringToPdbqtCompoundBytes(mol2String));
-      if (compound.getOriginalPdbqt().isEmpty()) {
-        return Optional.empty();
-      }
-      return Optional.of(compound);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.error("Unable to parse the returned PDBQT compound: {}", e.toString());
-      return Optional.empty();
-    }
+  public static String convertMol2ToPdbqt(String mol2String) {
+    return convertMol2StringToPdbqtString(mol2String);
   }
 
   public static Optional<Compound> getMetadataFromSmileString(String smileString) {
@@ -78,7 +69,7 @@ public final class ZincUtils {
     }
   }
 
-  private static native byte[] convertMol2StringToPdbqtCompoundBytes(String mol2String);
+  private static native String convertMol2StringToPdbqtString(String mol2String);
   private static native byte[] getMetadataBytesFromSmileString(String smileString);
   private static native byte[] getMetadataBytesFromMol2String(String mol2String);
 

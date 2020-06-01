@@ -9,7 +9,7 @@
 
 namespace zinc {
 
-Compound ConvertMol2StringToPdbqtCompound(absl::string_view mol2_string);
+std::string ConvertMol2StringToPdbqtString(absl::string_view mol2_string);
 
 Compound GetMetadataFromSmileString(absl::string_view smile_string);
 

@@ -11,9 +11,9 @@ std::string JStringToString(JNIEnv* env, jstring j_str) {
 }
 
 jbyteArray StringToJByteArray(JNIEnv* env, const std::string& str) {
-  jbyteArray arr = env->NewByteArray(str.length());
-  env->SetByteArrayRegion(arr, 0, str.length(),
-                          reinterpret_cast<const jbyte*>(str.c_str()));
+  jbyteArray arr = env->NewByteArray(str.size());
+  env->SetByteArrayRegion(arr, 0, str.size(),
+                          reinterpret_cast<const jbyte*>(str.data()));
   return arr;
 }
 

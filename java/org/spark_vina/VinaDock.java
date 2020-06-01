@@ -1,9 +1,9 @@
 package org.spark_vina;
 
-import com.google.common.base.Optional;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.spark.tools.LibraryLoader;
 import org.spark_vina.SparkVinaProtos.VinaResult;
@@ -84,7 +84,7 @@ public final class VinaDock implements AutoCloseable {
   public Optional<VinaResult> vinaFitSingleLigand(
       final String ligandString, final double filterLimit) {
     final List<VinaResult> result = vinaFit(Collections.singletonList(ligandString), filterLimit);
-    return result.isEmpty() ? Optional.absent() : Optional.of(result.get(0));
+    return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
   }
 
   /**

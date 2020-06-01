@@ -1,6 +1,6 @@
 diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h openbabel-openbabel-3-1-1-new/include/openbabel/babelconfig.h
 --- openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h	1969-12-31 19:00:00.000000000 -0500
-+++ openbabel-openbabel-3-1-1-new/include/openbabel/babelconfig.h	2020-05-23 11:11:51.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/include/openbabel/babelconfig.h	2020-06-01 00:00:10.000000000 -0400
 @@ -0,0 +1,189 @@
 +/* src/config.h.in.  Generated from configure.in by autoheader.  */
 +
@@ -193,7 +193,7 @@ diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h openbabel-o
 +#endif
 diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/plugin.h openbabel-openbabel-3-1-1-new/include/openbabel/plugin.h
 --- openbabel-openbabel-3-1-1/include/openbabel/plugin.h	2020-05-08 11:38:02.000000000 -0400
-+++ openbabel-openbabel-3-1-1-new/include/openbabel/plugin.h	2020-05-25 12:17:40.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/include/openbabel/plugin.h	2020-05-31 23:57:22.000000000 -0400
 @@ -374,218 +374,11 @@
    OBAPI OB_EXTERN className instanceName;
  
@@ -415,7 +415,7 @@ diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/plugin.h openbabel-openba
  #endif // USING_DYNAMIC_LIBS
 diff -ruNa openbabel-openbabel-3-1-1/openbabel.bzl openbabel-openbabel-3-1-1-new/openbabel.bzl
 --- openbabel-openbabel-3-1-1/openbabel.bzl	1969-12-31 19:00:00.000000000 -0500
-+++ openbabel-openbabel-3-1-1-new/openbabel.bzl	2020-05-25 12:14:19.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/openbabel.bzl	2020-05-31 23:58:08.000000000 -0400
 @@ -0,0 +1,14 @@
 +"""Helper rules to build openbabel library."""
 +
@@ -431,9 +431,20 @@ diff -ruNa openbabel-openbabel-3-1-1/openbabel.bzl openbabel-openbabel-3-1-1-new
 +            "data",
 +        ]
 +    )
+diff -ruNa openbabel-openbabel-3-1-1/src/data.cpp openbabel-openbabel-3-1-1-new/src/data.cpp
+--- openbabel-openbabel-3-1-1/src/data.cpp	2020-05-08 11:38:02.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/src/data.cpp	2020-05-31 23:56:19.000000000 -0400
+@@ -703,6 +703,7 @@
+                 charBuffer[(p2 - p1)] = '\0';
+                 ParseLine(charBuffer);
+                 p1 = ++p2;
++                if (*p2 == '\0') break;
+               }
+         }
+       else
 diff -ruNa openbabel-openbabel-3-1-1/src/plugin.cpp openbabel-openbabel-3-1-1-new/src/plugin.cpp
 --- openbabel-openbabel-3-1-1/src/plugin.cpp	2020-05-08 11:38:02.000000000 -0400
-+++ openbabel-openbabel-3-1-1-new/src/plugin.cpp	2020-05-25 12:16:12.000000000 -0400
++++ openbabel-openbabel-3-1-1-new/src/plugin.cpp	2020-05-31 23:57:43.000000000 -0400
 @@ -228,218 +228,11 @@
    // by compiler optimization.
    std::vector<std::string> plugin_ids;

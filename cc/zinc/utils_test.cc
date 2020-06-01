@@ -67,13 +67,13 @@ constexpr char kSmileString[] =
     R"(C[C@H](CCC(=O)[O-])[C@H]1CC[C@H]2[C@@H]3[C@@H](O)C[C@@H]4C[C@H](O)CC[C@]4(C)[C@H]3CC[C@@]21C)";
 
 TEST(ZincUtilsTest, NormalPdbqtConversionCase) {
-  Compound compound = ConvertMol2StringToPdbqtCompound(kMol2String);
+  Compound compound = GetMetadataFromMol2String(kMol2String);
   EXPECT_EQ(compound.name(), "ZINC000001531008");
   EXPECT_EQ(compound.num_atoms(), 24);
   EXPECT_EQ(compound.num_bonds(), 23);
   EXPECT_NEAR(compound.molecular_weight(), 195.147, 0.01);
   EXPECT_EQ(compound.net_charge(), -1);
-  EXPECT_FALSE(compound.original_pdbqt().empty());
+  EXPECT_FALSE(ConvertMol2StringToPdbqtString(kMol2String).empty());
 }
 
 TEST(ZincUtilsTest, NormalCase) {

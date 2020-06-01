@@ -1,16 +1,16 @@
 package org.spark_vina;
 
-import com.google.common.base.Optional;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.Optional;
 import org.apache.spark.api.java.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spark_vina.SparkVinaProtos.VinaResult;
 
-public class FitCompoundFunction implements Function<String, Optional<VinaResult>> {
+public class FitCompoundFunction implements Function<String, VinaResult> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FitCompoundFunction.class);
   private static final String ZINC_PATTERN = "ZINC";
@@ -51,31 +51,31 @@ public class FitCompoundFunction implements Function<String, Optional<VinaResult
   }
 
   @Override
-  public Optional<VinaResult> call(String ligandString) throws Exception {
+  public VinaResult call(String ligandString) throws Exception {
     Optional<VinaResult> vinaResult = vinaDock.vinaFitSingleLigand(ligandString, filterLimit);
     if (!vinaResult.isPresent()) {
       LOGGER.warn("Cannot fit ligand: {}", ligandString);
-      return Optional.absent();
+      return null;
     }
-    Optional<String> ligandKey = parseLigandKey(vinaResult.get().getOriginalPdbqt());
-    if (!ligandKey.isPresent()) {
+    String ligandKey = parseLigandKey(vinaResult.get().getOriginalPdbqt());
+    if (ligandKey == null) {
       LOGGER.error("Ligand with no ZINC id: {}", vinaResult.get().getOriginalPdbqt());
-      return Optional.absent();
+      return null;
     }
-    return Optional.of(vinaResult.get().toBuilder().setLigandId(ligandKey.get()).build());
+    return vinaResult.get().toBuilder().setLigandId(ligandKey).build();
   }
 
-  private Optional<String> parseLigandKey(String ligandString) {
+  private String parseLigandKey(String ligandString) {
     String[] lines = ligandString.split("\\r?\\n");
     java.util.Optional<String> keyLine =
         Arrays.stream(lines).filter(line -> line.contains(ZINC_PATTERN)).findFirst();
     if (!keyLine.isPresent()) {
-      return Optional.absent();
+      return null;
     }
     String[] components = keyLine.get().split(" ");
-    java.util.Optional<String> ligandId =
+    Optional<String> ligandId =
         Arrays.stream(components).filter(word -> word.contains(ZINC_PATTERN)).findFirst();
-    return ligandId.isPresent() ? Optional.of(ligandId.get()) : Optional.absent();
+    return ligandId.isPresent() ? ligandId.get() : null;
   }
 
   private void readObject(ObjectInputStream inputStream)

@@ -1,5 +1,6 @@
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "openbabel/mol.h"
@@ -125,6 +126,43 @@ NO_NAME
   56   27   53 1
 )";
 
+constexpr const char* const kSmilesStrings[] = {
+    "O=C(Nc1ccc(Cl)cc1)Nc1ccc(Cl)c(Cl)c1",
+    "OC[C@H]1O[C@@H](Oc2ccc(O)cc2)[C@H](O)[C@@H](O)[C@@H]1O",
+    "COc1ccc(-c2cc(=O)c3c(O)cc([O-])cc3o2)cc1O",
+    "C=C1CC[C@H]2[C@@H](/"
+    "C=C(\C)C(=O)[C@@]3(OC(C)=O)C[C@H](C)[C@H](OC(=O)c4ccccc4)[C@@H]3[C@H]1OC("
+    "C)=O)C2(C)C",
+    "O=C(OCCO)c1ccccc1O",
+    "CCOc1cc2ncc(C#N)c(Nc3ccc(OCc4ccccn4)c(Cl)c3)c2cc1NC(=O)/C=C/CN(C)C",
+    "Nc1nc(-n2cc(C(=O)[O-])c(=O)c3cc(F)c(N4CC(O)C4)c(Cl)c32)c(F)cc1F",
+    "COC(=O)[C@H]1[C@@H](c2ccc(I)cc2)C[C@@H]2CC[C@H]1[N@@H+]2CCCF",
+    "CO[C@@H]1[C@H](N(C)C(=O)c2ccccc2)C[C@H]2O[C@]1(C)n1c3ccccc3c3c4c("
+    "c5c6ccccc6n2c5c31)C(=O)NC4",
+    "C[NH2+]CCC=C1c2ccccc2CCc2ccccc21",
+    "COC(=O)[C@H]1[C@H]2C[C@@H]3c4[nH]c5cc(OC)ccc5c4CCN3C[C@H]2C[C@@H](OC(=O)"
+    "c2cc(OC)c(OC)c(OC)c2)[C@@H]1OC",
+    "Cn1nc(C(=O)NC2C[C@@H]3CCC[C@H](C2)[N@@H+]3C)c2ccccc21",
+    "Cc1cc2nc3c(=O)[n-]c(=O)nc-3n(C[C@H](O)[C@H](O)[C@H](O)CO)c2cc1C"};
+
+void ParseSmileString(absl::string_view smile_string) {
+  OpenBabel::OBConversion conv;
+  OpenBabel::OBMol molecule;
+  if (!conv.SetInFormat("smi")) {
+    LOG(ERROR) << "Unable to load formats: smi.";
+    return;
+  }
+  if (!conv.ReadString(&molecule, std::string(smile_string))) {
+    LOG(ERROR) << "Unable to read smi string: " << smile_string;
+    return;
+  }
+  molecule.AddHydrogens();
+  LOG(INFO) << "Read molecule: " << molecule.NumAtoms() << " atoms & "
+            << molecule.NumBonds() << " bonds. "
+            << " (MW: " << molecule.GetMolWt()
+            << " Net Charge: " << molecule.GetTotalCharge() << ")\n";
+}
+
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -154,5 +192,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   LOG(INFO) << "\nConvert to pdbqt string: " << pdbqt_string;
+
+  for (const auto& smile_string : kSmilesStrings) {
+    ParseSmileString(smile_string);
+  }
   return 0;
 }

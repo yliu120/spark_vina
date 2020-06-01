@@ -34,7 +34,7 @@ message Compound {
   int32 num_atoms = 2;
   int32 num_bonds = 3;
   int32 net_charge = 4;
-  double molecular_weight = 5;
+  int32 molecular_weight_millis = 5;
   double logP = 6;
   string original_pdbqt = 7;
   repeated AtomFeatures atom_features = 8;

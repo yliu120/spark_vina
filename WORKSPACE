@@ -127,16 +127,16 @@ http_archive(
 
 http_archive(
     name = "openbabel",
-    strip_prefix = "openbabel-openbabel-3-1-1",
-    sha256 = "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02",
-    urls = [
-        "https://github.com/openbabel/openbabel/archive/openbabel-3-1-1.tar.gz",
-    ],
     build_file = "//third_party/openbabel:openbabel.BUILD",
+    patch_args = ["-p1"],
     patches = [
         "//third_party/openbabel:openbabel.patch",
     ],
-    patch_args = ["-p1"],
+    sha256 = "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02",
+    strip_prefix = "openbabel-openbabel-3-1-1",
+    urls = [
+        "https://github.com/openbabel/openbabel/archive/openbabel-3-1-1.tar.gz",
+    ],
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
