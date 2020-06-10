@@ -139,7 +139,7 @@ diff -ruNa openbabel-openbabel-3-1-1/include/openbabel/babelconfig.h openbabel-o
 +#define HAVE_SNPRINTF 1
 +
 +/* have symbol sranddev */
-+#define HAVE_SRANDDEV 1
++#define DUMMY 1
 +
 +/* have symbol strcasecmp */
 +#define HAVE_STRCASECMP 1
