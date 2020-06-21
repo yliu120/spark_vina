@@ -49,6 +49,9 @@ cc_test(
     data = [
         "//data:test_data",
     ],
+    linkopts = [
+        "-lprofiler",
+    ],
     deps = [
         ":vina",
         "@com_google_googletest//:gtest",

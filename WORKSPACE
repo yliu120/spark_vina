@@ -49,6 +49,16 @@ http_archive(
 )
 
 http_archive(
+    name = "eigen",
+    build_file = "//third_party:eigen.BUILD",
+    sha256 = "d56fbad95abf993f8af608484729e3d87ef611dd85b3380a8bad1d5cbc373a57",
+    strip_prefix = "eigen-3.3.7",
+    urls = [
+        "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/eigen-3.3.7.tar.gz",
+    ],
+)
+
+http_archive(
     name = "swig",
     build_file = "//third_party/swig:swig.BUILD",
     sha256 = "7cf9f447ae7ed1c51722efc45e7f14418d15d7a1e143ac9f09a668999f4fc94d",
@@ -136,6 +146,15 @@ http_archive(
     strip_prefix = "openbabel-openbabel-3-1-1",
     urls = [
         "https://github.com/openbabel/openbabel/archive/openbabel-3-1-1.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "com_google_benchmark",
+    sha256 = "23082937d1663a53b90cb5b61df4bcc312f6dee7018da78ba00dd6bd669dfef2",
+    strip_prefix = "benchmark-1.5.1",
+    urls = [
+        "https://github.com/google/benchmark/archive/v1.5.1.tar.gz",
     ],
 )
 
