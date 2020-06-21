@@ -86,7 +86,10 @@ http_archive(
     name = "absl",
     sha256 = "f41868f7a938605c92936230081175d1eae87f6ea2c248f41077c8f88316f111",
     strip_prefix = "abseil-cpp-20200225.2",
-    url = "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
+    urls = [
+        "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
+	"https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/abslcpp.tar.gz",
+    ],
 )
 
 # rules_cc defines rules for generating C++ code from Protocol Buffers.
@@ -130,6 +133,7 @@ http_archive(
     sha256 = "cf754718b0aa945b00550ed7962ddc167167bd922b842199eeb6505e6f344852",
     strip_prefix = "protobuf-3.11.3",
     urls = [
+        "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/protobuf-3.11.3.tar.gz",
         "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
         "https://github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
     ],
@@ -145,6 +149,7 @@ http_archive(
     sha256 = "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02",
     strip_prefix = "openbabel-openbabel-3-1-1",
     urls = [
+	"https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/openbabel-3-1-1.tar.gz",
         "https://github.com/openbabel/openbabel/archive/openbabel-3-1-1.tar.gz",
     ],
 )
@@ -195,7 +200,10 @@ http_archive(
     name = "rules_jvm_external",
     sha256 = RULES_JVM_EXTERNAL_SHA,
     strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
-    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+    urls = [
+        "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/rules_external_jvm-%s.zip" % RULES_JVM_EXTERNAL_TAG,
+        "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+    ],
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -219,6 +227,9 @@ maven_install(
         "org.slf4j:slf4j-api:1.7.30",
     ],
     repositories = [
+	"https://maven.aliyun.com/repository/public",
+	"https://maven.aliyun.com/repository/google",
+	"https://maven.aliyun.com/repository/apache-snapshots",
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
