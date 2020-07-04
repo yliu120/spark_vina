@@ -9,6 +9,8 @@
 
 #include "protos/vina.pb.h"
 
+#include "absl/types/optional.h"
+
 // This is a util method that read ligand files to a list of strings.
 // This is just an interface to expose the split method in parse_pdbqt.
 std::vector<std::string> read_ligand_to_strings(const std::string& ligand_path);
@@ -23,6 +25,8 @@ class VinaDock {
                     double center_x, double center_y, double center_z,
                     double size_x, double size_y, double size_z, int cpu,
                     int num_modes);
+
+  void SetRandomSeed(int seed) { seed_ = seed; };
 
   std::vector<VinaResult> vina_fit(const std::vector<std::string>& ligand_strs,
                                    double filter_limit);
@@ -39,6 +43,7 @@ class VinaDock {
   double size_z_;
   int cpu_;
   int num_modes_;
+  absl::optional<int> seed_;
 };
 
 #endif  // CC_VINA_H_

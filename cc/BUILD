@@ -36,6 +36,7 @@ cc_library(
         ":parse_pdbqt",
         "//protos:vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
+        "@absl//absl/types:optional",
         "@boost//:filesystem",
         "@boost//:program_options",
         "@boost//:thread",
@@ -49,12 +50,21 @@ cc_test(
     data = [
         "//data:test_data",
     ],
-    linkopts = [
-        "-lprofiler",
+    deps = [
+        ":vina",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "vina_benchmark",
+    srcs = ["vina_benchmark.cc"],
+    data = [
+        "//data:test_data",
     ],
     deps = [
         ":vina",
-        "@com_google_googletest//:gtest",
+        "@com_google_benchmark//:benchmark",
         "@com_google_googletest//:gtest_main",
     ],
 )

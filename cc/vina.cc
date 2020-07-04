@@ -254,7 +254,7 @@ std::vector<VinaResult> VinaDock::vina_fit(
       system.append(ligand_model.second);
       boost::optional<model> ref;
 
-      int seed = auto_seed();
+      int seed = seed_.has_value() ? *seed_ : auto_seed();
 
       VinaResult result;
       try {
