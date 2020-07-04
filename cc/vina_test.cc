@@ -8,6 +8,8 @@
 
 namespace {
 
+constexpr int kRandomSeed = 12345;
+
 TEST(VinaDockTest, SplitLigandsInFile) {
   std::string ligand_path = "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
   std::vector<std::string> ligand_strs = read_ligand_to_strings(ligand_path);
@@ -19,11 +21,19 @@ TEST(VinaDockTest, VinaDock) {
   std::string ligand_path = "data/ligands/HB/AAMM/HBAAMM.xaa.pdbqt.gz";
 
   std::vector<std::string> ligand_strs = read_ligand_to_strings(ligand_path);
-  EXPECT_EQ(ligand_strs.size(), 2);
+  ASSERT_EQ(ligand_strs.size(), 2);
 
-  VinaDock vina_dock(receptor_path, 0, 0, 0, 30, 30, 30, 4, 8);
+  VinaDock vina_dock(receptor_path, 170.0, -110.0, -110.0, 10, 10, 10, 4, 4);
+  vina_dock.SetRandomSeed(kRandomSeed);
   std::vector<VinaResult> affinities = vina_dock.vina_fit(ligand_strs, 1.0);
-  EXPECT_EQ(affinities.size(), 2);
+  ASSERT_EQ(affinities.size(), 2);
+
+  // Compares the affinities of the first two models of each docking is
+  // sufficient for guarding the correctness.
+  EXPECT_NEAR(affinities[0].models(0).affinity(), -5.349553, 1e-5);
+  EXPECT_NEAR(affinities[0].models(1).affinity(), -4.854657, 1e-5);
+  EXPECT_NEAR(affinities[1].models(0).affinity(), -6.157632, 1e-5);
+  EXPECT_NEAR(affinities[1].models(1).affinity(), -5.653163, 1e-5);
 }
 
 }  // namespace
