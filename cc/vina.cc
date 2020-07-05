@@ -25,9 +25,6 @@
 
 #include "cc/vina.h"
 
-#include <boost/filesystem/convenience.hpp>  // filesystem::basename
-#include <boost/filesystem/exception.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
 #include <cmath>                    // for ceila
@@ -44,7 +41,6 @@
 #include "third_party/vina/lib/current_weights.h"
 #include "third_party/vina/lib/everything.h"
 #include "third_party/vina/lib/file.h"
-#include "third_party/vina/lib/naive_non_cache.h"
 #include "third_party/vina/lib/non_cache.h"
 #include "third_party/vina/lib/parallel_mc.h"
 #include "third_party/vina/lib/quasi_newton.h"
@@ -52,7 +48,6 @@
 #include "third_party/vina/lib/weighted_terms.h"
 
 namespace {
-using boost::filesystem::path;
 
 // -0.035579, -0.005156, 0.840245, -0.035069, -0.587439, 0.05846
 // These constants are copied from the original vina/main/main.cpp

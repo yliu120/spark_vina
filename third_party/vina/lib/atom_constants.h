@@ -23,6 +23,7 @@
 #ifndef VINA_ATOM_CONSTANTS_H
 #define VINA_ATOM_CONSTANTS_H
 
+#include "absl/strings/string_view.h"
 #include "common.h"
 
 // based on SY_TYPE_* but includes H
@@ -237,8 +238,8 @@ const std::string non_ad_metal_names[] = { // expand as necessary
 	"Cu", "Fe", "Na", "K", "Hg", "Co", "U", "Cd", "Ni"
 };
 
-inline bool is_non_ad_metal_name(const std::string& name) {
-	const sz s = sizeof(non_ad_metal_names) / sizeof(const std::string);
+inline bool is_non_ad_metal_name(absl::string_view name) {
+  const sz s = sizeof(non_ad_metal_names) / sizeof(const std::string);
 	VINA_FOR(i, s)
 		if(non_ad_metal_names[i] == name)
 			return true;
@@ -282,7 +283,7 @@ inline const atom_kind& ad_type_property(sz i) {
     return atom_kind_data[i];
 }
 
-inline sz string_to_ad_type(const std::string& name) { // returns AD_TYPE_SIZE if not found (no exceptions thrown, because metals unknown to AD4 are not exceptional)
+inline sz string_to_ad_type(absl::string_view name) { // returns AD_TYPE_SIZE if not found (no exceptions thrown, because metals unknown to AD4 are not exceptional)
     VINA_FOR(i, atom_kinds_size)
 		if(atom_kind_data[i].name == name)
 			return i;

@@ -23,7 +23,6 @@ cc_test(
     ],
     deps = [
         ":parse_pdbqt",
-        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
