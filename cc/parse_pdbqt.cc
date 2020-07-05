@@ -2,10 +2,8 @@
 
 #include "cc/parse_pdbqt.h"
 
-#include <boost/filesystem/fstream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>  // for noncopyable
 #include <cctype>
@@ -13,8 +11,11 @@
 #include <sstream>
 #include <string>
 
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "third_party/vina/lib/atom_constants.h"
-#include "third_party/vina/lib/convert_substring.h"
 #include "third_party/vina/lib/file.h"
 #include "third_party/vina/lib/parse_error.h"
 
@@ -67,44 +68,35 @@ struct atom_syntax_error {
   explicit atom_syntax_error(const std::string& nature_) : nature(nature_) {}
 };
 
-template <typename T>
-T checked_convert_substring(const std::string& str, sz i, sz j,
-                            const std::string& dest_nature) {
-  VINA_CHECK(i >= 1);
-  VINA_CHECK(i <= j + 1);
-  if (j > str.size()) throw atom_syntax_error("The line is too short");
+parsed_atom parse_pdbqt_atom_string(absl::string_view atom_string) {
+  int atom_number = 0;
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+  double charge = 0.0;
 
-  // omit leading whitespace
-  while (i <= j && std::isspace(str[i - 1])) ++i;
-
-  const std::string substr = str.substr(i - 1, j - i + 1);
-  try {
-    return boost::lexical_cast<T>(substr);
-  } catch (...) {
-    throw atom_syntax_error(std::string("\"") + substr + "\" is not a valid " +
-                            dest_nature);
+  if (absl::SimpleAtoi(atom_string.substr(6, 5), &atom_number) &&
+      absl::SimpleAtod(atom_string.substr(30, 8), &x) &&
+      absl::SimpleAtod(atom_string.substr(38, 8), &y) &&
+      absl::SimpleAtod(atom_string.substr(46, 8), &z) &&
+      absl::SimpleAtod(atom_string.substr(68, 8), &charge)) {
+    // The last column element is left-aligned as the above example shows.
+    absl::string_view name = absl::StripSuffix(atom_string.substr(77, 2), " ");
+    parsed_atom result(string_to_ad_type(name), charge, vec(x, y, z),
+                       atom_number);
+    if (is_non_ad_metal_name(name)) {
+      result.xs = XS_TYPE_Met_D;
+    }
+    if (result.acceptable_type()) {
+      return result;
+    }
+    // TODO: clears all throw.
+    throw atom_syntax_error(
+        absl::StrCat(name,
+                     "is not a valid AutoDock type. Note that AutoDock atome "
+                     "types are case-sensitives."));
   }
-}
-
-parsed_atom parse_pdbqt_atom_string(const std::string& str) {
-  unsigned number =
-      checked_convert_substring<unsigned>(str, 7, 11, "atom number");
-  vec coords(checked_convert_substring<fl>(str, 31, 38, "coordinate"),
-             checked_convert_substring<fl>(str, 39, 46, "coordinate"),
-             checked_convert_substring<fl>(str, 47, 54, "coordinate"));
-  fl charge = 0;
-  if (!substring_is_blank(str, 69, 76))
-    charge = checked_convert_substring<fl>(str, 69, 76, "charge");
-  std::string name = omit_whitespace(str, 78, 79);
-  sz ad = string_to_ad_type(name);
-  parsed_atom tmp(ad, charge, coords, number);
-  if (is_non_ad_metal_name(name)) tmp.xs = XS_TYPE_Met_D;
-  if (tmp.acceptable_type())
-    return tmp;
-  else
-    throw atom_syntax_error(std::string("\"") + name +
-                            "\" is not a valid AutoDock type. Note that "
-                            "AutoDock atom types are case-sensitive.");
+  throw atom_syntax_error(absl::StrCat("Cannot parse atom line: ", atom_string));
 }
 
 struct atom_reference {
@@ -326,8 +318,7 @@ void parse_pdbqt_branch_aux(std::istream& in, unsigned& count,
     }
   if (i == p.atoms.size())
     throw stream_parse_error(
-        count, "No atom number " + boost::lexical_cast<std::string>(first) +
-                   " in this branch");
+        count, absl::StrCat("No atom number ", first, " in this branch"));
 }
 
 void parse_pdbqt_aux(std::istream& in, unsigned& count, parsing_struct& p,
@@ -484,8 +475,8 @@ void parse_pdbqt_branch(std::istream& in, unsigned& count, parsing_struct& p,
         throw stream_parse_error(count, "Inconsistent branch numbers");
       if (!p.immobile_atom)
         throw stream_parse_error(
-            count, "Atom " + boost::lexical_cast<std::string>(to) +
-                       " has not been found in this branch");
+            count,
+            absl::StrCat("Atom ", to, " has not been found in this branch"));
       return;
     } else if (starts_with(str, "ATOM  ") || starts_with(str, "HETATM")) {
       try {
