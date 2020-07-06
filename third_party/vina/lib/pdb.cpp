@@ -20,10 +20,15 @@
 
 */
 
+#include <string>
+
+#include "absl/strings/numbers.h"
+#include "absl/strings/string_view.h"
 #include "pdb.h"
 #include "parse_error.h"
 #include "file.h"
-#include "convert_substring.h"
+
+struct bad_conversion {};
 
 void pdb::check(fl min_distance) const {
 	VINA_FOR_IN(i, atoms) {
@@ -42,19 +47,21 @@ void pdb::check(fl min_distance) const {
 	}
 }
 
-pdb_atom string_to_pdb_atom(const std::string& str) {
-	if(str.size() < 66) throw bad_conversion(); // b-factor is in 61-66
-	pdb_atom tmp;
-	tmp.id           = convert_substring<unsigned>   (str,  7, 11);
-	tmp.name         = convert_substring<std::string>(str, 13, 16);
-	tmp.residue_id   = convert_substring<int>        (str, 23, 26);
-	tmp.residue_name = convert_substring<std::string>(str, 18, 20);
-	tmp.coords[0]    = convert_substring<fl>         (str, 31, 38);
-	tmp.coords[1]    = convert_substring<fl>         (str, 39, 46);
-	tmp.coords[2]    = convert_substring<fl>         (str, 47, 54);
-	tmp.b_factor     = convert_substring<fl>         (str, 61, 66);
-	tmp.element      = convert_substring<std::string>(str, 77, 78);
-	return tmp;
+pdb_atom string_to_pdb_atom(absl::string_view atom_string) {
+  if (atom_string.size() < 66) throw bad_conversion();  // b-factor is in 61-66
+  pdb_atom result;
+  if (absl::SimpleAtoi(atom_string.substr(6, 5), &result.id) &&
+      absl::SimpleAtoi(atom_string.substr(22, 4), &result.residue_id) &&
+      absl::SimpleAtod(atom_string.substr(30, 8), &result.coords[0]) &&
+      absl::SimpleAtod(atom_string.substr(38, 8), &result.coords[1]) &&
+      absl::SimpleAtod(atom_string.substr(46, 8), &result.coords[2]) &&
+      absl::SimpleAtod(atom_string.substr(60, 6), &result.b_factor)) {
+    result.name = std::string(atom_string.substr(12, 4));
+    result.residue_name = std::string(atom_string.substr(17, 3));
+    result.element = std::string(atom_string.substr(76, 2));
+    return result;
+  }
+  throw bad_conversion();
 }
 
 pdb parse_pdb(const path& name) {

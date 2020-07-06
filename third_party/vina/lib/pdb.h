@@ -26,7 +26,7 @@
 #include "common.h"
 
 struct pdb_atom {
-	unsigned id;
+	int id;
 	std::string name;
 	std::string residue_name;
 	int residue_id;

@@ -20,6 +20,8 @@
 
 */
 
+#include <array>
+
 #include "grid.h"
 
 void grid::init(const grid_dims& gd) {
@@ -42,8 +44,8 @@ fl grid::evaluate_aux(const vec& location, fl slope, fl v, vec* deriv) const { /
 	vec s  = elementwise_product(location - m_init, m_factor); 
 
 	vec miss(0, 0, 0);
-	boost::array<int, 3> region;
-	boost::array<sz, 3> a;
+	std::array<int, 3> region;
+	std::array<sz, 3> a;
 
 	VINA_FOR(i, 3) {
 		if(s[i] < 0) {
