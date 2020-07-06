@@ -36,7 +36,6 @@ cc_library(
         "//protos:vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
         "@absl//absl/types:optional",
-        "@boost//:filesystem",
         "@boost//:program_options",
         "@boost//:thread",
         "@glog//:glog",

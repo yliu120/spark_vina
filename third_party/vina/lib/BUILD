@@ -8,7 +8,6 @@ cc_library(
     deps = [
         "@absl//absl/strings",
         "@boost//:array",
-        "@boost//:lexical_cast",
         "@boost//:math",
         "@boost//:optional",
         # TODO: Change backs to "@boost//:progress" after rules_boost supports
