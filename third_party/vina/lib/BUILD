@@ -11,7 +11,6 @@ cc_library(
         # the progress lib.
         "//third_party/boost:progress",
         "@boost//:ptr_container",
-        "@boost//:random",
         "@boost//:serialization",
         "@boost//:thread",
     ],

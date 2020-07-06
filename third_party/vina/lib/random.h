@@ -23,10 +23,11 @@
 #ifndef VINA_RANDOM_H
 #define VINA_RANDOM_H
 
-#include <boost/random.hpp>
+#include <random>
+
 #include "common.h"
 
-typedef boost::mt19937 rng;
+using rng = ::std::mt19937;
 
 fl random_fl(fl a, fl b, rng& generator); // expects a < b, returns rand in [a, b]
 fl random_normal(fl mean, fl sigma, rng& generator); // expects sigma >= 0
