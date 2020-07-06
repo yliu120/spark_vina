@@ -14,6 +14,5 @@ cc_library(
         "@boost//:random",
         "@boost//:serialization",
         "@boost//:thread",
-        "@boost//:utility",
     ],
 )

@@ -5,7 +5,6 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/optional.hpp>
-#include <boost/utility.hpp>  // for noncopyable
 #include <cctype>
 #include <fstream>
 #include <sstream>

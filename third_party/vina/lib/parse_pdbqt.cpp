@@ -26,7 +26,6 @@
 #include <fstream> // for getline ?
 #include <sstream> // in parse_two_unsigneds
 #include <cctype> // isspace
-#include <boost/utility.hpp> // for noncopyable 
 #include <boost/optional.hpp>
 #include "parse_pdbqt.h"
 #include "atom_constants.h"
