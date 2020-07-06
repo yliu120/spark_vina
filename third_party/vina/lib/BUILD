@@ -8,7 +8,6 @@ cc_library(
     deps = [
         "@absl//absl/strings",
         "@boost//:array",
-        "@boost//:filesystem",
         "@boost//:lexical_cast",
         "@boost//:math",
         "@boost//:optional",

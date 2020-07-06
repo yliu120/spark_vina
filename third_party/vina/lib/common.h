@@ -31,6 +31,7 @@
 #include <vector> // used in typedef, and commonly used overall
 #include <cmath> // commonly used
 #include <iostream> // various debugging everywhere
+#include <filesystem>
 #include <fstream> // print_coords
 #include <iomanip> // to_string
 #include <sstream> // to_string
@@ -38,7 +39,6 @@
 
 #include <boost/serialization/vector.hpp> // can't come before the above two - wart fixed in upcoming Boost versions
 #include <boost/serialization/base_object.hpp> // movable_atom needs it - (derived from atom)
-#include <boost/filesystem/path.hpp> // typedef'ed
 
 #include "macros.h"
 
@@ -184,7 +184,8 @@ typedef std::pair<vec, vec> vecp;
 typedef std::vector<fl> flv;
 typedef std::vector<pr> prv;
 typedef std::vector<sz> szv;
-typedef boost::filesystem::path path;
+
+using ::std::filesystem::path;
 
 struct internal_error {
 	std::string file;

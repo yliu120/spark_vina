@@ -25,7 +25,6 @@
 #include <cctype> // isspace
 #include <boost/utility.hpp> // for noncopyable 
 #include <boost/optional.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <boost/lexical_cast.hpp>
 #include "parse_pdbqt.h"
 #include "atom_constants.h"

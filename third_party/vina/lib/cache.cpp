@@ -36,7 +36,6 @@
 #endif 
 
 #include <boost/serialization/split_member.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <boost/static_assert.hpp>
 #include "cache.h"
 #include "file.h"
