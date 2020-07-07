@@ -4,9 +4,9 @@
 
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/optional.hpp>
 #include <cctype>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -42,7 +42,7 @@ struct parsed_atom : public atom {
 };
 
 void add_context(context& c, std::string& str) {
-  c.push_back(parsed_line(str, boost::optional<sz>()));
+  c.push_back(parsed_line(str, std::nullopt));
 }
 
 std::string omit_whitespace(const std::string& str, sz i, sz j) {
@@ -173,12 +173,12 @@ struct parsing_struct {
   };
 
   typedef node_t<parsing_struct> node;
-  boost::optional<sz> immobile_atom;  // which of `atoms' is immobile, if any
-  boost::optional<atom_reference> axis_begin;  // the index (in
+  std::optional<sz> immobile_atom;  // which of `atoms' is immobile, if any
+  std::optional<atom_reference> axis_begin;  // the index (in
                                                // non_rigid_parsed::atoms) of
                                                // the parent bound to immobile
                                                // atom (if already known)
-  boost::optional<atom_reference> axis_end;  // if immobile atom has been pushed
+  std::optional<atom_reference> axis_end;  // if immobile atom has been pushed
                                              // into non_rigid_parsed::atoms,
                                              // this is its index there
   std::vector<node> atoms;
@@ -188,17 +188,19 @@ struct parsing_struct {
     atoms.push_back(node(a, c.size() - 1));
   }
   const vec& immobile_atom_coords() const {
-    VINA_CHECK(immobile_atom);
-    VINA_CHECK(immobile_atom.get() < atoms.size());
-    return atoms[immobile_atom.get()].a.coords;
+    VINA_CHECK(immobile_atom.has_value());
+    sz immobile_atom_local = *immobile_atom;
+    VINA_CHECK(immobile_atom_local < atoms.size());
+    return atoms[immobile_atom_local].a.coords;
   }
   // inflex insertion
   void insert_immobile_inflex(non_rigid_parsed& nr) {
     if (!atoms.empty()) {
-      VINA_CHECK(immobile_atom);
-      VINA_CHECK(immobile_atom.get() < atoms.size());
+      VINA_CHECK(immobile_atom.has_value());
+      sz immobile_atom_local = *immobile_atom;
+      VINA_CHECK(immobile_atom_local < atoms.size());
       axis_end = atom_reference(nr.inflex.size(), true);
-      atoms[immobile_atom.get()].insert_inflex(nr);
+      atoms[immobile_atom_local].insert_inflex(nr);
     }
   }
 
@@ -207,16 +209,17 @@ struct parsing_struct {
                        const vec& frame_origin) {
     if (!atoms.empty()) {
       VINA_CHECK(immobile_atom);
-      VINA_CHECK(immobile_atom.get() < atoms.size());
+      sz immobile_atom_local = *immobile_atom;
+      VINA_CHECK(immobile_atom_local < atoms.size());
       axis_end = atom_reference(nr.atoms.size(), false);
-      atoms[immobile_atom.get()].insert(nr, c, frame_origin);
+      atoms[immobile_atom_local].insert(nr, c, frame_origin);
     }
   }
 
   bool essentially_empty() const {  // no sub-branches besides immobile atom,
                                     // including sub-sub-branches, etc
     VINA_FOR_IN(i, atoms) {
-      if (immobile_atom && immobile_atom.get() != i) return false;
+      if (immobile_atom && *immobile_atom != i) return false;
       const node& nd = atoms[i];
       if (!nd.ps.empty()) return false;  // FIXME : iffy
     }
@@ -321,7 +324,7 @@ void parse_pdbqt_branch_aux(std::istream& in, unsigned& count,
 }
 
 void parse_pdbqt_aux(std::istream& in, unsigned& count, parsing_struct& p,
-                     context& c, boost::optional<unsigned>& torsdof,
+                     context& c, std::optional<unsigned>& torsdof,
                      bool residue) {
   parse_pdbqt_root(in, count, p, c);
 
@@ -345,10 +348,10 @@ void parse_pdbqt_aux(std::istream& in, unsigned& count, parsing_struct& p,
   }
 }
 
-void add_bonds(non_rigid_parsed& nr, boost::optional<atom_reference> atm,
+void add_bonds(non_rigid_parsed& nr, std::optional<atom_reference> atm,
                const atom_range& r) {
   if (atm) VINA_RANGE(i, r.begin, r.end) {
-      atom_reference& ar = atm.get();
+      atom_reference& ar = atm.value();
       if (ar.inflex)
         nr.atoms_inflex_bonds(i, ar.index) =
             DISTANCE_FIXED;  //(max_unsigned); // first index - atoms, second
@@ -358,11 +361,11 @@ void add_bonds(non_rigid_parsed& nr, boost::optional<atom_reference> atm,
     }
 }
 
-void set_rotor(non_rigid_parsed& nr, boost::optional<atom_reference> axis_begin,
-               boost::optional<atom_reference> axis_end) {
+void set_rotor(non_rigid_parsed& nr, std::optional<atom_reference> axis_begin,
+               std::optional<atom_reference> axis_end) {
   if (axis_begin && axis_end) {
-    atom_reference& r1 = axis_begin.get();
-    atom_reference& r2 = axis_end.get();
+    atom_reference& r1 = axis_begin.value();
+    atom_reference& r2 = axis_end.value();
     if (r2.inflex) {
       VINA_CHECK(r1.inflex);  // no atom-inflex rotors
       nr.inflex_inflex_bonds(r1.index, r2.index) = DISTANCE_ROTOR;
@@ -376,7 +379,7 @@ void set_rotor(non_rigid_parsed& nr, boost::optional<atom_reference> axis_begin,
 }
 
 typedef std::pair<sz, sz> axis_numbers;
-typedef boost::optional<axis_numbers> axis_numbers_option;
+typedef std::optional<axis_numbers> axis_numbers_option;
 
 void nr_update_matrixes(non_rigid_parsed& nr) {
   // atoms with indexes p.axis_begin and p.axis_end can not move relative to
@@ -395,7 +398,7 @@ void postprocess_branch(non_rigid_parsed& nr, parsing_struct& p, context& c,
   b.node.begin = nr.atoms.size();
   VINA_FOR_IN(i, p.atoms) {  // postprocess atoms into 'b.node'
     parsing_struct::node& p_node = p.atoms[i];
-    if (p.immobile_atom && i == p.immobile_atom.get()) {
+    if (p.immobile_atom.has_value() && i == *p.immobile_atom) {
     }  // skip immobile_atom - it's already inserted in "THERE"
     else
       p_node.insert(nr, c, b.node.get_origin());
@@ -444,7 +447,7 @@ void parse_pdbqt_ligand(const std::string& ligand_str, non_rigid_parsed& nr,
   std::istringstream iss(ligand_str);
   unsigned count = 0;
   parsing_struct p;
-  boost::optional<unsigned> torsdof;
+  std::optional<unsigned> torsdof;
   try {
     parse_pdbqt_aux(iss, count, p, c, torsdof, false);
     if (p.atoms.empty()) throw parse_error("", count, "No atoms in the ligand");
@@ -452,7 +455,7 @@ void parse_pdbqt_ligand(const std::string& ligand_str, non_rigid_parsed& nr,
     postprocess_ligand(
         nr, p, c,
         unsigned(
-            torsdof.get()));  // bizarre size_t -> unsigned compiler complaint
+            torsdof.value()));  // bizarre size_t -> unsigned compiler complaint
   } catch (stream_parse_error& e) {
     throw e.to_parse_error("dummy parse error");
   }
@@ -580,17 +583,17 @@ struct pdbqt_initializer {
   }
 };
 
-boost::optional<model> parse_ligand_pdbqt(const std::string& ligand_str) {
+std::optional<model> parse_ligand_pdbqt(const std::string& ligand_str) {
   non_rigid_parsed nrp;
   context c;
   try {
     parse_pdbqt_ligand(ligand_str, nrp, c);
   } catch (parse_error& e) {
     std::cerr << "Cannot parse: " << ligand_str << "\n";
-    return boost::none;
+    return std::nullopt;
   } catch (...) {
     std::cerr << "Unknown error occurs hile parsing " << ligand_str << "\n";
-    return boost::none;
+    return std::nullopt;
   }
   pdbqt_initializer tmp;
   tmp.initialize_from_nrp(nrp, c, true);
@@ -603,7 +606,7 @@ std::vector<std::pair<int, model>> parse_ligand_pdbqt(
   std::vector<std::pair<int, model>> models;
   int model_id = 0;
   for (const auto& ligand_str : ligand_strs) {
-    boost::optional<model> tmp = parse_ligand_pdbqt(ligand_str);
+    std::optional<model> tmp = parse_ligand_pdbqt(ligand_str);
     if (tmp) {
       models.emplace_back(std::make_pair(model_id, *tmp));
     }

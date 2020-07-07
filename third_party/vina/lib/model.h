@@ -23,7 +23,7 @@
 #ifndef VINA_MODEL_H
 #define VINA_MODEL_H
 
-#include <boost/optional.hpp>  // for context
+#include <optional>
 #include <string>
 
 #include "file.h"
@@ -43,7 +43,7 @@ struct interacting_pair {
 
 typedef std::vector<interacting_pair> interacting_pairs;
 
-typedef std::pair<std::string, boost::optional<sz> > parsed_line;
+typedef std::pair<std::string, std::optional<sz>> parsed_line;
 typedef std::vector<parsed_line> context;
 
 struct ligand : public flexible_body, atom_range {

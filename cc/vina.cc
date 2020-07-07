@@ -82,7 +82,7 @@ output_container remove_redundant(const output_container& in, fl min_rmsd) {
   return tmp;
 }
 
-VinaResult do_search(model& m, const boost::optional<model>& ref,
+VinaResult do_search(model& m, const std::optional<model>& ref,
                      const scoring_function& sf, const precalculate& prec,
                      const igrid& ig, const precalculate& prec_widened,
                      const igrid& ig_widened,
@@ -149,7 +149,7 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
 }
 
 VinaResult main_procedure(
-    model& m, const boost::optional<model>& ref,  // m is non-const (FIXME?)
+    model& m, const std::optional<model>& ref,  // m is non-const (FIXME?)
     const std::string& out_name, const grid_dims& gd, int exhaustiveness,
     const flv& weights, int cpu, std::optional<int> seed, sz num_modes, fl energy_range) {
   everything t;
@@ -249,7 +249,7 @@ std::vector<VinaResult> VinaDock::vina_fit(
     for (const auto& ligand_model : ligand_models) {
       model system = receptor;
       system.append(ligand_model.second);
-      boost::optional<model> ref;
+      std::optional<model> ref;
 
       VinaResult result;
       try {

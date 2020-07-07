@@ -23,7 +23,6 @@
 #ifndef VINA_MONTE_CARLO_H
 #define VINA_MONTE_CARLO_H
 
-#include "incrementable.h"
 #include "ssd.h"
 
 struct monte_carlo {

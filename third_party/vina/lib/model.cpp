@@ -142,8 +142,9 @@ public:
     transform_ranges(r, *this);
   }
   void update(parsed_line& p) const {
-    if(p.second)
-      p.second = operator()(p.second.get());
+    if(p.second.has_value()) {
+      p.second = operator()(*p.second);
+    }
   }
   void update(atom& a) const {
     VINA_FOR_IN(i, a.bonds) {
@@ -563,8 +564,8 @@ void model::write_context(const context& c, ofile& out) const {
   verify_bond_lengths();
   VINA_FOR_IN(i, c) {
     const std::string& str = c[i].first;
-    if(c[i].second) {
-      out << coords_to_pdbqt_string(coords[c[i].second.get()], str) << '\n';
+    if(c[i].second.has_value()) {
+      out << coords_to_pdbqt_string(coords[c[i].second.value()], str) << '\n';
     }
     else
       out << str << '\n';
@@ -576,9 +577,9 @@ std::string model::ligand_to_string(const context& contexts) const {
   std::string result;
   for (const auto& context : contexts) {
     const std::string& str = context.first;
-    if (context.second) {
+    if (context.second.has_value()) {
       absl::StrAppend(&result,
-                      coords_to_pdbqt_string(coords[context.second.get()], str),
+                      coords_to_pdbqt_string(coords[context.second.value()], str),
                       "\n");
     } else {
       absl::StrAppend(&result, str, "\n");

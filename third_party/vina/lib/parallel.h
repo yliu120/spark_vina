@@ -23,11 +23,11 @@
 #ifndef VINA_PARALLEL_H
 #define VINA_PARALLEL_H
 
+#include <optional>
 #include <vector>
 
 #include "common.h"
 
-#include <boost/optional.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
@@ -59,8 +59,8 @@ struct parallel_for : private boost::thread_group {
     }
 private:
 	void loop(sz offset) {
-		while(boost::optional<sz> sz_option = get_size(offset)) {
-			sz s = sz_option.get();
+		while(std::optional<sz> sz_option = get_size(offset)) {
+			sz s = *sz_option;
 			for(sz i = offset; i < s; i += num_threads)
 				(*m_f)(i);
 			{
@@ -86,11 +86,11 @@ private:
     sz count_finished; 
 	sz num_threads;
 	boost::mutex self; // any modification or reading of mutables should lock this first
-	boost::optional<sz> get_size(sz offset) {
+	std::optional<sz> get_size(sz offset) {
 		boost::mutex::scoped_lock self_lk(self);
         while(!destructing && thread_finished[offset])
             cond.wait(self_lk);
-		if(destructing) return boost::optional<sz>(); // wrap it up!
+		if(destructing) return std::nullopt; // wrap it up!
         return size;
     }
 };
@@ -120,16 +120,16 @@ struct parallel_for<F, true> : private boost::thread_group {
         join_all(); 
     }
 private:
-	void loop() {
-		while(boost::optional<sz> i = get_next()) {
-			(*m_f)(i.get());
-			{
-				boost::mutex::scoped_lock self_lk(self);
-				++finished;
-				busy.notify_one();
-			}
-		}
-	}
+ void loop() {
+   while (std::optional<sz> i = get_next()) {
+     (*m_f)(*i);
+     {
+       boost::mutex::scoped_lock self_lk(self);
+       ++finished;
+       busy.notify_one();
+     }
+   }
+ }
     struct aux {
         parallel_for* par;
         aux() : par(NULL) {}
@@ -144,11 +144,11 @@ private:
     sz started; // the number of jobs given to run() the work started on
     sz finished; // the number of jobs given to run() the work finished on
 	boost::mutex self; // any modification or reading of mutables should lock this first
-	boost::optional<sz> get_next() {
+	std::optional<sz> get_next() {
 		boost::mutex::scoped_lock self_lk(self);
         while(!destructing && started >= size)
             cond.wait(self_lk);
-		if(destructing) return boost::optional<sz>(); // NOTHING
+		if(destructing) return std::nullopt; // NOTHING
 		sz tmp = started;
         ++started;
         return tmp;
