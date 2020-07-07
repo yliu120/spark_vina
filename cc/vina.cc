@@ -25,7 +25,6 @@
 
 #include "cc/vina.h"
 
-#include <boost/program_options.hpp>
 #include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
 #include <cmath>                    // for ceila
 #include <exception>
@@ -91,7 +90,7 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
                      const std::string& out_name, const vec& corner1,
                      const vec& corner2, const parallel_mc& par,
                      fl energy_range, sz num_modes,
-                     absl::optional<int> seed, const terms& t,
+                     std::optional<int> seed, const terms& t,
                      const flv& weights) {
   conf_size s = m.get_size();
   conf c = m.get_initial_conf();
@@ -152,7 +151,7 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
 VinaResult main_procedure(
     model& m, const boost::optional<model>& ref,  // m is non-const (FIXME?)
     const std::string& out_name, const grid_dims& gd, int exhaustiveness,
-    const flv& weights, int cpu, absl::optional<int> seed, sz num_modes, fl energy_range) {
+    const flv& weights, int cpu, std::optional<int> seed, sz num_modes, fl energy_range) {
   everything t;
   VINA_CHECK(weights.size() == 6);
 
@@ -177,7 +176,6 @@ VinaResult main_procedure(
   par.mc.hunt_cap = vec(10, 10, 10);
   par.num_tasks = exhaustiveness;
   par.num_threads = cpu;
-  par.display_progress = false;
 
   const fl slope = 1e6;  // FIXME: too large? used to be 100
   non_cache nc(m, gd, &prec,

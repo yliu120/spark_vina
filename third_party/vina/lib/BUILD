@@ -7,9 +7,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@absl//absl/strings",
-        # TODO: Change backs to "@boost//:progress" after rules_boost supports
-        # the progress lib.
-        "//third_party/boost:progress",
         "@boost//:ptr_container",
         "@boost//:serialization",
         "@boost//:thread",

@@ -4,12 +4,11 @@
 #ifndef CC_VINA_H_
 #define CC_VINA_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "protos/vina.pb.h"
-
-#include "absl/types/optional.h"
 
 // This is a util method that read ligand files to a list of strings.
 // This is just an interface to expose the split method in parse_pdbqt.
@@ -43,7 +42,7 @@ class VinaDock {
   double size_z_;
   int cpu_;
   int num_modes_;
-  absl::optional<int> seed_;
+  std::optional<int> seed_;
 };
 
 #endif  // CC_VINA_H_
