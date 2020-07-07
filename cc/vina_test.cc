@@ -30,10 +30,10 @@ TEST(VinaDockTest, VinaDock) {
 
   // Compares the affinities of the first two models of each docking is
   // sufficient for guarding the correctness.
-  EXPECT_NEAR(affinities[0].models(0).affinity(), -5.349553, 1e-5);
-  EXPECT_NEAR(affinities[0].models(1).affinity(), -4.854657, 1e-5);
-  EXPECT_NEAR(affinities[1].models(0).affinity(), -6.157632, 1e-5);
-  EXPECT_NEAR(affinities[1].models(1).affinity(), -5.653163, 1e-5);
+  EXPECT_NEAR(affinities[0].models(0).affinity(), -5.824148, 1e-5);
+  EXPECT_NEAR(affinities[0].models(1).affinity(), -5.445939, 1e-5);
+  EXPECT_NEAR(affinities[1].models(0).affinity(), -5.583360, 1e-5);
+  EXPECT_NEAR(affinities[1].models(1).affinity(), -5.568257, 1e-5);
 }
 
 }  // namespace

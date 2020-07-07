@@ -90,12 +90,16 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
                      non_cache& nc,  // nc.slope is changed
                      const std::string& out_name, const vec& corner1,
                      const vec& corner2, const parallel_mc& par,
-                     fl energy_range, sz num_modes, int seed, const terms& t,
+                     fl energy_range, sz num_modes,
+                     absl::optional<int> seed, const terms& t,
                      const flv& weights) {
   conf_size s = m.get_size();
   conf c = m.get_initial_conf();
   const vec authentic_v(1000, 1000, 1000);
-  rng generator(static_cast<rng::result_type>(seed));
+
+  rng generator(seed.has_value() ? static_cast<rng::result_type>(*seed)
+                                 : static_cast<rng::result_type>(
+                                       std::random_device("/dev/urandom")()));
   output_container out_cont;
   par(m, out_cont, prec, ig, prec_widened, ig_widened, corner1, corner2,
       generator);
@@ -148,7 +152,7 @@ VinaResult do_search(model& m, const boost::optional<model>& ref,
 VinaResult main_procedure(
     model& m, const boost::optional<model>& ref,  // m is non-const (FIXME?)
     const std::string& out_name, const grid_dims& gd, int exhaustiveness,
-    const flv& weights, int cpu, int seed, sz num_modes, fl energy_range) {
+    const flv& weights, int cpu, absl::optional<int> seed, sz num_modes, fl energy_range) {
   everything t;
   VINA_CHECK(weights.size() == 6);
 
@@ -249,13 +253,11 @@ std::vector<VinaResult> VinaDock::vina_fit(
       system.append(ligand_model.second);
       boost::optional<model> ref;
 
-      int seed = seed_.has_value() ? *seed_ : auto_seed();
-
       VinaResult result;
       try {
         result =
             main_procedure(system, ref, "", gd, exhaustiveness, weights, cpu_,
-                           seed, static_cast<sz>(num_modes_), energy_range);
+                           seed_, static_cast<sz>(num_modes_), energy_range);
       } catch (...) {
         // For any kinds of failure, we just give up this ligand.
         continue;
@@ -269,7 +271,6 @@ std::vector<VinaResult> VinaDock::vina_fit(
       // negative.
       if (result.models(0).affinity() < filter_limit) {
         result.set_original_pdbqt(ligand_strs[ligand_model.first]);
-        result.set_random_seed(seed);
         results.push_back(std::move(result));
       }
     }
