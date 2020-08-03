@@ -6,8 +6,9 @@ cc_library(
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"],
     deps = [
+        "@absl//absl/algorithm:container",
+        "@absl//absl/memory:memory",
         "@absl//absl/strings",
-        "@boost//:ptr_container",
         "@boost//:serialization",
         "@boost//:thread",
     ],

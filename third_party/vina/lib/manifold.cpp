@@ -24,6 +24,9 @@
 #include "coords.h"
 #include "quasi_newton.h"
 
+#include "absl/algorithm/container.h"
+#include "absl/memory/memory.h"
+
 const vec authentic_v(1000, 1000,
                       1000);  // FIXME? this is here to avoid max_fl/max_fl
 
@@ -36,16 +39,16 @@ output_type manifold::operator()(model& m, const precalculate& p,
       m, tmp, p, ig, p_widened, ig_widened, corner1, corner2,
       generator);  // call the version that produces the whole container
   VINA_CHECK(!tmp.empty());
-  return tmp.front();
+  return *tmp.front();
 }
 
 const conf* select_rs(const output_container& mf, sz rstart,
                       rng& generator) {  // clean up
   if (!mf.empty() && mf.size() >= rstart) {
     sz i = random_sz(0, mf.size() - 1, generator);
-    return &(mf[i].c);
+    return &(mf[i]->c);
   }
-  return NULL;
+  return nullptr;
 }
 
 bool determine_iu(const conf& c, const output_container& mf,
@@ -53,7 +56,7 @@ bool determine_iu(const conf& c, const output_container& mf,
                   fl exclusion) {  // clean up
   bool tmp = true;
   VINA_FOR_IN(i, mf) {
-    bool t = c.internal_too_close(mf[i].c, exclusion);
+    bool t = c.internal_too_close(mf[i]->c, exclusion);
     internal_too_close[i] = t;
     if (t) tmp = false;
   }
@@ -65,7 +68,7 @@ bool conf_is_legal(const conf& c, const output_container& mf,
                    const scale& exclusion) {
   assert(mf.size() == internal_too_close.size());
   VINA_FOR_IN(i, mf)
-  if (internal_too_close[i] && c.external_too_close(mf[i].c, exclusion))
+  if (internal_too_close[i] && c.external_too_close(mf[i]->c, exclusion))
     return false;
   return true;
 }
@@ -209,18 +212,20 @@ void manifold::operator()(model& m, output_container& out,
     std::pair<sz, fl> closest_rmsd = find_closest(tmp.coords, out);
     if (closest_rmsd.first < out.size() &&
         closest_rmsd.second < min_rmsd) {  // have a very similar one
-      if (tmp.e <
-          out[closest_rmsd.first].e) {  // the new one is better, apparently
-        out[closest_rmsd.first] = tmp;  // FIXME? slow
+      auto& closest_rmsd_iter = out[closest_rmsd.first];
+      if (tmp.e < closest_rmsd_iter->e) {  // the new one is better, apparently
+        *closest_rmsd_iter = std::move(tmp);
       }
     } else {  // nothing similar
-      out.push_back(new output_type(tmp));
+      out.push_back(absl::make_unique<output_type>(std::move(tmp)));
     }
   }
   // final tunings
   const output_container null_array;
   VINA_CHECK(!out.empty());
-  out.sort();
+  absl::c_sort(
+      out, [](const std::unique_ptr<output_type>& a,
+              const std::unique_ptr<output_type>& b) { return a->e < b->e; });
   // make sure the sorting worked in the correct order
-  VINA_CHECK(out.front().e <= out.back().e);
+  VINA_CHECK(out.front()->e <= out.back()->e);
 }

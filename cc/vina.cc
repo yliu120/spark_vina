@@ -25,7 +25,6 @@
 
 #include "cc/vina.h"
 
-#include <boost/thread/thread.hpp>  // hardware_concurrency // FIXME rm ?
 #include <cmath>                    // for ceila
 #include <exception>
 #include <iostream>
@@ -33,6 +32,8 @@
 #include <utility>
 #include <vector>  // ligand paths
 
+#include "absl/algorithm/container.h"
+#include "absl/memory/memory.h"
 #include "cc/parse_pdbqt.h"
 #include "glog/logging.h"
 #include "third_party/vina/lib/cache.h"
@@ -77,8 +78,9 @@ void refine_structure(model& m, const precalculate& prec, non_cache& nc,
 
 output_container remove_redundant(const output_container& in, fl min_rmsd) {
   output_container tmp;
-  VINA_FOR_IN(i, in)
-  add_to_output_container(tmp, in[i], min_rmsd, in.size());
+  for (const auto& in_element : in) {
+    add_to_output_container(tmp, *in_element, min_rmsd, in.size());
+  }
   return tmp;
 }
 
@@ -103,33 +105,42 @@ VinaResult do_search(model& m, const std::optional<model>& ref,
   par(m, out_cont, prec, ig, prec_widened, ig_widened, corner1, corner2,
       generator);
 
-  VINA_FOR_IN(i, out_cont)
-  refine_structure(m, prec, nc, out_cont[i], authentic_v, par.mc.ssd_par.evals);
+  for (auto& output : out_cont) {
+    refine_structure(m, prec, nc, *output, authentic_v, par.mc.ssd_par.evals);
+  }
 
   if (!out_cont.empty()) {
-    out_cont.sort();
+    absl::c_sort(out_cont, [](const std::unique_ptr<output_type>& a,
+                              const std::unique_ptr<output_type>& b) {
+      return a->e < b->e;
+    });
     const fl best_mode_intramolecular_energy =
-        m.eval_intramolecular(prec, authentic_v, out_cont[0].c);
+        m.eval_intramolecular(prec, authentic_v, out_cont[0]->c);
 
-    VINA_FOR_IN(i, out_cont)
-    if (not_max(out_cont[i].e))
-      out_cont[i].e = m.eval_adjusted(sf, prec, nc, authentic_v, out_cont[i].c,
-                                      best_mode_intramolecular_energy);
+    for (auto& output : out_cont) {
+      if (not_max(output->e)) {
+        output->e = m.eval_adjusted(sf, prec, nc, authentic_v, output->c,
+                                    best_mode_intramolecular_energy);
+      }
+    }
     // the order must not change because of non-decreasing g (see paper), but
     // we'll re-sort in case g is non strictly increasing
-    out_cont.sort();
+    absl::c_sort(out_cont, [](const std::unique_ptr<output_type>& a,
+                              const std::unique_ptr<output_type>& b) {
+      return a->e < b->e;
+    });
   }
 
   const fl out_min_rmsd = 1;
   out_cont = remove_redundant(out_cont, out_min_rmsd);
 
   model best_mode_model = m;
-  if (!out_cont.empty()) best_mode_model.set(out_cont.front().c);
+  if (!out_cont.empty()) best_mode_model.set(out_cont.front()->c);
 
   sz how_many = 0;
   VINA_FOR_IN(i, out_cont) {
-    if (how_many >= num_modes || !not_max(out_cont[i].e) ||
-        out_cont[i].e > out_cont[0].e + energy_range)
+    if (how_many >= num_modes || !not_max(out_cont[i]->e) ||
+        out_cont[i]->e > out_cont[0]->e + energy_range)
       break;  // check energy_range sanity FIXME
     ++how_many;
   }
@@ -140,9 +151,9 @@ VinaResult do_search(model& m, const std::optional<model>& ref,
 
   VinaResult result;
   VINA_FOR(i, how_many) {
-    m.set(out_cont[i].c);
+    m.set(out_cont[i]->c);
     VinaResult::Model* model = result.add_models();
-    model->set_affinity(out_cont[i].e);
+    model->set_affinity(out_cont[i]->e);
     model->set_docked_pdbqt(m.model_to_string());
   }
   return result;

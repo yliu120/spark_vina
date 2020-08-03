@@ -23,8 +23,6 @@
 #ifndef VINA_CONF_H
 #define VINA_CONF_H
 
-#include <boost/ptr_container/ptr_vector.hpp> // typedef output_container
-
 #include "quaternion.h"
 #include "random.h"
 
@@ -356,13 +354,13 @@ private:
 };
 
 struct output_type {
-	conf c;
-	fl e;
-	vecv coords;
-	output_type(const conf& c_, fl e_) : c(c_), e(e_) {}
+  conf c;
+  fl e;
+  vecv coords;
+  output_type(const conf& c_, fl e_) : c(c_), e(e_) {}
 };
 
-typedef boost::ptr_vector<output_type> output_container;
+typedef std::vector<std::unique_ptr<output_type>> output_container;
 
 inline bool operator<(const output_type& a, const output_type& b) { // for sorting output_container
 	return a.e < b.e;

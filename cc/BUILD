@@ -35,7 +35,8 @@ cc_library(
         ":parse_pdbqt",
         "//protos:vina_cc_proto",
         "//third_party/vina/lib:vina_libs",
-        "@boost//:thread",
+        "@absl//absl/algorithm:container",
+        "@absl//absl/memory:memory",
         "@glog//:glog",
     ],
 )

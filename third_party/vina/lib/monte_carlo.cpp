@@ -25,11 +25,14 @@
 #include "mutate.h"
 #include "quasi_newton.h"
 
+#include "absl/algorithm/container.h"
+#include "absl/memory/memory.h"
+
 output_type monte_carlo::operator()(model& m, const precalculate& p, const igrid& ig, const precalculate& p_widened, const igrid& ig_widened, const vec& corner1, const vec& corner2, rng& generator) const {
 	output_container tmp;
 	this->operator()(m, tmp, p, ig, p_widened, ig_widened, corner1, corner2, generator); // call the version that produces the whole container
 	VINA_CHECK(!tmp.empty());
-	return tmp.front();
+	return *tmp.front();
 }
 
 bool metropolis_accept(fl old_f, fl new_f, fl temperature, rng& generator) {
@@ -59,24 +62,30 @@ void monte_carlo::single_run(model& m, output_type& out, const precalculate& p, 
 	quasi_newton_par(m, p, ig, out, g, authentic_v);
 }
 
-void monte_carlo::many_runs(model& m, output_container& out, const precalculate& p, const igrid& ig, const vec& corner1, const vec& corner2, sz num_runs, rng& generator) const {
-	conf_size s = m.get_size();
-	VINA_FOR(run, num_runs) {
-		output_type tmp(s, 0);
-		tmp.c.randomize(corner1, corner2, generator);
-		single_run(m, tmp, p, ig, generator);
-		out.push_back(new output_type(tmp));
-	}
-	out.sort();
+void monte_carlo::many_runs(model& m, output_container& out,
+                            const precalculate& p, const igrid& ig,
+                            const vec& corner1, const vec& corner2, sz num_runs,
+                            rng& generator) const {
+  conf_size s = m.get_size();
+  VINA_FOR(run, num_runs) {
+    auto& output_back = out.emplace_back(absl::make_unique<output_type>(s, 0));
+    output_back->c.randomize(corner1, corner2, generator);
+    single_run(m, *output_back, p, ig, generator);
+  }
+  absl::c_sort(
+      out, [](const std::unique_ptr<output_type>& a,
+              const std::unique_ptr<output_type>& b) { return a->e < b->e; });
 }
 
-output_type monte_carlo::many_runs(model& m, const precalculate& p, const igrid& ig, const vec& corner1, const vec& corner2, sz num_runs, rng& generator) const {
-	output_container tmp;
-	many_runs(m, tmp, p, ig, corner1, corner2, num_runs, generator);
-	VINA_CHECK(!tmp.empty());
-	return tmp.front();
+output_type monte_carlo::many_runs(model& m, const precalculate& p,
+                                   const igrid& ig, const vec& corner1,
+                                   const vec& corner2, sz num_runs,
+                                   rng& generator) const {
+  output_container tmp;
+  many_runs(m, tmp, p, ig, corner1, corner2, num_runs, generator);
+  VINA_CHECK(!tmp.empty());
+  return *tmp.front();
 }
-
 
 // out is sorted
 void monte_carlo::operator()(model& m, output_container& out,
@@ -115,7 +124,5 @@ void monte_carlo::operator()(model& m, output_container& out,
     }
   }
   VINA_CHECK(!out.empty());
-  VINA_CHECK(
-      out.front().e <=
-      out.back().e);  // make sure the sorting worked in the correct order
+  VINA_CHECK(out.front()->e <= out.back()->e);
 }
