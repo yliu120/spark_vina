@@ -40,4 +40,27 @@ cc_library(
     ]
 )
 
+cc_library(
+    name = "lock_free_thread_pool",
+    srcs = ["lock_free_thread_pool.cc"],
+    hdrs = ["lock_free_thread_pool.h"],
+    deps = [
+        ":execution_context",
+        ":task",
+        "@absl//absl/types:span",
+    ]
+)
+
+cc_test(
+    name = "lock_free_thread_pool_test",
+    srcs = ["lock_free_thread_pool_test.cc"],
+    deps = [
+        ":lock_free_thread_pool",
+        ":task",
+        "@absl//absl/types:span",
+        "@com_google_googletest//:gtest_main",
+        "@glog",
+    ]
+)
+
 

@@ -12,20 +12,30 @@ namespace vina {
 
 class Task {
  public:
-  enum class TaskType {
+  enum class TaskType : char {
     kSentinel = 0,
-    kDock = 1,
+    kCompute = 1,
+  };
+  enum class TaskStatus : char {
+    kNotStart = 0,
+    kDone = 1,
   };
   virtual void Run() {}
-  virtual TaskType Type() = 0;
+  virtual TaskType Type() const = 0;
   virtual bool RequireExecutionContext() { return false; }
   virtual void SetExecutionContext(const ExecutionContext* context) {}
+
+  void MarkDone() { task_status_ = TaskStatus::kDone; }
+  TaskStatus Status() const { return task_status_; }
+
+ private:
+  TaskStatus task_status_ = TaskStatus::kNotStart;
 };
 
 class SentinelTask : public Task {
  public:
   explicit SentinelTask() {}
-  TaskType Type() final { return TaskType::kSentinel; }
+  TaskType Type() const final { return TaskType::kSentinel; }
 };
 
 class DockTask : public Task {
@@ -36,7 +46,7 @@ class DockTask : public Task {
   void operator=(const DockTask&&) = delete;
 
   void Run() final;
-  TaskType Type() final { return TaskType::kDock; }
+  TaskType Type() const final { return TaskType::kCompute; }
 
   bool RequireExecutionContext() { return true; }
   void SetExecutionContext(const ExecutionContext* context) {
