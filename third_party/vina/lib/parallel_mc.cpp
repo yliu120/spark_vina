@@ -23,12 +23,20 @@
 #include <memory>
 #include <vector>
 
-#include "parallel.h"
+#include "execution_context.h"
+#include "lock_free_thread_pool.h"
 #include "parallel_mc.h"
+#include "task.h"
 #include "coords.h"
 
 #include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
+
+using ::vina::DockTask;
+using ::vina::ExecutionContext;
+using ::vina::ExecutionContextInput;
+using ::vina::LockFreeThreadPool;
+using ::vina::Task;
 
 struct parallel_mc_task {
 	model m;
@@ -36,8 +44,6 @@ struct parallel_mc_task {
 	rng generator;
 	parallel_mc_task(const model& m_, int seed) : m(m_), generator(static_cast<rng::result_type>(seed)) {}
 };
-
-typedef std::vector<std::unique_ptr<parallel_mc_task>> parallel_mc_task_container;
 
 struct parallel_mc_aux {
   const monte_carlo* mc;
@@ -71,12 +77,12 @@ void merge_output_containers(const output_container& in, output_container& out,
   }
 }
 
-void merge_output_containers(const parallel_mc_task_container& many,
+void merge_output_containers(const std::vector<DockTask>& many,
                              output_container& out, fl min_rmsd, sz max_size) {
   min_rmsd = 2;  // FIXME? perhaps it's necessary to separate min_rmsd during
                  // search and during output?
   for (const auto& task : many) {
-    merge_output_containers(task->out, out, min_rmsd, max_size);
+    merge_output_containers(task.Output(), out, min_rmsd, max_size);
   }
   absl::c_sort(
       out, [](const std::unique_ptr<output_type>& a,
@@ -88,15 +94,28 @@ void parallel_mc::operator()(const model& m, output_container& out,
                              const precalculate& p_widened,
                              const igrid& ig_widened, const vec& corner1,
                              const vec& corner2, rng& generator) const {
-  parallel_mc_aux parallel_mc_aux_instance(&mc, &p, &ig, &p_widened,
-                                           &ig_widened, &corner1, &corner2);
-  parallel_mc_task_container task_container;
+  const ExecutionContext context(
+      ExecutionContextInput{.mc = &mc,
+                            .p = &p,
+                            .p_widened = &p_widened,
+                            .g = &ig,
+                            .ig_widened = &ig_widened,
+                            .corner1 = &corner1,
+                            .corner2 = &corner2});
+  std::vector<DockTask> dock_task_storage;
+  std::vector<Task*> dock_tasks;
+  // By calling reserve(), memory will be fixed as well as
+  dock_task_storage.reserve(num_tasks);
+  dock_tasks.reserve(num_tasks);
   for (int i = 0; i < num_tasks; i++) {
-    task_container.push_back(absl::make_unique<parallel_mc_task>(
-        m, random_int(0, 1000000, generator)));
+    auto& task =
+        dock_task_storage.emplace_back(m, random_int(0, 1000000, generator));
+    dock_tasks.push_back(&task);
   }
-  parallel_iter<parallel_mc_aux, parallel_mc_task_container>
-      parallel_iter_instance(&parallel_mc_aux_instance, num_threads);
-  parallel_iter_instance.run(task_container);
-  merge_output_containers(task_container, out, mc.min_rmsd, mc.num_saved_mins);
+
+  LockFreeThreadPool thread_pool(&context, num_threads);
+  thread_pool.RunTasks(absl::MakeSpan(dock_tasks));
+
+  merge_output_containers(dock_task_storage, out, mc.min_rmsd,
+                          mc.num_saved_mins);
 }
