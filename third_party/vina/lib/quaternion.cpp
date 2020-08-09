@@ -136,7 +136,7 @@ void print(const qt& q, std::ostream& out) {  // print as an angle
   print(quaternion_to_angle(q), out);
 }
 
-fl GetA(const qt& q) { return q.a(); }
-fl GetB(const qt& q) { return q.b(); }
-fl GetC(const qt& q) { return q.c(); }
-fl GetD(const qt& q) { return q.d(); }
+fl GetA(const qt& q) { return q.x(); }
+fl GetB(const qt& q) { return q.y(); }
+fl GetC(const qt& q) { return q.z(); }
+fl GetD(const qt& q) { return q.w(); }

@@ -4,6 +4,11 @@
 
 #include "gtest/gtest.h"
 
+std::ostream& operator<<(std::ostream& os, const qt& q) {
+  os << '(' << q.x() << ',' << q.y() << ',' << q.z() << ',' << q.w() << ')';
+  return os;
+}
+
 TEST(QuaternionTest, Normalize) {
   qt test_qt(1.0, 2.0, 3.0, 4.0);
   std::cout << "Test Input: " << test_qt << "\n";
@@ -20,7 +25,7 @@ TEST(QuaternionTest, Normalize) {
 }
 
 TEST(QuaternionTest, Identity) {
-  qt test_qt = qt_identity;
+  qt test_qt = qt::Identity();
   std::cout << "Test Input: " << test_qt << "\n";
   EXPECT_TRUE(quaternion_is_normalized(test_qt));
 
