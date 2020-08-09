@@ -61,4 +61,9 @@ vec quaternion_difference(
     const qt& a);  // rotation that needs to be applied to convert a to b
 void print(const qt& q, std::ostream& out = std::cout);  // print as an angle
 
+fl GetA(const qt& q);
+fl GetB(const qt& q);
+fl GetC(const qt& q);
+fl GetD(const qt& q);
+
 #endif

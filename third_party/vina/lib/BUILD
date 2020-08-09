@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
 licenses(["notice"])
 
 cc_library(
@@ -8,10 +10,19 @@ cc_library(
     deps = [
         "@absl//absl/algorithm:container",
         "@absl//absl/base",
-        "@absl//absl/memory:memory",
+        "@absl//absl/memory",
         "@absl//absl/strings",
         "@absl//absl/types:span",
         "@eigen//:eigen_minimal",
         "@glog",
+    ],
+)
+
+cc_test(
+    name = "quaternion_test",
+    srcs = ["quaternion_test.cc"],
+    deps = [
+        ":vina_libs",
+        "@com_google_googletest//:gtest_main",
     ],
 )
