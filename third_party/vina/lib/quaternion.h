@@ -76,15 +76,6 @@ inline fl quaternion_norm_sqr(
          sqr(q.R_component_3()) + sqr(q.R_component_4());
 }
 
-inline void quaternion_normalize(qt& q) {
-  const fl s = quaternion_norm_sqr(q);
-  assert(eq(s, sqr(boost::math::abs(q))));
-  const fl a = std::sqrt(s);
-  assert(a > epsilon_fl);
-  q *= 1 / a;
-  assert(quaternion_is_normalized(q));
-}
-
 inline void quaternion_normalize_approx(qt& q, const fl tolerance = 1e-6) {
   const fl s = quaternion_norm_sqr(q);
   assert(eq(s, sqr(boost::math::abs(q))));
@@ -104,5 +95,10 @@ vec quaternion_difference(
     const qt& b,
     const qt& a);  // rotation that needs to be applied to convert a to b
 void print(const qt& q, std::ostream& out = std::cout);  // print as an angle
+
+fl GetA(const qt& q);
+fl GetB(const qt& q);
+fl GetC(const qt& q);
+fl GetD(const qt& q);
 
 #endif

@@ -147,3 +147,8 @@ vec quaternion_difference(
 void print(const qt& q, std::ostream& out) {  // print as an angle
   print(quaternion_to_angle(q), out);
 }
+
+fl GetA(const qt& q) { return q.R_component_1(); }
+fl GetB(const qt& q) { return q.R_component_2(); }
+fl GetC(const qt& q) { return q.R_component_3(); }
+fl GetD(const qt& q) { return q.R_component_4(); }

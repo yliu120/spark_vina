@@ -23,3 +23,12 @@ cc_library(
         "@boost//:utility",
     ],
 )
+
+cc_test(
+    name = "quaternion_test",
+    srcs = ["quaternion_test.cc"],
+    deps = [
+        ":vina_libs",
+        "@com_google_googletest//:gtest_main",
+    ]
+)
