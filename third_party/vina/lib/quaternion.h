@@ -41,15 +41,6 @@ qt angle_to_quaternion(const vec& rotation);  // rotation == angle * axis
 vec quaternion_to_angle(const qt& q);
 mat quaternion_to_r3(const qt& q);
 
-inline void quaternion_normalize(qt& q) {
-  const fl s = q.squaredNorm();
-  assert(eq(s, sqr(q.norm())));
-  const fl a = std::sqrt(s);
-  assert(a > epsilon_fl);
-  q.coeffs() /= a;
-  assert(quaternion_is_normalized(q));
-}
-
 inline void quaternion_normalize_approx(qt& q, const fl tolerance = 1e-6) {
   const fl s = q.squaredNorm();
   assert(eq(s, sqr(q.norm())));

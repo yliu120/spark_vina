@@ -120,8 +120,7 @@ qt random_orientation(rng& generator) {
 void quaternion_increment(qt& q, const vec& rotation) {
   assert(quaternion_is_normalized(q));
   q = angle_to_quaternion(rotation) * q;
-  quaternion_normalize_approx(q);  // normalization added in 1.1.2
-  // quaternion_normalize(q); // normalization added in 1.1.2
+  quaternion_normalize_approx(q);
 }
 
 vec quaternion_difference(
