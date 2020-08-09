@@ -149,7 +149,7 @@ http_archive(
     sha256 = "c97023ac6300d26176c97d4ef39957f06e68848d64f1a04b0b284ccff2744f02",
     strip_prefix = "openbabel-openbabel-3-1-1",
     urls = [
-	"https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/openbabel-3-1-1.tar.gz",
+	    "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/openbabel-3-1-1.tar.gz",
         "https://github.com/openbabel/openbabel/archive/openbabel-3-1-1.tar.gz",
     ],
 )
