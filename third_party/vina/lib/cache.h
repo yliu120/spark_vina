@@ -37,10 +37,7 @@ struct cache : public igrid {
 	cache(const std::string& scoring_function_version_, const grid_dims& gd_, fl slope_, atom_type::t atom_typing_used_);
 	fl eval      (const model& m, fl v) const; // needs m.coords // clean up
 	fl eval_deriv(      model& m, fl v) const; // needs m.coords, sets m.minus_forces // clean up
-#if 0 // no longer doing I/O of the cache
-	void read(const path& name); // can throw cache_mismatch
-	void write(const path& name) const;
-#endif
+
 	void populate(const model& m, const precalculate& p, const szv& atom_types_needed, bool display_progress = true);
 private:
 	std::string scoring_function_version;
@@ -49,13 +46,6 @@ private:
 	fl slope; // does not get (de-)serialized
 	atom_type::t atu;
 	std::vector<grid> grids;
-
-	friend class boost::serialization::access;
-	template<class Archive>
-	void save(Archive& ar, const unsigned version) const;
-	template<class Archive>
-	void load(Archive& ar, const unsigned version);
-	BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 #endif

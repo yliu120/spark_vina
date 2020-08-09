@@ -34,14 +34,6 @@ struct grid_dim {
 	grid_dim() : begin(0), end(0), n(0) {}
 	fl span() const { return end - begin; }
 	bool enabled() const { return (n > 0); }
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned version) {
-		ar & begin;
-		ar & end;
-		ar & n;
-	}
 };
 
 inline bool eq(const grid_dim& a, const grid_dim& b) {

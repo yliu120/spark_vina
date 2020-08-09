@@ -22,20 +22,6 @@
 
 #include <algorithm> // fill, etc
 
-#if 0 // use binary cache
-	// for some reason, binary archive gives four huge warnings in VC2008
-	#include <boost/archive/binary_oarchive.hpp>
-	#include <boost/archive/binary_iarchive.hpp>
-	typedef boost::archive::binary_iarchive iarchive;
-	typedef boost::archive::binary_oarchive oarchive;
-#else // use text cache
-	#include <boost/archive/text_oarchive.hpp>
-	#include <boost/archive/text_iarchive.hpp>
-	typedef boost::archive::text_iarchive iarchive;
-	typedef boost::archive::text_oarchive oarchive;
-#endif 
-
-#include <boost/serialization/split_member.hpp>
 #include "cache.h"
 #include "file.h"
 #include "szv_grid.h"
@@ -58,7 +44,7 @@ fl cache::eval      (const model& m, fl v) const { // needs m.coords
 	return e;
 }
 
-fl cache::eval_deriv(      model& m, fl v) const { // needs m.coords, sets m.minus_forces
+fl cache::eval_deriv(model& m, fl v) const { // needs m.coords, sets m.minus_forces
 	fl e = 0;
 	sz nat = num_atom_types(atu);
 
@@ -73,37 +59,6 @@ fl cache::eval_deriv(      model& m, fl v) const { // needs m.coords, sets m.min
 		m.minus_forces[i] = deriv;
 	}
 	return e;
-}
-
-#if 0 // No longer doing I/O of the cache
-void cache::read(const path& p) {
-	ifile in(p, std::ios::binary);
-	iarchive ar(in);
-	ar >> *this;
-}
-
-void cache::write(const path& p) const {
-	ofile out(p, std::ios::binary);
-	oarchive ar(out);
-	ar << *this;
-}
-#endif
-
-template<class Archive>
-void cache::save(Archive& ar, const unsigned version) const {
-	ar & scoring_function_version;
-	ar & gd;
-	ar & atu;
-	ar & grids;
-}
-
-template<class Archive>
-void cache::load(Archive& ar, const unsigned version) {
-	std::string name_tmp;       ar & name_tmp;       if(name_tmp != scoring_function_version) throw energy_mismatch();
-	grid_dims   gd_tmp;         ar &   gd_tmp;       if(!eq(gd_tmp, gd))                    throw grid_dims_mismatch();
-	atom_type::t atu_tmp;       ar &  atu_tmp;       if(atu_tmp != atu)                       throw cache_mismatch();
-
-	ar & grids;
 }
 
 void cache::populate(const model& m, const precalculate& p, const szv& atom_types_needed, bool display_progress) {

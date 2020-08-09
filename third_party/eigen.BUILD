@@ -4,22 +4,31 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-EIGEN_FILES = [
-    "Eigen/**",
-    "unsupported/Eigen/CXX11/**",
-    "unsupported/Eigen/FFT",
-    "unsupported/Eigen/KroneckerProduct",
-    "unsupported/Eigen/src/FFT/**",
-    "unsupported/Eigen/src/KroneckerProduct/**",
-    "unsupported/Eigen/MatrixFunctions",
-    "unsupported/Eigen/SpecialFunctions",
-    "unsupported/Eigen/src/MatrixFunctions/**",
-    "unsupported/Eigen/src/SpecialFunctions/**",
-]
-
 # Files known to be under MPL2 license.
-EIGEN_MPL2_HEADER_FILES = glob(
-    EIGEN_FILES,
+EIGEN_MINIMAL_FILES = glob(
+    [
+        "Eigen/Cholesky",
+        "Eigen/Dense",
+        "Eigen/src/Cholesky/**",
+        "Eigen/Core",
+        "Eigen/src/Core/**",
+        "Eigen/Eigenvalues",
+        "Eigen/src/Eigenvalues/**",
+        "Eigen/Geometry",
+        "Eigen/src/Geometry/**",
+        "Eigen/HouseHolder",
+        "Eigen/src/HouseHolder/**",
+        "Eigen/Jacobi",
+        "Eigen/src/Jacobi/**",
+        "Eigen/LU",
+        "Eigen/src/LU/**",
+        "Eigen/src/misc/**",
+        "Eigen/src/plugins/**",
+        "Eigen/QR",
+        "Eigen/src/QR/**",
+        "Eigen/SVD",
+        "Eigen/src/SVD/**",
+    ],
     exclude = [
         # Guarantees that any non-MPL2 file added to the list above will fail to
         # compile.
@@ -29,8 +38,8 @@ EIGEN_MPL2_HEADER_FILES = glob(
 )
 
 cc_library(
-    name = "eigen",
-    hdrs = EIGEN_MPL2_HEADER_FILES,
+    name = "eigen_minimal",
+    hdrs = EIGEN_MINIMAL_FILES,
     defines = [
         # This define (mostly) guarantees we don't link any problematic
         # code. We use it, but we do not rely on it, as evidenced above.
@@ -44,6 +53,6 @@ cc_library(
 
 filegroup(
     name = "eigen_header_files",
-    srcs = EIGEN_MPL2_HEADER_FILES,
+    srcs = EIGEN_MINIMAL_FILES,
     visibility = ["//visibility:public"],
 )

@@ -11,8 +11,7 @@ cc_library(
         "@absl//absl/memory:memory",
         "@absl//absl/strings",
         "@absl//absl/types:span",
-        "@boost//:math",
-        "@boost//:serialization",
+        "@eigen//:eigen_minimal",
         "@glog",
     ],
 )

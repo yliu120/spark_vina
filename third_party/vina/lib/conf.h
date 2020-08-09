@@ -88,10 +88,10 @@ struct rigid_change {
 struct rigid_conf {
 	vec position;
 	qt orientation;
-	rigid_conf() : position(0, 0, 0), orientation(qt_identity) {}
+	rigid_conf() : position(0, 0, 0), orientation(qt::Identity()) {}
 	void set_to_null() {
 		position = zero_vec;
-		orientation = qt_identity;
+		orientation.setIdentity();
 	}
 	void increment(const rigid_change& c, fl factor) {
 		position += factor * c.position;
@@ -134,13 +134,6 @@ struct rigid_conf {
 		::print(position);
 		::print(orientation);
 	}
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned version) {
-		ar & position;
-		ar & orientation;
-	}
 };
 
 struct ligand_change {
@@ -171,13 +164,6 @@ struct ligand_conf {
 		rigid.print();
 		printnl(torsions);
 	}
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned version) {
-		ar & rigid;
-		ar & torsions;
-	}
 };
 
 struct residue_change {
@@ -200,12 +186,6 @@ struct residue_conf {
 	}
 	void print() const {
 		printnl(torsions);
-	}
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned version) {
-		ar & torsions;
 	}
 };
 
@@ -317,7 +297,7 @@ struct conf {
 	void generate_internal(fl torsion_spread, fl rp, const conf* rs, rng& generator) { // torsions are not normalized after this
 		VINA_FOR_IN(i, ligands) {
 			ligands[i].rigid.position.assign(0);
-			ligands[i].rigid.orientation = qt_identity;
+			ligands[i].rigid.orientation.setIdentity();
 			const flv* torsions_rs = rs ? (&rs->ligands[i].torsions) : NULL;
 			torsions_generate(ligands[i].torsions, torsion_spread, rp, torsions_rs, generator);
 		}
@@ -343,13 +323,6 @@ struct conf {
 			ligands[i].print();
 		VINA_FOR_IN(i, flex)
 			flex[i].print();
-	}
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned version) {
-		ar & ligands;
-		ar & flex;
 	}
 };
 

@@ -50,16 +50,6 @@ public:
 	fl evaluate(const vec& location, fl slope, fl c, vec& deriv) const { return evaluate_aux(location, slope, c, &deriv); } // sets deriv
 private:
 	fl evaluate_aux(const vec& location, fl slope, fl v, vec* deriv) const; // sets *deriv if not NULL
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned version) {
-		ar & m_init;
-		ar & m_data;
-		ar & m_range;
-		ar & m_factor;
-		ar & m_dim_fl_minus_1;
-		ar & m_factor_inv;
-	}
 };
 
 #endif

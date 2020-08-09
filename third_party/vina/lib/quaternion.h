@@ -23,77 +23,42 @@
 #ifndef VINA_QUATERNION_H
 #define VINA_QUATERNION_H
 
-#include <boost/math/quaternion.hpp>
-#include <boost/serialization/split_free.hpp>
+// #include <boost/math/quaternion.hpp>
 
 #include "common.h"
 #include "random.h"
 
-typedef boost::math::quaternion<fl> qt;
+#include "Eigen/Geometry"
 
-// non-intrusive free function split serialization
-namespace boost {
-namespace serialization {
-template <class Archive>
-void save(Archive& ar, const qt& q, const unsigned version) {
-  fl q1 = q.R_component_1();
-  fl q2 = q.R_component_2();
-  fl q3 = q.R_component_3();
-  fl q4 = q.R_component_4();
-
-  ar& q1;
-  ar& q2;
-  ar& q3;
-  ar& q4;
-}
-template <typename Archive>
-void load(Archive& ar, qt& q, const unsigned version) {
-  fl a, b, c, d;
-  ar& a;
-  ar& b;
-  ar& c;
-  ar& d;
-  q = qt(a, b, c, d);
-}
-}
-}
-BOOST_SERIALIZATION_SPLIT_FREE(qt)
+// typedef boost::math::quaternion<fl> qt;
+using qt = Eigen::Quaterniond;
 
 // modified the original weird code to forward declaration.
 bool quaternion_is_normalized(const qt& q);
-bool eq(const qt& a, const qt& b);  // elementwise approximate equality - may
-                                    // return false for equivalent rotations
-const qt qt_identity(1, 0, 0, 0);
 qt angle_to_quaternion(const vec& axis,
                        fl angle);  // axis is assumed to be a unit vector
 qt angle_to_quaternion(const vec& rotation);  // rotation == angle * axis
 vec quaternion_to_angle(const qt& q);
 mat quaternion_to_r3(const qt& q);
 
-inline fl quaternion_norm_sqr(
-    const qt& q) {  // equivalent to sqr(boost::math::abs(const qt&))
-  return sqr(q.R_component_1()) + sqr(q.R_component_2()) +
-         sqr(q.R_component_3()) + sqr(q.R_component_4());
-}
-
 inline void quaternion_normalize(qt& q) {
-  const fl s = quaternion_norm_sqr(q);
-  assert(eq(s, sqr(boost::math::abs(q))));
+  const fl s = q.squaredNorm();
+  assert(eq(s, sqr(q.norm())));
   const fl a = std::sqrt(s);
   assert(a > epsilon_fl);
-  q *= 1 / a;
+  q.coeffs() /= a;
   assert(quaternion_is_normalized(q));
 }
 
 inline void quaternion_normalize_approx(qt& q, const fl tolerance = 1e-6) {
-  const fl s = quaternion_norm_sqr(q);
-  assert(eq(s, sqr(boost::math::abs(q))));
+  const fl s = q.squaredNorm();
+  assert(eq(s, sqr(q.norm())));
   if (std::abs(s - 1) < tolerance)
     ;  // most likely scenario
   else {
     const fl a = std::sqrt(s);
     assert(a > epsilon_fl);
-    q *= 1 / a;
+    q.coeffs() /= a;
     assert(quaternion_is_normalized(q));
   }
 }

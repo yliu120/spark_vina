@@ -37,9 +37,6 @@
 #include <sstream> // to_string
 #include <string> // probably included by the above anyway, common anyway
 
-#include <boost/serialization/vector.hpp> // can't come before the above two - wart fixed in upcoming Boost versions
-#include <boost/serialization/base_object.hpp> // movable_atom needs it - (derived from atom)
-
 #include "macros.h"
 
 typedef double fl;
@@ -121,12 +118,6 @@ struct vec {
 		data[0] = data[1] = data[2] = s;
 	}
 	sz size() const { return 3; }
-private:
-	friend class boost::serialization::access;
-	template<class Archive> 
-	void serialize(Archive& ar, const unsigned version) {
-		ar & data;
-	}
 };
 
 inline vec operator*(fl s, const vec& v) {

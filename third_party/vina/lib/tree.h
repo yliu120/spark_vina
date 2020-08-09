@@ -29,8 +29,8 @@
 struct frame {
   frame(const vec& origin_)
       : origin(origin_),
-        orientation_m(quaternion_to_r3(qt_identity)),
-        orientation_q(qt_identity) {}
+        orientation_m(quaternion_to_r3(qt::Identity())),
+        orientation_q(qt::Identity()) {}
   vec local_to_lab(const vec& local_coords) const {
     vec tmp;
     tmp = origin + orientation_m * local_coords;
@@ -121,9 +121,8 @@ struct segment : public axis_frame {
   segment(const vec& origin_, sz begin_, sz end_, const vec& axis_root,
           const frame& parent)
       : axis_frame(origin_, begin_, end_, axis_root) {
-    VINA_CHECK(eq(parent.orientation(), qt_identity));  // the only initial
-                                                        // parent orientation
-                                                        // this c'tor supports
+    // The original vina impl uses 0.001 as fl_tolerance.
+    VINA_CHECK(parent.orientation().isApprox(qt::Identity(), 0.001));
     relative_axis = axis;
     relative_origin = origin - parent.get_origin();
   }

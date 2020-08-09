@@ -24,15 +24,8 @@
 
 bool quaternion_is_normalized(
     const qt& q) {  // not in the interface, used in assertions
-  return eq(quaternion_norm_sqr(q), 1) && eq(boost::math::abs(q), 1);
-}
-
-bool eq(const qt& a, const qt& b) {  // elementwise approximate equality - may
-                                     // return false for equivalent rotations
-  return eq(a.R_component_1(), b.R_component_1()) &&
-         eq(a.R_component_2(), b.R_component_2()) &&
-         eq(a.R_component_3(), b.R_component_3()) &&
-         eq(a.R_component_4(), b.R_component_4());
+  // return eq(q.squaredNorm(), 1.0) && eq(boost::math::abs(q), 1.0);
+  return eq(q.norm(), 1.0);
 }
 
 qt angle_to_quaternion(const vec& axis,
@@ -47,27 +40,24 @@ qt angle_to_quaternion(const vec& axis,
 }
 
 qt angle_to_quaternion(const vec& rotation) {
-  // fl angle = tvmet::norm2(rotation);
   fl angle = rotation.norm();
   if (angle > epsilon_fl) {
-    // vec axis;
-    // axis = rotation / angle;
     vec axis = (1 / angle) * rotation;
     return angle_to_quaternion(axis, angle);
   }
-  return qt_identity;
+  return qt::Identity();
 }
 
 vec quaternion_to_angle(const qt& q) {
   assert(quaternion_is_normalized(q));
-  const fl c = q.R_component_1();
+  const fl c = q.x();
   if (c > -1 && c < 1) {  // c may in theory be outside [-1, 1] even with
                           // approximately normalized q, due to rounding errors
     fl angle = 2 * std::acos(c);      // acos is in [0, pi]
     if (angle > pi) angle -= 2 * pi;  // now angle is in [-pi, pi]
-    vec axis(q.R_component_2(), q.R_component_3(), q.R_component_4());
-    fl s = std::sin(angle /
-                    2);  // perhaps not very efficient to calculate sin of acos
+    vec axis(q.y(), q.z(), q.w());
+    // perhaps not very efficient to calculate sin of acos
+    fl s = std::sin(angle / 2);
     if (std::abs(s) < epsilon_fl) return zero_vec;
     axis *= (angle / s);
     return axis;
@@ -78,10 +68,10 @@ vec quaternion_to_angle(const qt& q) {
 mat quaternion_to_r3(const qt& q) {
   assert(quaternion_is_normalized(q));
 
-  const fl a = q.R_component_1();
-  const fl b = q.R_component_2();
-  const fl c = q.R_component_3();
-  const fl d = q.R_component_4();
+  const fl a = q.x();
+  const fl b = q.y();
+  const fl c = q.z();
+  const fl d = q.w();
 
   const fl aa = a * a;
   const fl ab = a * b;
@@ -117,14 +107,14 @@ mat quaternion_to_r3(const qt& q) {
 qt random_orientation(rng& generator) {
   qt q(random_normal(0, 1, generator), random_normal(0, 1, generator),
        random_normal(0, 1, generator), random_normal(0, 1, generator));
-  fl nrm = boost::math::abs(q);
+  fl nrm = q.norm();
   if (nrm > epsilon_fl) {
-    q /= nrm;
+    q.coeffs() /= nrm;
     assert(quaternion_is_normalized(q));
     return q;
   } else
-    return random_orientation(
-        generator);  // this call should almost never happen
+  // this call should almost never happen
+  return random_orientation(generator);  
 }
 
 void quaternion_increment(qt& q, const vec& rotation) {
@@ -139,9 +129,8 @@ vec quaternion_difference(
     const qt& a) {  // rotation that needs to be applied to convert a to b
   quaternion_is_normalized(a);
   quaternion_is_normalized(b);
-  qt tmp = b;
-  tmp /= a;                         // b = tmp * a    =>   b * inv(a) = tmp
-  return quaternion_to_angle(tmp);  // already assert normalization
+  // b = tmp * a    =>   b * inv(a) = tmp
+  return quaternion_to_angle(b * a.inverse());
 }
 
 void print(const qt& q, std::ostream& out) {  // print as an angle

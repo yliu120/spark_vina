@@ -84,18 +84,6 @@ struct conf_independent_inputs {
               // function friends
   unsigned atom_rotors(const model& m, const atom_index& i)
       const;  // the number of rotatable bonds to heavy ligand atoms
-
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned version) {
-    ar& num_tors;
-    ar& num_rotors;
-    ar& num_heavy_atoms;
-    ar& num_hydrophobic_atoms;
-    ar& ligand_max_num_h_bonds;
-    ar& num_ligands;
-    ar& ligand_lengths_sum;
-  }
 };
 
 struct conf_independent : public term {
@@ -152,14 +140,6 @@ struct factors {
   // compiler bug? getting warnings here
   sz num_weights() const { return (e.size() > i.size()) ? e.size() : i.size(); }
   fl eval(const flv& weights, bool include_internal) const;
-
- private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned version) {
-    ar& e;
-    ar& i;
-  }
 };
 
 struct terms {
