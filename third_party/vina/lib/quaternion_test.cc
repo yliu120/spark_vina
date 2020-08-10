@@ -48,6 +48,34 @@ TEST(QuaternionTest, AngleToQuaternion) {
   EXPECT_NEAR(inverse_angle[2], 0.5677749, 1e-6);
 }
 
+TEST(QuaternionTest, ToRotationMatrix) {
+  qt test_qt(1.0, 2.0, 3.0, 4.0);
+  std::cout << "Test Input: " << test_qt << "\n";
+  EXPECT_FALSE(quaternion_is_normalized(test_qt));
+
+  quaternion_normalize_approx(test_qt);
+  std::cout << "Test Input (Normalized): " << test_qt << "\n";
+
+  const mat rotation = quaternion_to_r3(test_qt);
+
+  EXPECT_NEAR(rotation(0, 0), -0.6666666, 1e-6);
+  EXPECT_NEAR(rotation(0, 1), 0.13333333, 1e-6);
+  EXPECT_NEAR(rotation(0, 2), 0.7333333, 1e-6);
+  EXPECT_NEAR(rotation(1, 0), 0.66666666, 1e-6);
+  EXPECT_NEAR(rotation(1, 1), -0.3333333, 1e-6);
+  EXPECT_NEAR(rotation(1, 2), 0.66666666, 1e-6);
+  EXPECT_NEAR(rotation(2, 0), 0.33333333, 1e-6);
+  EXPECT_NEAR(rotation(2, 1), 0.93333333, 1e-6);
+  EXPECT_NEAR(rotation(2, 2), 0.13333333, 1e-6);
+}
+
+TEST(QuaternionTest, RandomOrientation) {
+  rng generator(1);
+  qt random_qt = random_orientation(generator);
+  std::cout << "Random Quaternion: " << random_qt << "\n";
+  EXPECT_TRUE(quaternion_is_normalized(random_qt));
+}
+
 TEST(QuaternionTest, QuaternionIncrement) {
   qt test_qt(1.0, 2.0, 3.0, 4.0);
   std::cout << "Test Input: " << test_qt << "\n";
