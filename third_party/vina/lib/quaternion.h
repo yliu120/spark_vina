@@ -42,16 +42,18 @@ vec quaternion_to_angle(const qt& q);
 mat quaternion_to_r3(const qt& q);
 
 inline void quaternion_normalize_approx(qt& q, const fl tolerance = 1e-6) {
-  const fl s = q.squaredNorm();
-  assert(eq(s, sqr(q.norm())));
-  if (std::abs(s - 1) < tolerance)
-    ;  // most likely scenario
-  else {
-    const fl a = std::sqrt(s);
-    assert(a > epsilon_fl);
-    q.coeffs() /= a;
-    assert(quaternion_is_normalized(q));
-  }
+  // const fl s = q.squaredNorm();
+  // assert(eq(s, sqr(q.norm())));
+  // if (std::abs(s - 1) < tolerance)
+  //   ;  // most likely scenario
+  // else {
+  //   const fl a = std::sqrt(s);
+  //   assert(a > epsilon_fl);
+  //   q.coeffs() /= a;
+  //   assert(quaternion_is_normalized(q));
+  // }
+  q.normalize();
+  assert(quaternion_is_normalized(q));
 }
 
 qt random_orientation(rng& generator);

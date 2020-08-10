@@ -50,12 +50,12 @@ qt angle_to_quaternion(const vec& rotation) {
 
 vec quaternion_to_angle(const qt& q) {
   assert(quaternion_is_normalized(q));
-  const fl c = q.x();
+  const fl c = q.w();
   if (c > -1 && c < 1) {  // c may in theory be outside [-1, 1] even with
                           // approximately normalized q, due to rounding errors
     fl angle = 2 * std::acos(c);      // acos is in [0, pi]
     if (angle > pi) angle -= 2 * pi;  // now angle is in [-pi, pi]
-    vec axis(q.y(), q.z(), q.w());
+    vec axis(q.x(), q.y(), q.z());
     // perhaps not very efficient to calculate sin of acos
     fl s = std::sin(angle / 2);
     if (std::abs(s) < epsilon_fl) return zero_vec;
@@ -68,38 +68,48 @@ vec quaternion_to_angle(const qt& q) {
 mat quaternion_to_r3(const qt& q) {
   assert(quaternion_is_normalized(q));
 
-  const fl a = q.x();
-  const fl b = q.y();
-  const fl c = q.z();
-  const fl d = q.w();
+  // const fl a = q.w();
+  // const fl b = q.x();
+  // const fl c = q.y();
+  // const fl d = q.z();
 
-  const fl aa = a * a;
-  const fl ab = a * b;
-  const fl ac = a * c;
-  const fl ad = a * d;
-  const fl bb = b * b;
-  const fl bc = b * c;
-  const fl bd = b * d;
-  const fl cc = c * c;
-  const fl cd = c * d;
-  const fl dd = d * d;
+  // const fl aa = a * a;
+  // const fl ab = a * b;
+  // const fl ac = a * c;
+  // const fl ad = a * d;
+  // const fl bb = b * b;
+  // const fl bc = b * c;
+  // const fl bd = b * d;
+  // const fl cc = c * c;
+  // const fl cd = c * d;
+  // const fl dd = d * d;
 
-  assert(eq(aa + bb + cc + dd, 1));
+  // assert(eq(aa + bb + cc + dd, 1));
+  auto matrix = q.toRotationMatrix();
 
   mat tmp;
 
   // from http://www.boost.org/doc/libs/1_35_0/libs/math/quaternion/TQE.pdf
-  tmp(0, 0) = (aa + bb - cc - dd);
-  tmp(0, 1) = 2 * (-ad + bc);
-  tmp(0, 2) = 2 * (ac + bd);
+  // tmp(0, 0) = (aa + bb - cc - dd);
+  // tmp(0, 1) = 2 * (-ad + bc);
+  // tmp(0, 2) = 2 * (ac + bd);
 
-  tmp(1, 0) = 2 * (ad + bc);
-  tmp(1, 1) = (aa - bb + cc - dd);
-  tmp(1, 2) = 2 * (-ab + cd);
+  // tmp(1, 0) = 2 * (ad + bc);
+  // tmp(1, 1) = (aa - bb + cc - dd);
+  // tmp(1, 2) = 2 * (-ab + cd);
 
-  tmp(2, 0) = 2 * (-ac + bd);
-  tmp(2, 1) = 2 * (ab + cd);
-  tmp(2, 2) = (aa - bb - cc + dd);
+  // tmp(2, 0) = 2 * (-ac + bd);
+  // tmp(2, 1) = 2 * (ab + cd);
+  // tmp(2, 2) = (aa - bb - cc + dd);
+  tmp(0, 0) = matrix(0, 0);
+  tmp(0, 1) = matrix(0, 1);
+  tmp(0, 2) = matrix(0, 2);
+  tmp(1, 0) = matrix(1, 0);
+  tmp(1, 1) = matrix(1, 1);
+  tmp(1, 2) = matrix(1, 2);
+  tmp(2, 0) = matrix(2, 0);
+  tmp(2, 1) = matrix(2, 1);
+  tmp(2, 2) = matrix(2, 2);
 
   return tmp;
 }
@@ -136,7 +146,7 @@ void print(const qt& q, std::ostream& out) {  // print as an angle
   print(quaternion_to_angle(q), out);
 }
 
-fl GetA(const qt& q) { return q.x(); }
-fl GetB(const qt& q) { return q.y(); }
-fl GetC(const qt& q) { return q.z(); }
-fl GetD(const qt& q) { return q.w(); }
+fl GetA(const qt& q) { return q.w(); }
+fl GetB(const qt& q) { return q.x(); }
+fl GetC(const qt& q) { return q.y(); }
+fl GetD(const qt& q) { return q.z(); }

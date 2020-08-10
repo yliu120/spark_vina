@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 std::ostream& operator<<(std::ostream& os, const qt& q) {
-  os << '(' << q.x() << ',' << q.y() << ',' << q.z() << ',' << q.w() << ')';
+  os << q.x() << "i + " << q.y() << "j + " << q.z() << "k" << " + " << q.w();
   return os;
 }
 

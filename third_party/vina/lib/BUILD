@@ -4,7 +4,10 @@ licenses(["notice"])
 
 cc_library(
     name = "vina_libs",
-    srcs = glob(["*.cpp"]) + glob(["*.cc"]),
+    srcs = glob(["*.cpp"]) + glob(
+        ["*.cc"],
+        exclude = ["quaternion_test.cc"],
+    ),
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"],
     deps = [
