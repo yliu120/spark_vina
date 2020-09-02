@@ -88,7 +88,7 @@ http_archive(
     strip_prefix = "abseil-cpp-20200225.2",
     urls = [
         "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
-	"https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/abslcpp.tar.gz",
+        "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/abslcpp.tar.gz",
     ],
 )
 

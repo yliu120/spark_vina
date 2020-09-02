@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 
 // Low-level C headers
 #include <fcntl.h>
@@ -35,31 +36,31 @@ void WriteTestDataFile(const std::filesystem::path& path, int size) {
 void ReadFileWithSyscall(const std::filesystem::path& path, int file_size) {
   int fd = open(path.c_str(), O_RDONLY);
   LOG_IF(FATAL, fd == -1) << "ReadFileWithSyscall cannot open file!";
-  char* buffer = static_cast<char*>(malloc(kDefaultBufferSize));
+  auto buffer = std::make_unique<char[]>(kDefaultBufferSize);
 
-  ssize_t bytes_read = read(fd, buffer, kDefaultBufferSize);
+  ssize_t bytes_read = read(fd, buffer.get(), kDefaultBufferSize);
   ssize_t total_bytes_read = bytes_read;
   while (bytes_read == kDefaultBufferSize) {
-    bytes_read = read(fd, buffer, kDefaultBufferSize);
+    bytes_read = read(fd, buffer.get(), kDefaultBufferSize);
     total_bytes_read += bytes_read;
   }
 
   LOG_IF(FATAL, total_bytes_read != file_size)
       << "ReadFileWithSyscall Read failed";
-  free(buffer);
   LOG_IF(FATAL, close(fd) == -1) << "ReadFileWithSyscall cannot close file!";
 }
 
 void ReadFileWithFread(const std::filesystem::path& path, int file_size) {
   std::FILE* fp = std::fopen(path.c_str(), "r");
   LOG_IF(FATAL, fp == nullptr) << "ReadFileWithFread cannot open file!";
-  char* buffer = static_cast<char*>(malloc(kDefaultBufferSize));
+  auto buffer = std::make_unique<char[]>(kDefaultBufferSize);
 
   ssize_t bytes_read =
-      std::fread(buffer, sizeof(buffer[0]), kDefaultBufferSize, fp);
+      std::fread(buffer.get(), sizeof(buffer[0]), kDefaultBufferSize, fp);
   ssize_t total_bytes_read = bytes_read;
   while (bytes_read == kDefaultBufferSize) {
-    bytes_read = std::fread(buffer, sizeof(buffer[0]), kDefaultBufferSize, fp);
+    bytes_read =
+        std::fread(buffer.get(), sizeof(buffer[0]), kDefaultBufferSize, fp);
     total_bytes_read += bytes_read;
   }
 
@@ -71,10 +72,10 @@ void ReadFileWithFread(const std::filesystem::path& path, int file_size) {
 
 void ReadFileWithIfstream(const std::filesystem::path& path, int file_size) {
   std::ifstream stream(path, std::ios::in);
-  char* buffer = static_cast<char*>(malloc(kDefaultBufferSize));
+  auto buffer = std::make_unique<char[]>(kDefaultBufferSize);
 
   ssize_t total_bytes_read = 0;
-  while (stream.read(buffer, kDefaultBufferSize)) {
+  while (stream.read(buffer.get(), kDefaultBufferSize)) {
     total_bytes_read += stream.gcount();
   }
   total_bytes_read += stream.gcount();
@@ -89,8 +90,9 @@ void ReadFileWithMMap(const std::filesystem::path& path, int file_size) {
   char* mapped = static_cast<char*>(
       mmap(nullptr, file_size, PROT_READ, MAP_PRIVATE, fd, /*offset=*/0));
   // Mimics memory read access to each page.
+  char c;
   for (int i = 0; i < file_size; i += kPageSize) {
-    benchmark::DoNotOptimize(mapped[i]);
+    benchmark::DoNotOptimize(c = mapped[i]);
   }
 
   LOG_IF(FATAL, mapped == MAP_FAILED)
