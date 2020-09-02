@@ -67,40 +67,9 @@ vec quaternion_to_angle(const qt& q) {
 
 mat quaternion_to_r3(const qt& q) {
   assert(quaternion_is_normalized(q));
-
-  // const fl a = q.w();
-  // const fl b = q.x();
-  // const fl c = q.y();
-  // const fl d = q.z();
-
-  // const fl aa = a * a;
-  // const fl ab = a * b;
-  // const fl ac = a * c;
-  // const fl ad = a * d;
-  // const fl bb = b * b;
-  // const fl bc = b * c;
-  // const fl bd = b * d;
-  // const fl cc = c * c;
-  // const fl cd = c * d;
-  // const fl dd = d * d;
-
-  // assert(eq(aa + bb + cc + dd, 1));
   auto matrix = q.toRotationMatrix();
 
   mat tmp;
-
-  // from http://www.boost.org/doc/libs/1_35_0/libs/math/quaternion/TQE.pdf
-  // tmp(0, 0) = (aa + bb - cc - dd);
-  // tmp(0, 1) = 2 * (-ad + bc);
-  // tmp(0, 2) = 2 * (ac + bd);
-
-  // tmp(1, 0) = 2 * (ad + bc);
-  // tmp(1, 1) = (aa - bb + cc - dd);
-  // tmp(1, 2) = 2 * (-ab + cd);
-
-  // tmp(2, 0) = 2 * (-ac + bd);
-  // tmp(2, 1) = 2 * (ab + cd);
-  // tmp(2, 2) = (aa - bb - cc + dd);
   tmp(0, 0) = matrix(0, 0);
   tmp(0, 1) = matrix(0, 1);
   tmp(0, 2) = matrix(0, 2);
@@ -133,11 +102,8 @@ void quaternion_increment(qt& q, const vec& rotation) {
   quaternion_normalize_approx(q);
 }
 
-vec quaternion_difference(
-    const qt& b,
-    const qt& a) {  // rotation that needs to be applied to convert a to b
-  quaternion_is_normalized(a);
-  quaternion_is_normalized(b);
+vec quaternion_difference(const qt& b, const qt& a) {
+  // rotation that needs to be applied to convert a to b
   // b = tmp * a    =>   b * inv(a) = tmp
   return quaternion_to_angle(b * a.inverse());
 }
@@ -145,8 +111,3 @@ vec quaternion_difference(
 void print(const qt& q, std::ostream& out) {  // print as an angle
   print(quaternion_to_angle(q), out);
 }
-
-fl GetA(const qt& q) { return q.w(); }
-fl GetB(const qt& q) { return q.x(); }
-fl GetC(const qt& q) { return q.y(); }
-fl GetD(const qt& q) { return q.z(); }

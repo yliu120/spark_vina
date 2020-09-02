@@ -23,49 +23,32 @@
 #ifndef VINA_QUATERNION_H
 #define VINA_QUATERNION_H
 
-// #include <boost/math/quaternion.hpp>
 
 #include "common.h"
 #include "random.h"
 
 #include "Eigen/Geometry"
 
-// typedef boost::math::quaternion<fl> qt;
 using qt = Eigen::Quaterniond;
 
 // modified the original weird code to forward declaration.
 bool quaternion_is_normalized(const qt& q);
-qt angle_to_quaternion(const vec& axis,
-                       fl angle);  // axis is assumed to be a unit vector
-qt angle_to_quaternion(const vec& rotation);  // rotation == angle * axis
+
+// axis is assumed to be a unit vector
+qt angle_to_quaternion(const vec& axis, fl angle);
+qt angle_to_quaternion(const vec& rotation);
 vec quaternion_to_angle(const qt& q);
 mat quaternion_to_r3(const qt& q);
 
 inline void quaternion_normalize_approx(qt& q, const fl tolerance = 1e-6) {
-  // const fl s = q.squaredNorm();
-  // assert(eq(s, sqr(q.norm())));
-  // if (std::abs(s - 1) < tolerance)
-  //   ;  // most likely scenario
-  // else {
-  //   const fl a = std::sqrt(s);
-  //   assert(a > epsilon_fl);
-  //   q.coeffs() /= a;
-  //   assert(quaternion_is_normalized(q));
-  // }
   q.normalize();
   assert(quaternion_is_normalized(q));
 }
 
 qt random_orientation(rng& generator);
 void quaternion_increment(qt& q, const vec& rotation);
-vec quaternion_difference(
-    const qt& b,
-    const qt& a);  // rotation that needs to be applied to convert a to b
-void print(const qt& q, std::ostream& out = std::cout);  // print as an angle
-
-fl GetA(const qt& q);
-fl GetB(const qt& q);
-fl GetC(const qt& q);
-fl GetD(const qt& q);
+// rotation that needs to be applied to convert a to b
+vec quaternion_difference(const qt& b, const qt& a);
+void print(const qt& q, std::ostream& out = std::cout);
 
 #endif

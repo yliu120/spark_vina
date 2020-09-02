@@ -53,9 +53,9 @@ TEST(QuaternionTest, AngleToQuaternion) {
   EXPECT_NEAR(result.z(), 0.278127, 1e-6);
 
   const vec inverse_angle = quaternion_to_angle(result);
-  EXPECT_NEAR(inverse_angle[0], 0.2271093, 1e-6);
-  EXPECT_NEAR(inverse_angle[1], 0.3406647, 1e-6);
-  EXPECT_NEAR(inverse_angle[2], 0.5677749, 1e-6);
+  EXPECT_NEAR(inverse_angle[0], 0.22710939999, 1e-9);
+  EXPECT_NEAR(inverse_angle[1], 0.340664799999, 1e-9);
+  EXPECT_NEAR(inverse_angle[2], 0.5677749, 1e-9);
 }
 
 TEST(QuaternionTest, ToRotationMatrix) {
@@ -66,15 +66,15 @@ TEST(QuaternionTest, ToRotationMatrix) {
 
   const mat rotation = quaternion_to_r3(test_qt);
 
-  EXPECT_NEAR(rotation(0, 0), -0.6666666, 1e-6);
-  EXPECT_NEAR(rotation(0, 1), 0.13333333, 1e-6);
-  EXPECT_NEAR(rotation(0, 2), 0.7333333, 1e-6);
-  EXPECT_NEAR(rotation(1, 0), 0.66666666, 1e-6);
-  EXPECT_NEAR(rotation(1, 1), -0.3333333, 1e-6);
-  EXPECT_NEAR(rotation(1, 2), 0.66666666, 1e-6);
-  EXPECT_NEAR(rotation(2, 0), 0.33333333, 1e-6);
-  EXPECT_NEAR(rotation(2, 1), 0.93333333, 1e-6);
-  EXPECT_NEAR(rotation(2, 2), 0.13333333, 1e-6);
+  EXPECT_NEAR(rotation(0, 0), -0.66666666666666652, 1e-9);
+  EXPECT_NEAR(rotation(0, 1), 0.13333333333333336, 1e-9);
+  EXPECT_NEAR(rotation(0, 2), 0.73333333333333317, 1e-9);
+  EXPECT_NEAR(rotation(1, 0), 0.66666666666666652, 1e-9);
+  EXPECT_NEAR(rotation(1, 1), -0.33333333333333326, 1e-9);
+  EXPECT_NEAR(rotation(1, 2), 0.66666666666666663, 1e-9);
+  EXPECT_NEAR(rotation(2, 0), 0.3333333333333332, 1e-9);
+  EXPECT_NEAR(rotation(2, 1), 0.93333333333333324, 1e-9);
+  EXPECT_NEAR(rotation(2, 2), 0.1333333333333333, 1e-9);
 }
 
 TEST(QuaternionTest, RandomOrientation) {
@@ -110,7 +110,7 @@ TEST(QuaternionTest, QuaternionDifference) {
   quaternion_normalize_approx(test_b);
 
   const vec rotation = quaternion_difference(test_a, test_b);
-  EXPECT_NEAR(rotation.data[0], 0.0995864, 1e-6);
-  EXPECT_NEAR(rotation.data[1], 0.0, 1e-6);
-  EXPECT_NEAR(rotation.data[2], 0.19917286, 1e-6);
+  EXPECT_NEAR(rotation.data[0], 0.099586430700069686, 1e-9);
+  EXPECT_NEAR(rotation.data[1], 0.0, 1e-9);
+  EXPECT_NEAR(rotation.data[2], 0.19917286140013937, 1e-9);
 }
