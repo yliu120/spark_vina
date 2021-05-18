@@ -75,7 +75,7 @@ public final class ZincFilesToParquetV2Main {
     final String sourceDir = cmdLine.getOptionValue(sourceDirOption.getLongOpt());
     final String outputFile = cmdLine.getOptionValue(outputFileOption.getLongOpt());
     Optional<List<String>> metaDataFilePaths = SparkVinaUtils
-        .getAllLigandFilesInDirectory(sourceDir, Pattern
+        .getAllFilesInDirectory(sourceDir, Pattern
             .compile(".*.txt"));
     if (!metaDataFilePaths.isPresent() || metaDataFilePaths.get().isEmpty()) {
       LOGGER.error("Collecting txt files failed.");

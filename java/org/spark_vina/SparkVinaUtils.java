@@ -16,9 +16,9 @@ public class SparkVinaUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaUtils.class);
 
-  public static Optional<List<String>> getAllLigandFilesInDirectory(String ligandDir,
+  public static Optional<List<String>> getAllFilesInDirectory(String directory,
       Pattern fileNamePattern) {
-    try (Stream<Path> paths = Files.walk(Paths.get(ligandDir))) {
+    try (Stream<Path> paths = Files.walk(Paths.get(directory))) {
       List<String> result =
           paths
               .filter(
@@ -29,7 +29,7 @@ public class SparkVinaUtils {
       LOGGER.info("Read {} files in total.", result.size());
       return Optional.of(result);
     } catch (IOException e) {
-      LOGGER.info("Failed to walk the input ligand directory: {}.", ligandDir);
+      LOGGER.info("Failed to walk the input directory: {}.", directory);
       e.printStackTrace();
     }
     return Optional.empty();

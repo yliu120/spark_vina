@@ -82,10 +82,10 @@ public final class ZincFilesToParquetMain {
     }
 
     Optional<List<String>> mol2LigandFilePaths = SparkVinaUtils
-        .getAllLigandFilesInDirectory(sourceDir, Pattern
+        .getAllFilesInDirectory(sourceDir, Pattern
             .compile(".*.mol2"));
     Optional<List<String>> metaDataFilePaths = SparkVinaUtils
-        .getAllLigandFilesInDirectory(sourceDir, Pattern
+        .getAllFilesInDirectory(sourceDir, Pattern
             .compile(".*.txt"));
     if (!mol2LigandFilePaths.isPresent() || mol2LigandFilePaths.get().isEmpty()) {
       LOGGER.error("Collecting mol2 files failed.");

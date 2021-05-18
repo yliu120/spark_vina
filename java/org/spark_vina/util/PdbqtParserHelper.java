@@ -76,7 +76,7 @@ public final class PdbqtParserHelper {
     }
 
     compoundBuilder.setOriginalPdbqt(ligandString);
-    compoundBuilder.setMolecularWeight((int) molecularWeight);
+    compoundBuilder.setMolecularWeightMillis((int) (molecularWeight * 1000));
     return Optional.of(compoundBuilder.build());
   }
 

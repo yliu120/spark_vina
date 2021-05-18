@@ -38,12 +38,12 @@ public final class SparkVinaMain {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkVinaMain.class);
 
   public static void main(String[] args) throws Exception {
-    final Option receptorPathOption =
+    final Option receptorDirOption =
         Option.builder()
-            .longOpt("receptor_path")
+            .longOpt("receptor_dir")
             .required()
             .hasArg()
-            .desc("The path of the receptor's pdbqt file.")
+            .desc("The directory containing the receptors' pdbqt files (one per receptor).")
             .build();
     final Option ligandDirOption =
         Option.builder()
@@ -139,7 +139,7 @@ public final class SparkVinaMain {
 
     Options options = new Options();
     options
-        .addOption(receptorPathOption)
+        .addOption(receptorDirOption)
         .addOption(ligandDirOption)
         .addOption(outputDirOption)
         .addOption(centerXOption)
@@ -166,7 +166,7 @@ public final class SparkVinaMain {
     }
 
     // Required args.
-    final String receptorPath = cmdLine.getOptionValue(receptorPathOption.getLongOpt());
+    final String receptorDir = cmdLine.getOptionValue(receptorDirOption.getLongOpt());
     final String ligandDir = cmdLine.getOptionValue(ligandDirOption.getLongOpt());
     final String outputDir = cmdLine.getOptionValue(outputDirOption.getLongOpt());
     // Optional parameters.
@@ -216,8 +216,8 @@ public final class SparkVinaMain {
             ? ((Number) cmdLine.getParsedOptionValue(thresholdOption.getLongOpt())).doubleValue()
             : DEFAULT_THRESHOLD;
 
-    if (!Files.exists(Paths.get(receptorPath))) {
-      LOGGER.error("Receptor path {} doesn't exist.", receptorPath);
+    if (!Files.exists(Paths.get(receptorDir))) {
+      LOGGER.error("Receptor path {} doesn't exist.", receptorDir);
       return;
     }
     if (!Files.exists(Paths.get(ligandDir))) {
@@ -225,7 +225,14 @@ public final class SparkVinaMain {
       return;
     }
 
-    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllLigandFilesInDirectory(ligandDir,
+    Optional<List<String>> receptorFilePaths = SparkVinaUtils
+        .getAllFilesInDirectory(receptorDir, Pattern.compile(".*.pdbqt"));
+    if (!receptorFilePaths.isPresent() || receptorFilePaths.get().isEmpty()) {
+      LOGGER.error("Collecting receptor files failed.");
+      return;
+    }
+
+    Optional<List<String>> ligandFilePaths = SparkVinaUtils.getAllFilesInDirectory(ligandDir,
         Pattern.compile(".*.(pdbqt|pdbqt.gz)"));
     if (!ligandFilePaths.isPresent() || ligandFilePaths.get().isEmpty()) {
       LOGGER.error("Collecting ligand files failed.");
@@ -245,7 +252,8 @@ public final class SparkVinaMain {
         javaSparkContext.sc().longAccumulator("NumModelsProcessed");
     LongAccumulator numModelsFit = javaSparkContext.sc().longAccumulator("NumModelsFit");
 
-    JavaRDD<Row> result =
+    // Loads ligands
+    JavaRDD<String> ligands =
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
@@ -255,53 +263,59 @@ public final class SparkVinaMain {
                         .flatMap(
                             ligandString -> Collections.nCopies(numRepeats, ligandString).stream())
                         .collect(Collectors.toList())
-                        .iterator())
-            .repartition(numMapTasksPerExecutor * numOfExecutors)
-            .map(
-                model -> {
-                  numModelsProduced.add(1);
-                  return model;
-                })
-            .map(
-                new FitCompoundFunction(
-                    receptorPath,
-                    centerX,
-                    centerY,
-                    centerZ,
-                    sizeX,
-                    sizeY,
-                    sizeZ,
-                    numCpuPerTasks,
-                    numModes,
-                    threshold))
-            .map(
-                vinaResult -> {
-                  numModelsProcessed.add(1);
-                  return vinaResult;
-                })
-            .filter(
-                vinaResult -> {
-                  boolean notNull = (vinaResult != null);
-                  if (notNull) {
-                    numModelsFit.add(1);
-                  }
-                  return notNull;
-                })
-            .keyBy(vinaResult -> vinaResult.getLigandId())
-            .groupByKey()
-            .map(pair -> new DockingResult(pair._1, pair._2))
-            .map(
-                dockingResult ->
-                    RowFactory.create(
-                        dockingResult.getCompoundKey(),
-                        dockingResult.getOriginalPdbqt(),
-                        dockingResult.getNumModels(),
-                        dockingResult.getAffinityMean(),
-                        dockingResult.getAffinityStd(),
-                        dockingResult.getVinaResults()));
+                        .iterator());
+
+    JavaRDD<Row> finalResult = javaSparkContext.emptyRDD();
+    for (String receptorPath : receptorFilePaths.get()) {
+      JavaRDD<Row> result = ligands.repartition(numMapTasksPerExecutor * numOfExecutors)
+          .map(
+              model -> {
+                numModelsProduced.add(1);
+                return model;
+              })
+          .map(
+              new FitCompoundFunction(
+                  receptorPath,
+                  centerX,
+                  centerY,
+                  centerZ,
+                  sizeX,
+                  sizeY,
+                  sizeZ,
+                  numCpuPerTasks,
+                  numModes,
+                  threshold))
+          .map(
+              vinaResult -> {
+                numModelsProcessed.add(1);
+                return vinaResult;
+              })
+          .filter(
+              vinaResult -> {
+                boolean notNull = (vinaResult != null);
+                if (notNull) {
+                  numModelsFit.add(1);
+                }
+                return notNull;
+              })
+          .keyBy(vinaResult -> vinaResult.getLigandId())
+          .groupByKey()
+          .map(pair -> new DockingResult(pair._1, pair._2))
+          .map(
+              dockingResult ->
+                  RowFactory.create(
+                      dockingResult.getCompoundKey(),
+                      receptorPath,
+                      dockingResult.getOriginalPdbqt(),
+                      dockingResult.getNumModels(),
+                      dockingResult.getAffinityMean(),
+                      dockingResult.getAffinityStd(),
+                      dockingResult.getVinaResults()));
+      finalResult.union(result);
+    }
 
     spark
-        .createDataFrame(result, getDockingResultSchema())
+        .createDataFrame(finalResult, getDockingResultSchema())
         .write()
         .parquet(outputDir);
 
