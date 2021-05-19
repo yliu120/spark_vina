@@ -109,8 +109,8 @@ against the receptor (protein: `HIF2a` in our example).
 + Run with `bazel run`:
   ```bash
     bazel run //:spark_vina_main                                                \
-         --receptor_path=./data/protein/4ZPH-docking.pdb.pdbqt                  \
-         --ligand_dir=/Users/yunlongl/Downloads/spark_vina/data/ligands/HB/AAMP \
+         --receptor_dir=./data/protein/                                        \
+         --ligand_dir=./data/ligands/HB/AAMP                                    \
          --center_x=170.0 --center_y=-110.0 --center_z=-110.0                   \
          --size_x=10.0 --size_y=10.0 --size_z=10.0                              \
          --num_modes=5 --output_dir=$HOME/output/
@@ -118,8 +118,8 @@ against the receptor (protein: `HIF2a` in our example).
 + Run with `java -jar':
   ```bash
   java -jar bazel-bin/spark_vina_main_deploy.jar                              \
-       --receptor_path=./data/protein/4ZPH-docking.pdb.pdbqt                  \
-       --ligand_dir=/Users/yunlongl/Downloads/spark_vina/data/ligands/HB/AAMP \
+       --receptor_dir=./data/protein                                         \
+       --ligand_dir=./data/ligands/HB/AAMP                                   \
        --center_x=170.0 --center_y=-110.0 --center_z=-110.0                   \
        --size_x=10.0 --size_y=10.0 --size_z=10.0                              \
        --num_modes=5 --output_dir=$HOME/output/
@@ -129,7 +129,7 @@ against the receptor (protein: `HIF2a` in our example).
   docker run -v $PWD/data:/workspace/data                               \
              -v $HOME/output:/workspace/output                          \
              -it -p 4040:4040 spark_vina/spark_vina:spark_vina_image    \
-             --receptor_path=/workspace/data/protein/4ZPH-docking.pdb.pdbqt \
+             --receptor_dir=/workspace/data/protein                         \
              --ligand_dir=/workspace/data/ligands/HB/AAMP                   \
              --center_x=170.0 --center_y=-110.0 --center_z=-110.0           \
              --size_x=10.0 --size_y=10.0 --size_z=10.0 --num_modes=5        \

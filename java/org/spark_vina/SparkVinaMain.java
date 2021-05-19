@@ -239,7 +239,16 @@ public final class SparkVinaMain {
       return;
     }
 
-    SparkSession spark = SparkSession.builder().appName("SparkVinaMain").getOrCreate();
+    SparkSession.Builder sparkSessionBuilder = SparkSession.builder().appName("SparkVinaMain");
+    // If spark master is unset, initiate it to local.
+    String masterUrl = System.getProperty("spark.master");
+    boolean masterUrlNotFetchedFromJvm = (masterUrl == null || masterUrl.isEmpty());
+    String masterUrlFromEnv = System.getenv("MASTER");
+    boolean masterUrlNotFetchedFromEnv = (masterUrlFromEnv == null || masterUrlFromEnv.isEmpty());
+    if (masterUrlNotFetchedFromJvm && masterUrlNotFetchedFromEnv) {
+      sparkSessionBuilder.master("local[*]");
+    }
+    SparkSession spark = sparkSessionBuilder.getOrCreate();
     JavaSparkContext javaSparkContext = new JavaSparkContext(spark.sparkContext());
 
     final int numOfExecutors =
@@ -257,13 +266,15 @@ public final class SparkVinaMain {
         javaSparkContext
             .parallelize(ligandFilePaths.get())
             .map(VinaTools::readLigandsToStrings)
+            .setName("ReadLigandsToStrings")
             .flatMap(
                 ligandStrings ->
                     ligandStrings.stream()
                         .flatMap(
                             ligandString -> Collections.nCopies(numRepeats, ligandString).stream())
                         .collect(Collectors.toList())
-                        .iterator());
+                        .iterator())
+            .setName("GenerateRepeatedLigandsRDD");
 
     JavaRDD<Row> finalResult = javaSparkContext.emptyRDD();
     for (String receptorPath : receptorFilePaths.get()) {
@@ -285,6 +296,7 @@ public final class SparkVinaMain {
                   numCpuPerTasks,
                   numModes,
                   threshold))
+          .setName("DockingCompoundsToReceptor")
           .map(
               vinaResult -> {
                 numModelsProcessed.add(1);
@@ -299,8 +311,11 @@ public final class SparkVinaMain {
                 return notNull;
               })
           .keyBy(vinaResult -> vinaResult.getLigandId())
+          .setName("KeyVinaResultByLigandId")
           .groupByKey()
+          .setName("GroupVinaResultByLigandId")
           .map(pair -> new DockingResult(pair._1, pair._2))
+          .setName("MapToDockingResult")
           .map(
               dockingResult ->
                   // See getDockingResultSchema() for the definition of the schema.
@@ -311,9 +326,12 @@ public final class SparkVinaMain {
                       dockingResult.getNumModels(),
                       dockingResult.getAffinityMean(),
                       dockingResult.getAffinityStd(),
-                      dockingResult.getVinaResults()));
-      finalResult.union(result);
+                      dockingResult.getVinaResults()))
+          .setName("CreateParquetRowFromDockingResult");
+      finalResult = finalResult.union(result).setName("UnionResult");
     }
+
+    LOGGER.info("Result RDD execution plan: \n {}", finalResult.toDebugString());
 
     spark
         .createDataFrame(finalResult, getDockingResultSchema())

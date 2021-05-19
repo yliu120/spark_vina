@@ -26,7 +26,7 @@ public class SparkVinaUtils {
               .map(Path::toAbsolutePath)
               .map(Path::toString)
               .collect(Collectors.toList());
-      LOGGER.info("Read {} files in total.", result.size());
+      LOGGER.info("Read {} files from {} in total.", result.size(), directory);
       return Optional.of(result);
     } catch (IOException e) {
       LOGGER.info("Failed to walk the input directory: {}.", directory);
