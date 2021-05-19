@@ -1,4 +1,11 @@
-licenses(["notice"])
+filegroup(
+    name = "srcs",
+    srcs = [
+        "main.cpp",
+        "BUILD",
+    ],
+    visibility = ["//third_party:__pkg__"],
+)
 
 cc_binary(
     name = "vina",

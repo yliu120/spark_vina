@@ -12,6 +12,8 @@ build --cxxopt=-march=native
 
 build:c++17 --cxxopt=-std=c++1z
 
+build:avx2 --copt=-mavx2
+
 build:asan --strip=never
 build:asan --copt -fsanitize=address
 build:asan --copt -DADDRESS_SANITIZER

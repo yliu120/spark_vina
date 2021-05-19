@@ -1,4 +1,12 @@
-licenses(["notice"])
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "*.h",
+        "*.cpp",
+        "BUILD",
+    ]),
+    visibility = ["//third_party:__pkg__"],
+)
 
 cc_library(
     name = "vina_libs",

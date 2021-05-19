@@ -1,4 +1,11 @@
-licenses(["notice"])
+filegroup(
+    name = "srcs",
+    srcs = [
+        "split.cpp",
+        "BUILD",
+    ],
+    visibility = ["//third_party:__pkg__"],
+)
 
 cc_binary(
     name = "vina_split",

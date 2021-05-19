@@ -303,6 +303,7 @@ public final class SparkVinaMain {
           .map(pair -> new DockingResult(pair._1, pair._2))
           .map(
               dockingResult ->
+                  // See getDockingResultSchema() for the definition of the schema.
                   RowFactory.create(
                       dockingResult.getCompoundKey(),
                       receptorPath,
@@ -345,6 +346,7 @@ public final class SparkVinaMain {
     return new StructType(
         new StructField[]{
             new StructField("name", DataTypes.StringType, false, Metadata.empty()),
+            new StructField("receptor_path", DataTypes.StringType, false, Metadata.empty()),
             new StructField("original_pdbqt", DataTypes.StringType, false, Metadata.empty()),
             new StructField("num_models", DataTypes.IntegerType, false, Metadata.empty()),
             new StructField("affinity_mean", DataTypes.DoubleType, false, Metadata.empty()),
