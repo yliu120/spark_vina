@@ -22,6 +22,7 @@ filegroup(
         "//third_party:srcs",
         "//protos:srcs",
         "//java/jni:srcs",
+        "//java/org/spark/tools:srcs",
     ] + [".bazelrc"] + glob(["java/**/*"]),
 )
 
