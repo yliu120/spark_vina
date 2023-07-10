@@ -8,7 +8,6 @@ cc_library(
     srcs = [
         "adler32.c",
         "compress.c",
-        "contrib/amd64/amd64-match.S",
         "crc32.c",
         "crc32.h",
         "deflate.c",
