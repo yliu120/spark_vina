@@ -221,7 +221,7 @@ maven_install(
         "org.apache.spark:spark-sql_2.12:3.2.4",
         "org.hamcrest:hamcrest:2.2",
         "org.scala-lang:scala-library:2.12.18",
-        "org.slf4j:slf4j-api:2.0.6",
+        "org.slf4j:slf4j-api:1.7.36",
     ],
     repositories = [
 	#"https://maven.aliyun.com/repository/public",
