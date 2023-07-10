@@ -13,9 +13,9 @@ http_archive(
 http_archive(
     name = "zlib",
     build_file = "//third_party:zlib.BUILD",
-    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
-    strip_prefix = "zlib-1.2.11",
-    url = "https://zlib.net/zlib-1.2.11.tar.gz",
+    sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
+    strip_prefix = "zlib-1.2.13",
+    url = "https://zlib.net/zlib-1.2.13.tar.gz",
 )
 
 http_archive(
@@ -26,15 +26,12 @@ http_archive(
     url = "https://downloads.sourceforge.net/project/bzip2/bzip2-1.0.6.tar.gz",
 )
 
-git_repository(
+http_archive(
     name = "com_github_nelhage_rules_boost",
-    commit = "9f9fb8b2f0213989247c9d5c0e814a8451d18d7f",
-    remote = "https://github.com/nelhage/rules_boost",
-    shallow_since = "1570056263 -0700",
+    url = "https://github.com/nelhage/rules_boost/archive/96e9b631f104b43a53c21c87b01ac538ad6f3b48.tar.gz",
+    strip_prefix = "rules_boost-96e9b631f104b43a53c21c87b01ac538ad6f3b48",
 )
-
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
-
 boost_deps()
 
 http_archive(
@@ -84,11 +81,9 @@ http_archive(
 
 http_archive(
     name = "absl",
-    sha256 = "f41868f7a938605c92936230081175d1eae87f6ea2c248f41077c8f88316f111",
-    strip_prefix = "abseil-cpp-20200225.2",
+    strip_prefix = "abseil-cpp-20230125.3",
     urls = [
-        "https://github.com/abseil/abseil-cpp/archive/20200225.2.tar.gz",
-	"https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/abslcpp.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.3.tar.gz"
     ],
 )
 
@@ -122,20 +117,10 @@ http_archive(
 )
 
 http_archive(
-    name = "io_bazel_rules_docker",
-    sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
-    strip_prefix = "rules_docker-0.14.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
-)
-
-http_archive(
     name = "com_google_protobuf",
-    sha256 = "cf754718b0aa945b00550ed7962ddc167167bd922b842199eeb6505e6f344852",
-    strip_prefix = "protobuf-3.11.3",
+    strip_prefix = "protobuf-23.4",
     urls = [
-        "https://yunlongl-mirror.oss-cn-zhangjiakou.aliyuncs.com/protobuf-3.11.3.tar.gz",
-        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v23.4.tar.gz",
     ],
 )
 
@@ -192,9 +177,8 @@ bind(
     actual = "@local_config_python//:python_headers",
 )
 
-RULES_JVM_EXTERNAL_TAG = "3.2"
-
-RULES_JVM_EXTERNAL_SHA = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af"
+RULES_JVM_EXTERNAL_TAG = "4.5"
+RULES_JVM_EXTERNAL_SHA = "b17d7388feb9bfa7f2fa09031b32707df529f26c91ab9e5d909eb1676badd9a6"
 
 http_archive(
     name = "rules_jvm_external",
@@ -219,56 +203,39 @@ maven_install(
         "org.apache.hadoop:hadoop-mapreduce-client-common:3.2.1",
         "org.apache.hadoop:hadoop-mapreduce-client-app:3.2.1",
         "org.apache.hadoop:hadoop-common:3.2.1",
-        "org.apache.spark:spark-catalyst_2.12:3.1.1",
-        "org.apache.spark:spark-core_2.12:3.1.1",
-        "org.apache.spark:spark-sql_2.12:3.1.1",
+        "org.apache.spark:spark-catalyst_2.13:3.4.1",
+        "org.apache.spark:spark-core_2.13:3.4.1",
+        "org.apache.spark:spark-sql_2.13:3.4.1",
         "org.hamcrest:hamcrest:2.2",
-        "org.scala-lang:scala-library:2.12.10",
-        "org.slf4j:slf4j-api:1.7.30",
+        "org.scala-lang:scala-library:2.13.8",
+        "org.slf4j:slf4j-api:2.0.6",
     ],
     repositories = [
-	"https://maven.aliyun.com/repository/public",
-	"https://maven.aliyun.com/repository/google",
-	"https://maven.aliyun.com/repository/apache-snapshots",
+	#"https://maven.aliyun.com/repository/public",
+	#"https://maven.aliyun.com/repository/google",
+	#"https://maven.aliyun.com/repository/apache-snapshots",
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
 )
 
-load(
-    "@io_bazel_rules_docker//repositories:repositories.bzl",
-    container_repositories = "repositories",
-)
+#container_pull(
+#    name = "java_base",
+#    digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb",
+#    registry = "gcr.io",
+#    repository = "distroless/java",
+#)
 
-container_repositories()
+#container_pull(
+#    name = "spark_base",
+#    digest = "sha256:0d2c7d9d66fb83a0311442f0d2830280dcaba601244d1d8c1704d72f5806cc4c",
+#    registry = "gcr.io",
+#    repository = "spark-operator/spark",
+#)
 
-# Loads rules_docker's dependencies
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-container_deps()
-
-load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_pull",
-)
-
-container_pull(
-    name = "java_base",
-    digest = "sha256:e99eb6cf88ca2df69e99bf853d65f125066730e3e9f7a233bd1b7e3523c144cb",
-    registry = "gcr.io",
-    repository = "distroless/java",
-)
-
-container_pull(
-    name = "spark_base",
-    digest = "sha256:0d2c7d9d66fb83a0311442f0d2830280dcaba601244d1d8c1704d72f5806cc4c",
-    registry = "gcr.io",
-    repository = "spark-operator/spark",
-)
-
-load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
-
-dockerfile_image(
-    name = "java_base_modified",
-    dockerfile = "//docker:Dockerfile",
-)
+#load("@io_bazel_rules_docker//contrib:dockerfile_build.bzl", "dockerfile_image")
+#
+#dockerfile_image(
+#    name = "java_base_modified",
+#    dockerfile = "//docker:Dockerfile",
+#)

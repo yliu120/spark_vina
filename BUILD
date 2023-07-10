@@ -1,6 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+# load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -51,8 +51,8 @@ java_library(
         "//protos:vina_java_proto",
         "@com_google_protobuf//:protobuf_java",
         "@maven//:com_google_guava_guava",
-        "@maven//:org_apache_spark_spark_catalyst_2_12",
-        "@maven//:org_apache_spark_spark_core_2_12",
+        "@maven//:org_apache_spark_spark_catalyst_2_13",
+        "@maven//:org_apache_spark_spark_core_2_13",
         "@maven//:org_slf4j_slf4j_api",
     ],
 )
@@ -84,44 +84,44 @@ java_binary(
         "//protos:vina_java_proto",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_cli_commons_cli_1_4",
-        "@maven//:org_apache_spark_spark_catalyst_2_12",
-        "@maven//:org_apache_spark_spark_core_2_12",
-        "@maven//:org_apache_spark_spark_sql_2_12",
+        "@maven//:org_apache_spark_spark_catalyst_2_13",
+        "@maven//:org_apache_spark_spark_core_2_13",
+        "@maven//:org_apache_spark_spark_sql_2_13",
         "@maven//:org_slf4j_slf4j_api",
     ],
 )
 
-container_image(
-    name = "spark_vina_image",
-    base = "@java_base_modified//image:dockerfile_image.tar",
-    entrypoint = [
-        "java",
-        "-jar",
-        "/spark_vina_main_deploy.jar",
-    ],
-    files = ["//docker:spark_vina_main_deploy.jar"],
-    ports = [
-        # Ports for Spark WebUI
-        "4040",
-    ],
-    repository = "spark_vina/spark_vina",
-    stamp = 1,
-    volumes = [
-        "/workspace",
-    ],
-)
+# container_image(
+#    name = "spark_vina_image",
+#    base = "@java_base_modified//image:dockerfile_image.tar",
+#    entrypoint = [
+#        "java",
+#        "-jar",
+#        "/spark_vina_main_deploy.jar",
+#    ],
+#    files = ["//docker:spark_vina_main_deploy.jar"],
+#    ports = [
+#        # Ports for Spark WebUI
+#        "4040",
+#    ],
+#    repository = "spark_vina/spark_vina",
+#    stamp = 1,
+#    volumes = [
+#        "/workspace",
+#    ],
+#)
 
-container_image(
-    name = "spark_vina_k8s",
-    base = "@spark_base//image",
-    data_path = ".",
-    files = [
-        "//data:test_data",
-        "//docker:spark_vina_main_deploy.jar",
-    ],
-    repository = "spark_vina/spark_vina",
-    stamp = 1,
-    volumes = [
-        "/workspace",
-    ],
-)
+#container_image(
+#    name = "spark_vina_k8s",
+#    base = "@spark_base//image",
+#    data_path = ".",
+#    files = [
+#        "//data:test_data",
+#        "//docker:spark_vina_main_deploy.jar",
+#    ],
+#    repository = "spark_vina/spark_vina",
+#    stamp = 1,
+#    volumes = [
+#        "/workspace",
+#    ],
+#)

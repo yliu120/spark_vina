@@ -1,4 +1,4 @@
-# By default, build spark_vina in C++ 14 mode.
+# By default, build spark_vina in C++ 17 mode.
 build --color=yes
 build -c opt
 build --copt -g
@@ -7,10 +7,8 @@ build --copt=-O3
 build --copt=-march=native
 build --define=use_fast_cpp_protos=true
 build --cxxopt=-O3
-build --cxxopt=-std=c++1y
+build --cxxopt=-std=c++1z
 build --cxxopt=-march=native
-
-build:c++17 --cxxopt=-std=c++1z
 
 build:avx2 --copt=-mavx2
 

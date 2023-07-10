@@ -27,7 +27,7 @@ genrule(
         "-w /src/workspace",
         "l.gcr.io/google/bazel:latest",
         "--output_user_root=/tmp/build_output build -s -c opt",
-        "--config=avx2 --config=c++17 -- //:spark_vina_main_deploy.jar",
+        "--config=avx2 -- //:spark_vina_main_deploy.jar",
         " && ",
         "cp $$(cat $(locations :tmpdir.txt))/bazel-bin/spark_vina_main_deploy.jar $@",
     ]),
