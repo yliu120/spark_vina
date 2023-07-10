@@ -81,6 +81,7 @@ http_archive(
 
 http_archive(
     name = "absl",
+    sha256 = "5366d7e7fa7ba0d915014d387b66d0d002c03236448e1ba9ef98122c13b35c36",
     strip_prefix = "abseil-cpp-20230125.3",
     urls = [
         "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230125.3.tar.gz"
@@ -117,7 +118,19 @@ http_archive(
 )
 
 http_archive(
+    name = "rules_pkg",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+    ],
+    sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
+)
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+
+http_archive(
     name = "com_google_protobuf",
+    sha256 = "a700a49470d301f1190a487a923b5095bf60f08f4ae4cac9f5f7c36883d17971",
     strip_prefix = "protobuf-23.4",
     urls = [
         "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v23.4.tar.gz",

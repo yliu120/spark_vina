@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 # load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 package(default_visibility = ["//visibility:public"])
