@@ -73,22 +73,6 @@ always at the root directory, where places the `WORKSPACE` file.
   flags. The JAR file is a self-containing JAR file that carries all its
   dependencies.
   
-+ The docker image running the above JAR file only.
-  ```bash
-  sudo bazel build //:spark_vina_image
-  sudo bazel-bin/spark_vina_image.executable
-  ```
-  `sudo` is added here to avoid root permissions issues since under some
-  platforms, docker has to be run with root privilege.
-  Please note that the compilation of the JAR file living inside this distroless
-  image happens inside [another Bazel container](l.gcr.io/google/bazel:latest).
-  The second command will load the built image to your docker daemon.
-  ```bash
-  $ sudo docker images
-  REPOSITORY               TAG                 IMAGE ID       ...      SIZE
-  spark_vina/spark_vina    spark_vina_image    23cee7cd8528   ...      303MB
-  ```
-  
 + Examples for Python bindings:
   ```bash
   bazel build //python:vina_example_py
@@ -96,6 +80,14 @@ always at the root directory, where places the `WORKSPACE` file.
   We are intended to provide less support for Python bindings because it is
   gonna be hard for python applications to be deployed to Spark clusters.
   However, Python bindings might be important for interactive data analysis.
+
++ Docker images
+  Subfolders in docker/ contain standalone Dockerfile that will build binaries
+  inside the docker containers. Please use the following command:
+  ```
+  docker build -t <IMAGE_TAG> .
+  ```
+  to build the images containing the binaries.
   
 ## Test Drive Spark Vina
 
@@ -128,7 +120,7 @@ against the receptor (protein: `HIF2a` in our example).
   ```bash
   docker run -v $PWD/data:/workspace/data                               \
              -v $HOME/output:/workspace/output                          \
-             -it -p 4040:4040 spark_vina/spark_vina:spark_vina_image    \
+             -it -p 4040:4040 <YOUR_BUILD_IMAGE>                        \
              --receptor_dir=/workspace/data/protein                         \
              --ligand_dir=/workspace/data/ligands/HB/AAMP                   \
              --center_x=170.0 --center_y=-110.0 --center_z=-110.0           \
