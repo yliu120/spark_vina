@@ -121,6 +121,7 @@ against the receptor (protein: `HIF2a` in our example).
   docker run -v $PWD/data:/workspace/data                               \
              -v $HOME/output:/workspace/output                          \
              -it -p 4040:4040 <YOUR_BUILD_IMAGE>                        \
+             /spark_vina_main_deploy.jar                                \
              --receptor_dir=/workspace/data/protein                         \
              --ligand_dir=/workspace/data/ligands/HB/AAMP                   \
              --center_x=170.0 --center_y=-110.0 --center_z=-110.0           \
