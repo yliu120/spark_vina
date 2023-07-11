@@ -126,7 +126,7 @@ against the receptor (protein: `HIF2a` in our example).
              --ligand_dir=/workspace/data/ligands/HB/AAMP                   \
              --center_x=170.0 --center_y=-110.0 --center_z=-110.0           \
              --size_x=10.0 --size_y=10.0 --size_z=10.0 --num_modes=5        \
-             --output_dir=/workspace/output/
+             --output_dir=/workspace/output/trial1
   ```
 + Spark WebUI Monitoring: Please visit `localhost:4040` in your browser for 
   visualizing the Spark workflow.
