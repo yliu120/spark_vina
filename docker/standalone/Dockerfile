@@ -2,6 +2,8 @@ FROM debian:11 AS base
 
 WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends wget \
+    # Currently, we stick to JDK 11 as other versions might not be
+    # compatible with spark.
     git build-essential openjdk-11-jre openjdk-11-jdk
 
 # Install bazel. We don't directly use the official bazel image as it is hard to use.
