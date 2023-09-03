@@ -208,7 +208,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
-        "commons-cli:commons-cli:1.4.0",
+        "commons-cli:commons-cli:1.4",
         "com.google.truth:truth:1.1.5",
         "com.google.guava:guava:32.1.1-jre",
         "com.google.truth.extensions:truth-proto-extension:1.1.5",
