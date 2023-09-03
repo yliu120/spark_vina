@@ -83,7 +83,7 @@ java_binary(
         ":spark_vina_lib",
         "//protos:vina_java_proto",
         "@maven//:com_google_guava_guava",
-        "@maven//:commons_cli_commons_cli_1_4_0",
+        "@maven//:commons_cli_commons_cli_1_4",
         "@maven//:org_apache_spark_spark_catalyst_2_12",
         "@maven//:org_apache_spark_spark_core_2_12",
         "@maven//:org_apache_spark_spark_sql_2_12",
