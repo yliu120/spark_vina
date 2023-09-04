@@ -19,10 +19,14 @@ RUN cp spark_vina/bazel-bin/spark_vina_main_deploy.jar /build/ && \
     cp spark_vina/bazel-bin/java/org/spark/tools/zinc_files_to_parquet_v2_main_deploy.jar /build/ && \
     cp spark_vina/bazel-bin/java/org/spark/tools/zinc_files_to_parquet_main_deploy.jar /build/
 
-# We need to stick to 3.2.4 as spark 3.4 won't work well.
-FROM apache/spark:v3.2.4
-COPY --from=base /build/spark_vina_main_deploy.jar /opt/spark/jars/
-COPY --from=base /build/zinc_files_to_parquet_v2_main_deploy.jar /opt/spark/jars/
-COPY --from=base /build/zinc_files_to_parquet_main_deploy.jar /opt/spark/jars/
+# Needs to wrap by a spark image to run with k8s.
+FROM spark:3.4.1
+COPY --from=base /build/spark_vina_main_deploy.jar /jars/
+COPY --from=base /build/zinc_files_to_parquet_v2_main_deploy.jar /jars/
+COPY --from=base /build/zinc_files_to_parquet_main_deploy.jar /jars/
+
+# Remove the useless old protobuf-java jars inside spark. The upstream
+# should clean that up.
+RUN rm /opt/spark/jars/protobuf-java*.*
 
 EXPOSE 4040
